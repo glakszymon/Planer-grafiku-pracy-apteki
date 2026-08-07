@@ -3,7 +3,7 @@ using GrafikPlanerData;
 
 namespace GrafikPlanerCore;
 
-public class Class1
+public class ScheduleCreator
 {
-
+    
 }

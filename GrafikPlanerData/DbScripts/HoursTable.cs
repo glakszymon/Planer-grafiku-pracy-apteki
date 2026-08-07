@@ -41,4 +41,29 @@ public class HoursTable
 
         command.ExecuteNonQuery();
     }
+
+    public List<HoursRecord> GetAllHours()
+    {
+        var hours = new List<HoursRecord>();
+        
+        var command = _activeConnection.CreateCommand();
+        command.CommandText = @"
+            SELECT Id, StartTime, EndTime, Symbol FROM ShiftHours";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var hour = new HoursRecord();
+            hour.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+            hour.Symbol = reader.GetString(reader.GetOrdinal("Symbol"));
+            
+            /*TODO: DODAJ TUTAJ start i end time z formatowaniem */
+            
+            hours.Add(hour);
+        }
+
+        return hours;
+    }
+
+
 }

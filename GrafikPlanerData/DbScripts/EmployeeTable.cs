@@ -31,7 +31,6 @@ public class EmployeeTable
 
     public void AddEmployee(EmployeeRecord record)
     {
-        var createEmployeeTableCommand = _activeConnection.CreateCommand();
         
         var command = _activeConnection.CreateCommand();
 
@@ -47,5 +46,29 @@ public class EmployeeTable
 
         command.ExecuteNonQuery();
     }
-    
+
+    public List<EmployeeRecord> GetAllEmployees()
+    {
+        var employees = new List<EmployeeRecord>();
+        
+        var command = _activeConnection.CreateCommand();
+        command.CommandText = @"
+            SELECT Id, FirstName, LastName, Specialisation, Email, PhoneNumber FROM Employee";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var emp = new EmployeeRecord();
+            emp.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+            emp.FirstName = reader.GetString(reader.GetOrdinal("FirstName"));
+            emp.LastName = reader.GetString(reader.GetOrdinal("LastName"));
+            emp.Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email"));
+            emp.PhoneNumber = reader.IsDBNull(reader.GetOrdinal("PhoneNumber")) ? string.Empty : reader.GetString(reader.GetOrdinal("PhoneNumber"));
+            
+            employees.Add(emp);
+        }
+        
+        return employees;
+    }
+       
 }

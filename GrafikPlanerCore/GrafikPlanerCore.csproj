@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="DatabaseComunications\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\GrafikPlanerData\GrafikPlanerData.csproj" />
     </ItemGroup>
 

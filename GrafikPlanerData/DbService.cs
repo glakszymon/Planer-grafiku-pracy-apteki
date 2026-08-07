@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using GrafikPlanerData.DbScripts;
+using GrafikPlanerData.Models;
 
 namespace GrafikPlanerData;
 
@@ -7,7 +8,7 @@ public class DbService
 {
     private SqliteConnection _connection;
     
-    private void StartConnectionWithDatabase()
+    private SqliteConnection StartConnectionWithDatabase()
     {
         var connectionString = "Data Source=apteka.db";
         
@@ -15,6 +16,8 @@ public class DbService
         tempCon.Open();
         
         _connection = tempCon;
+        
+        return _connection;
     }
     
     public void InitializeDatabase()
@@ -28,6 +31,5 @@ public class DbService
         var shiftTable = new ShiftTable(_connection);
         shiftTable.CreateTable();
     }
-    
     
 }

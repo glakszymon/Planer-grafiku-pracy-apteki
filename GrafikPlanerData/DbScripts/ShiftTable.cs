@@ -47,4 +47,33 @@ public class ShiftTable
 
         command.ExecuteNonQuery();
     }
+
+    public List<ShiftRecord> GetShiftRecordsOfMonth(int month, int year)
+    {
+        var shifts = new List<ShiftRecord>();
+        string monthPattern = $"{year:D4}-{month:D2}-%";
+            
+        var command = _activeConnection.CreateCommand();
+        command.CommandText = @"
+            SELECT ShiftRecords.Id, ShiftRecords.EmployeeId, ShiftRecords.ShiftHourId, ShiftRecords.ShiftDate, ShiftRecords.PoleColor, ShiftRecords.PoleIcon
+            FROM ShiftRecords WHERE ShiftDate LIKE @monthPattern";
+        
+        command.Parameters.AddWithValue("@monthPattern", monthPattern);
+        
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var shiftRecord = new ShiftRecord();
+            shiftRecord.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+            shiftRecord.EmployeeId = reader.GetInt32(reader.GetOrdinal("EmployeeId"));
+            shiftRecord.ShiftHourId = reader.IsDBNull(reader.GetOrdinal("ShiftHourId")) ? 0 : reader.GetInt32(reader.GetOrdinal("ShiftHourId"));
+            /*shiftRecord.ShiftDate = reader.GetString(reader.GetOrdinal("ShiftDate"));*/
+            /*TODO: dodaj formatowanie string na date */
+            shiftRecord.PoleColor = reader.IsDBNull(reader.GetOrdinal("PoleColor")) ? null : reader.GetString(reader.GetOrdinal("PoleColor"));
+            shiftRecord.PoleIcon = reader.IsDBNull(reader.GetOrdinal("PoleIcon")) ? null : reader.GetString(reader.GetOrdinal("PoleIcon"));
+            
+            shifts.Add(shiftRecord);
+        }
+        return shifts;
+    }
 }
