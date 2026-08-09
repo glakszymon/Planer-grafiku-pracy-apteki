@@ -1,3 +1,4 @@
+using GrafikPlanerCore.Models;
 using GrafikPlanerCore.ScheduleScripts;
 using GrafikPlanerData;
 
@@ -24,6 +25,14 @@ public class CoreProgram
         scheduleCreator.SendScheduleToDatabase();
         
         return new Response("SUCCESS", "Schedule created");
+    }
+    
+    public List<ScheduleRow> OpenSchedule(int month, int year)
+    {
+        var scheduleReader = new ScheduleReader();
+        scheduleReader.GetDataFromDb(month, year);
+        scheduleReader.TransformDataToTableStructure();
+        return scheduleReader.FinalSchedule;
     }
     
     

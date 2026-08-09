@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using GrafikPlanerCore;
+using GrafikPlanerCore.ScheduleScripts;
 using GrafikPlanerData;
 using GrafikPlanerUI.ViewModels;
 
@@ -45,6 +46,37 @@ public partial class MainWindow : Window
         {
             StatusTextBlock.Text = "Błąd: Wybierz miesiąc i rok!";
             StatusTextBlock.Foreground = Brushes.Red;
+        }
+    }
+
+    private void OnSubmitClickShow(object? sender, RoutedEventArgs e)
+    {
+        // Poprawiono: pobieranie daty z właściwego pickera MonthYearPickerShow
+        if (MonthYearPickerShow.SelectedDate.HasValue)
+        {
+            DateTimeOffset selectedDate = MonthYearPickerShow.SelectedDate.Value;
+        
+            // 1. Pobieramy dane z logiki biznesowej
+            var dataForTable = _coreProgram.OpenSchedule(selectedDate.Month, selectedDate.Year);
+
+            // 2. Tworzymy instancję drugiego okna
+            var tableWindow = new ScheduleTableWindow();
+
+            // 3. Ładujemy pobrane dane do tabeli w nowym oknie
+            tableWindow.LoadSchedule(dataForTable);
+
+            // 4. Otwieramy nowe okno
+            tableWindow.Show();
+
+            // 5. (Opcjonalnie) Zamykamy lub ukrywamy główne okno:
+            // this.Close(); // Zamknie MainWindow całkowicie
+            // lub
+            this.Hide();  // Tylko ukryje MainWindow
+        }
+        else
+        {
+            StatusTextBlockShow.Text = "Błąd: Wybierz miesiąc i rok!";
+            StatusTextBlockShow.Foreground = Brushes.Red;
         }
     }
 }

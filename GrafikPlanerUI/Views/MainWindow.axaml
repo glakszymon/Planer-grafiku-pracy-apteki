@@ -35,6 +35,23 @@
                    Text="" 
                    FontWeight="SemiBold" 
                    HorizontalAlignment="Center" />
+
+        
+        <TextBlock Text="Wybierz miesiąc i rok:" FontWeight="Bold" />
+        <DatePicker x:Name="MonthYearPickerShow" 
+                    DayVisible="False" 
+                    MonthFormat="MMMM" 
+                    YearFormat="yyyy" />
+
+        <Button Content="Pokaż tabele" 
+                Click="OnSubmitClickShow" 
+                HorizontalAlignment="Stretch" 
+                HorizontalContentAlignment="Center" />
+
+        <TextBlock x:Name="StatusTextBlockShow" 
+                   Text="" 
+                   FontWeight="SemiBold" 
+                   HorizontalAlignment="Center" />
                
     </StackPanel>
 

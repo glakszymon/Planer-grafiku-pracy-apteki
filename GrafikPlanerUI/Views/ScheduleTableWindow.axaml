@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:GrafikPlanerCore.Models;assembly=GrafikPlanerCore"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="GrafikPlanerUI.Views.ScheduleTableWindow"
+        x:DataType="models:ScheduleRow"
+        Title="Grafik Pracy">
+
+    <Window.Styles>
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+    </Window.Styles>
+
+    <Grid Margin="10">
+        <DataGrid x:Name="ScheduleDataGrid" 
+                  AutoGenerateColumns="False" 
+                  IsReadOnly="True"
+                  GridLinesVisibility="All"
+                  BorderThickness="1" 
+                  BorderBrush="Gray">
+            <DataGrid.Columns>
+            
+                <DataGridTemplateColumn Header="Pracownik" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="models:ScheduleRow">
+                            <StackPanel Margin="5" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding FirstName}" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding LastName}" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Specialisation}" FontStyle="Italic" Foreground="Gray" FontSize="11"/>
+                                <TextBlock Text="{Binding PhoneNumber}" FontSize="11"/>
+                                <TextBlock Text="{Binding Email}" FontSize="10" Foreground="DarkBlue"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="Suma godz." 
+                                    Binding="{Binding HoursSummary}" 
+                                    Width="100" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
