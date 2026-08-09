@@ -14,9 +14,28 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainViewModel />
     </Design.DataContext>
+    
+    <StackPanel Margin="20" Spacing="15" Width="300" HorizontalAlignment="Center">
+        <TextBox Text="{Binding Greeting}"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center" />
+        
+        <TextBlock Text="Wybierz miesiąc i rok:" FontWeight="Bold" />
+        <DatePicker x:Name="MonthYearPicker" 
+                    DayVisible="False" 
+                    MonthFormat="MMMM" 
+                    YearFormat="yyyy" />
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+        <Button Content="Zatwierdź" 
+                Click="OnSubmitClick" 
+                HorizontalAlignment="Stretch" 
+                HorizontalContentAlignment="Center" />
+
+        <TextBlock x:Name="StatusTextBlock" 
+                   Text="" 
+                   FontWeight="SemiBold" 
+                   HorizontalAlignment="Center" />
+               
+    </StackPanel>
 
 </Window>

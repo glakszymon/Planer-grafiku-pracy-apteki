@@ -3,18 +3,13 @@ using Microsoft.Data.Sqlite;
 
 namespace GrafikPlanerData.DbScripts;
 
-public class EmployeeTable
+public class EmployeeTable : DbConnectionOption
 {
-    SqliteConnection  _activeConnection;
     
-    public EmployeeTable(SqliteConnection connection)
-    {
-        _activeConnection = connection;
-    }
     
     public void CreateTable()
     {
-        var createEmployeeTableCommand = _activeConnection.CreateCommand();
+        var createEmployeeTableCommand = _connection.CreateCommand();
         
         createEmployeeTableCommand.CommandText = @"
             CREATE TABLE IF NOT EXISTS Employee (
@@ -32,7 +27,7 @@ public class EmployeeTable
     public void AddEmployee(EmployeeRecord record)
     {
         
-        var command = _activeConnection.CreateCommand();
+        var command = _connection.CreateCommand();
 
         command.CommandText = @"
             INSERT INTO Employee (FirstName, LastName, Specialization, Email, PhoneNumber) 
@@ -40,7 +35,7 @@ public class EmployeeTable
 
         command.Parameters.AddWithValue("@firstName", record.FirstName);
         command.Parameters.AddWithValue("@lastName", record.LastName);
-        command.Parameters.AddWithValue("@specialisation", record.Specialization);
+        command.Parameters.AddWithValue("@specialisation", record.Specialisation);
         command.Parameters.AddWithValue("@email", (object?)record.Email ?? DBNull.Value);
         command.Parameters.AddWithValue("@phoneNumber", (object?)record.PhoneNumber ?? DBNull.Value);
 
@@ -50,24 +45,36 @@ public class EmployeeTable
     public List<EmployeeRecord> GetAllEmployees()
     {
         var employees = new List<EmployeeRecord>();
-        
-        var command = _activeConnection.CreateCommand();
+    
+        using var command = _connection.CreateCommand();
         command.CommandText = @"
-            SELECT Id, FirstName, LastName, Specialisation, Email, PhoneNumber FROM Employee";
+        SELECT Id, FirstName, LastName, Specialization, Email, PhoneNumber 
+        FROM Employee";
 
         using var reader = command.ExecuteReader();
+
+        int idOrdinal = reader.GetOrdinal("Id");
+        int firstNameOrdinal = reader.GetOrdinal("FirstName");
+        int lastNameOrdinal = reader.GetOrdinal("LastName");
+        int specOrdinal = reader.GetOrdinal("Specialization");
+        int emailOrdinal = reader.GetOrdinal("Email");
+        int phoneOrdinal = reader.GetOrdinal("PhoneNumber");
+
         while (reader.Read())
         {
-            var emp = new EmployeeRecord();
-            emp.Id = reader.GetInt32(reader.GetOrdinal("Id"));
-            emp.FirstName = reader.GetString(reader.GetOrdinal("FirstName"));
-            emp.LastName = reader.GetString(reader.GetOrdinal("LastName"));
-            emp.Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email"));
-            emp.PhoneNumber = reader.IsDBNull(reader.GetOrdinal("PhoneNumber")) ? string.Empty : reader.GetString(reader.GetOrdinal("PhoneNumber"));
-            
+            var emp = new EmployeeRecord
+            {
+                Id = reader.GetInt32(idOrdinal),
+                FirstName = reader.GetString(firstNameOrdinal),
+                LastName = reader.GetString(lastNameOrdinal),
+                Specialisation = reader.IsDBNull(specOrdinal) ? string.Empty : reader.GetString(specOrdinal),
+                Email = reader.IsDBNull(emailOrdinal) ? string.Empty : reader.GetString(emailOrdinal),
+                PhoneNumber = reader.IsDBNull(phoneOrdinal) ? string.Empty : reader.GetString(phoneOrdinal)
+            };
+        
             employees.Add(emp);
         }
-        
+    
         return employees;
     }
        

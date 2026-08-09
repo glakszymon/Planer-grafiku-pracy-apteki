@@ -3,18 +3,11 @@ using  Microsoft.Data.Sqlite;
 
 namespace GrafikPlanerData.DbScripts;
 
-public class ShiftTable
+public class ShiftTable : DbConnectionOption
 {
-    SqliteConnection  _activeConnection;
-
-    public ShiftTable(SqliteConnection connection)
-    {
-        _activeConnection = connection;
-    }
-
     public void CreateTable()
     {
-        var createShiftsTableCommand = _activeConnection.CreateCommand();
+        var createShiftsTableCommand = _connection.CreateCommand();
         
         createShiftsTableCommand.CommandText = @"
             CREATE TABLE IF NOT EXISTS ShiftRecords (
@@ -33,7 +26,7 @@ public class ShiftTable
 
     public void AddShift(ShiftRecord record)
     {
-        var command = _activeConnection.CreateCommand();
+        var command = _connection.CreateCommand();
         
         command.CommandText = @"
             INSERT INTO ShiftRecords (EmployeeId, ShiftHourId, ShiftDate, PoleColor, PoleIcon) 
@@ -53,7 +46,7 @@ public class ShiftTable
         var shifts = new List<ShiftRecord>();
         string monthPattern = $"{year:D4}-{month:D2}-%";
             
-        var command = _activeConnection.CreateCommand();
+        var command = _connection.CreateCommand();
         command.CommandText = @"
             SELECT ShiftRecords.Id, ShiftRecords.EmployeeId, ShiftRecords.ShiftHourId, ShiftRecords.ShiftDate, ShiftRecords.PoleColor, ShiftRecords.PoleIcon
             FROM ShiftRecords WHERE ShiftDate LIKE @monthPattern";
@@ -67,13 +60,51 @@ public class ShiftTable
             shiftRecord.Id = reader.GetInt32(reader.GetOrdinal("Id"));
             shiftRecord.EmployeeId = reader.GetInt32(reader.GetOrdinal("EmployeeId"));
             shiftRecord.ShiftHourId = reader.IsDBNull(reader.GetOrdinal("ShiftHourId")) ? 0 : reader.GetInt32(reader.GetOrdinal("ShiftHourId"));
-            /*shiftRecord.ShiftDate = reader.GetString(reader.GetOrdinal("ShiftDate"));*/
-            /*TODO: dodaj formatowanie string na date */
+            shiftRecord.ShiftDate = DateOnly.Parse(reader.GetString(reader.GetOrdinal("ShiftDate")));
             shiftRecord.PoleColor = reader.IsDBNull(reader.GetOrdinal("PoleColor")) ? null : reader.GetString(reader.GetOrdinal("PoleColor"));
             shiftRecord.PoleIcon = reader.IsDBNull(reader.GetOrdinal("PoleIcon")) ? null : reader.GetString(reader.GetOrdinal("PoleIcon"));
             
             shifts.Add(shiftRecord);
         }
         return shifts;
+    }
+    
+    public void UpdateShiftRecord(ShiftRecord record)
+    {
+        var command = _connection.CreateCommand();
+        command.CommandText = @"
+            UPDATE ShiftRecords
+                SET ShiftHourId  = @shiftHourId, PoleColor = @poleColor, PoleIcon = @poleIcon
+                WHERE Id = @id;";
+        command.Parameters.AddWithValue("@shiftHourId", record.ShiftHourId);
+        command.Parameters.AddWithValue("@poleColor", record.PoleColor);
+        command.Parameters.AddWithValue("@poleIcon", record.PoleIcon);
+        command.Parameters.AddWithValue("@id", record.Id);
+        command.ExecuteNonQuery();
+    }
+
+    public int NumberOfRecordsInMonthSchedule(int month, int year)
+    {
+        string monthPattern = $"{year:D4}-{month:D2}-%";
+    
+        using var command = _connection.CreateCommand();
+        command.CommandText = @"
+        SELECT COUNT(ShiftRecords.Id) 
+        FROM ShiftRecords 
+        WHERE ShiftDate LIKE @monthPattern";
+    
+        // Prawidłowe dodanie parametru w natywnym ADO.NET
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "@monthPattern";
+        parameter.Value = monthPattern;
+        command.Parameters.Add(parameter);
+    
+        // ExecuteScalar pobiera pierwszą kolumnę z pierwszego wiersza
+        var result = command.ExecuteScalar();
+
+        // Wykonujemy bezpieczną konwersję (na wypadek null)
+        return result != null && result != DBNull.Value 
+            ? Convert.ToInt32(result) 
+            : 0;
     }
 }

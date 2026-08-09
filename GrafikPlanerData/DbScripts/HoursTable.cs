@@ -3,18 +3,13 @@ using Microsoft.Data.Sqlite;
 
 namespace GrafikPlanerData.DbScripts;
 
-public class HoursTable
+public class HoursTable : DbConnectionOption
 {
-    SqliteConnection  _activeConnection;
-    
-    public HoursTable(SqliteConnection connection)
-    {
-        _activeConnection = connection;
-    }
+
 
     public void CreateTable()
     {
-        var createHoursTableCommand = _activeConnection.CreateCommand();
+        var createHoursTableCommand = _connection.CreateCommand();
         
         createHoursTableCommand.CommandText = @"
             CREATE TABLE IF NOT EXISTS ShiftHours (
@@ -29,7 +24,7 @@ public class HoursTable
 
     public void AddHours(HoursRecord record)
     {
-        var command = _activeConnection.CreateCommand();
+        var command = _connection.CreateCommand();
         
         command.CommandText = @"
             INSERT INTO ShiftHours (StartTime, EndTime, Symbol) 
@@ -46,7 +41,7 @@ public class HoursTable
     {
         var hours = new List<HoursRecord>();
         
-        var command = _activeConnection.CreateCommand();
+        var command = _connection.CreateCommand();
         command.CommandText = @"
             SELECT Id, StartTime, EndTime, Symbol FROM ShiftHours";
 
@@ -56,8 +51,8 @@ public class HoursTable
             var hour = new HoursRecord();
             hour.Id = reader.GetInt32(reader.GetOrdinal("Id"));
             hour.Symbol = reader.GetString(reader.GetOrdinal("Symbol"));
-            
-            /*TODO: DODAJ TUTAJ start i end time z formatowaniem */
+            hour.StartTime = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("StartTime")));
+            hour.EndTime = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("EndTime")));
             
             hours.Add(hour);
         }
