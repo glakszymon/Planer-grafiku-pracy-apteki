@@ -85,8 +85,8 @@ public class ScheduleReader
 
         if (numberOfRecords > 0)
         {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 }

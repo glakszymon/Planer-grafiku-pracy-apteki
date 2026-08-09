@@ -1,4 +1,5 @@
 using GrafikPlanerCore.Models;
+using GrafikPlanerCore.Models.Responses;
 using GrafikPlanerCore.ScheduleScripts;
 using GrafikPlanerData;
 
@@ -27,12 +28,18 @@ public class CoreProgram
         return new Response("SUCCESS", "Schedule created");
     }
     
-    public List<ScheduleRow> OpenSchedule(int month, int year)
+    public ResponseOpenSchedule OpenSchedule(int month, int year)
     {
         var scheduleReader = new ScheduleReader();
+        if (!scheduleReader.SheduleExistInDb(month, year))
+        {
+            return new ResponseOpenSchedule("ERROR", "Schedule does not exist");
+        }
+        
         scheduleReader.GetDataFromDb(month, year);
         scheduleReader.TransformDataToTableStructure();
-        return scheduleReader.FinalSchedule;
+
+        return new ResponseOpenSchedule("SUCCESS", "Schedule opened",  scheduleReader.FinalSchedule);
     }
     
     

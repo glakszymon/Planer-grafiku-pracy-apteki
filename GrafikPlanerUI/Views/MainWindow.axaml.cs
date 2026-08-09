@@ -59,19 +59,28 @@ public partial class MainWindow : Window
             // 1. Pobieramy dane z logiki biznesowej
             var dataForTable = _coreProgram.OpenSchedule(selectedDate.Month, selectedDate.Year);
 
-            // 2. Tworzymy instancję drugiego okna
-            var tableWindow = new ScheduleTableWindow();
+            if (dataForTable.Status == "SUCCESS")
+            {
+                // 2. Tworzymy instancję drugiego okna
+                var tableWindow = new ScheduleTableWindow();
 
-            // 3. Ładujemy pobrane dane do tabeli w nowym oknie
-            tableWindow.LoadSchedule(dataForTable);
+                // 3. Ładujemy pobrane dane do tabeli w nowym oknie
+                tableWindow.LoadSchedule(dataForTable.Data);
 
-            // 4. Otwieramy nowe okno
-            tableWindow.Show();
+                // 4. Otwieramy nowe okno
+                tableWindow.Show();
 
-            // 5. (Opcjonalnie) Zamykamy lub ukrywamy główne okno:
-            // this.Close(); // Zamknie MainWindow całkowicie
-            // lub
-            this.Hide();  // Tylko ukryje MainWindow
+                // 5. (Opcjonalnie) Zamykamy lub ukrywamy główne okno:
+                this.Close(); // Zamknie MainWindow całkowicie
+                // lub
+                // this.Hide();  // Tylko ukryje MainWindow
+            }
+            else
+            {
+                StatusTextBlockShow.Text = "Nie istnieje grafik na dany miesiac";
+                StatusTextBlockShow.Foreground =  Brushes.Yellow;
+            }
+
         }
         else
         {
