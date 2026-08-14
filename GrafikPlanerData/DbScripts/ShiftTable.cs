@@ -76,9 +76,9 @@ public class ShiftTable : DbConnectionOption
             UPDATE ShiftRecords
                 SET ShiftHourId  = @shiftHourId, PoleColor = @poleColor, PoleIcon = @poleIcon
                 WHERE Id = @id;";
-        command.Parameters.AddWithValue("@shiftHourId", record.ShiftHourId);
-        command.Parameters.AddWithValue("@poleColor", record.PoleColor);
-        command.Parameters.AddWithValue("@poleIcon", record.PoleIcon);
+        command.Parameters.AddWithValue("@shiftHourId", (object?)record.ShiftHourId ?? DBNull.Value);
+        command.Parameters.AddWithValue("@poleColor", (object?)record.PoleColor ?? DBNull.Value);
+        command.Parameters.AddWithValue("@poleIcon", (object?)record.PoleIcon ?? DBNull.Value);
         command.Parameters.AddWithValue("@id", record.Id);
         command.ExecuteNonQuery();
     }

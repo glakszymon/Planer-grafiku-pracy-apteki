@@ -6,10 +6,48 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="GrafikPlanerUI.Views.ScheduleTableWindow"
         x:DataType="models:ScheduleRow"
-        Title="Grafik Pracy">
+        Title="Grafik Pracy"
+        Background="White">
 
     <Window.Styles>
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="MinHeight" Value="45" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="2">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <!-- Usunięcie paddingu z komórek aby kolor wypełniał całą przestrzeń -->
+        <Style Selector="DataGridCell">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="DataGridCell /template/ ContentPresenter">
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <!-- Wyłączenie domyślnego podświetlenia wiersza -->
+        <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="Transparent" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="Transparent" />
+            <Setter Property="Opacity" Value="0" />
+        </Style>
     </Window.Styles>
 
     <Grid Margin="10">
@@ -17,11 +55,15 @@
                   AutoGenerateColumns="False" 
                   IsReadOnly="True"
                   GridLinesVisibility="All"
+                  HorizontalGridLinesBrush="#CCCCCC"
+                  VerticalGridLinesBrush="#CCCCCC"
                   BorderThickness="1" 
-                  BorderBrush="Gray">
+                  BorderBrush="#CCCCCC"
+                  Background="White"
+                  RowBackground="White">
             <DataGrid.Columns>
             
-                <DataGridTemplateColumn Header="Pracownik" Width="200">
+                <DataGridTemplateColumn Header="Pracownik" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:ScheduleRow">
                             <StackPanel Margin="5" VerticalAlignment="Center">
@@ -35,9 +77,9 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Suma godz." 
+                <DataGridTextColumn Header="Suma godzin" 
                                     Binding="{Binding HoursSummary}" 
-                                    Width="100" />
+                                    Width="*" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

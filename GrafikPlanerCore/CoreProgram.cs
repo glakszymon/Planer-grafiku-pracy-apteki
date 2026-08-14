@@ -41,6 +41,16 @@ public class CoreProgram
 
         return new ResponseOpenSchedule("SUCCESS", "Schedule opened",  scheduleReader.FinalSchedule);
     }
+
+    public ContextMenuOptions CreateContextMenu()
+    {
+        var contextMenuOptions = new ContextMenuOptions();
+        contextMenuOptions.FillColors();
+        contextMenuOptions.FillHours();
+        contextMenuOptions.FillIcons();
+        
+        return contextMenuOptions;
+    }
     
     
     

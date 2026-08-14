@@ -61,8 +61,10 @@ public partial class MainWindow : Window
 
             if (dataForTable.Status == "SUCCESS")
             {
+
+                var contextMenu = _coreProgram.CreateContextMenu();
                 // 2. Tworzymy instancję drugiego okna
-                var tableWindow = new ScheduleTableWindow();
+                var tableWindow = new ScheduleTableWindow(contextMenu);
 
                 // 3. Ładujemy pobrane dane do tabeli w nowym oknie
                 tableWindow.LoadSchedule(dataForTable.Data);
