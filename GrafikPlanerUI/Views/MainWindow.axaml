@@ -4,77 +4,221 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:GrafikPlanerData.Models;assembly=GrafikPlanerData"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="GrafikPlanerUI.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="GrafikPlanerUI">
+        Title="Grafik Planer"
+        Background="#F7F8FA"
+        WindowState="Maximized">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainViewModel />
     </Design.DataContext>
-    
-    <StackPanel Margin="20" Spacing="15" Width="300" HorizontalAlignment="Center">
-        <TextBox Text="{Binding Greeting}"
-                 HorizontalAlignment="Center"
-                 VerticalAlignment="Center" />
-        
-        <TextBlock Text="Wybierz miesiąc i rok:" FontWeight="Bold" />
-        <DatePicker x:Name="MonthYearPicker" 
-                    DayVisible="False" 
-                    MonthFormat="MMMM" 
-                    YearFormat="yyyy" />
 
-        <Button Content="Zatwierdź" 
-                Click="OnSubmitClick" 
-                HorizontalAlignment="Stretch" 
-                HorizontalContentAlignment="Center" />
+    <Grid>
+        <DockPanel>
+            <!-- Header -->
+            <Border DockPanel.Dock="Top"
+                    Padding="40,20"
+                    BorderThickness="0,0,0,1"
+                    BorderBrush="#E8ECF0"
+                    Background="#FCFCFD">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Grafik Planer" 
+                                   FontSize="26" 
+                                   FontWeight="Bold"
+                                   Foreground="#3D4F65"/>
+                        <TextBlock Text="Zarządzanie grafikami pracy" 
+                                   FontSize="13" 
+                                   Foreground="#8899A8"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="+ Nowy grafik"
+                            Click="OnAddNewScheduleClick"
+                            Background="#5B7FE8"
+                            Foreground="White"
+                            FontWeight="SemiBold"
+                            FontSize="14"
+                            Padding="22,11"
+                            CornerRadius="8"
+                            Cursor="Hand"
+                            BorderThickness="0"/>
+                </Grid>
+            </Border>
 
-        <TextBlock x:Name="StatusTextBlock" 
-                   Text="" 
-                   FontWeight="SemiBold" 
-                   HorizontalAlignment="Center" />
+            <!-- Main content -->
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="40,28" Spacing="16">
+                    
+                    <TextBlock Text="Twoje grafiki" 
+                               FontSize="18" 
+                               FontWeight="SemiBold" 
+                               Foreground="#3D4F65"/>
+                    
+                    <TextBlock x:Name="StatusTextBlock" 
+                               Text="" 
+                               FontSize="13"
+                               FontWeight="SemiBold" 
+                               HorizontalAlignment="Left" />
 
-        
-        <TextBlock Text="Wybierz miesiąc i rok:" FontWeight="Bold" />
-        <DatePicker x:Name="MonthYearPickerShow" 
-                    DayVisible="False" 
-                    MonthFormat="MMMM" 
-                    YearFormat="yyyy" />
+                    <!-- Lista grafików -->
+                    <ItemsControl x:Name="ItemsList" HorizontalAlignment="Stretch">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel HorizontalAlignment="Stretch"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="models:ScheduleInfo">
+                                <Button Margin="0,4"
+                                        Padding="18,14"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Click="OnItemButtonClick"
+                                        Tag="{Binding}"
+                                        Background="White"
+                                        BorderBrush="#E8ECF0"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Cursor="Hand">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
+                                        <!-- Kolorowa ikona -->
+                                        <Border Grid.Column="0"
+                                                Width="42" Height="42"
+                                                CornerRadius="10"
+                                                Background="#EEF2FF"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="G"
+                                                       FontSize="16"
+                                                       FontWeight="Bold"
+                                                       Foreground="#5B7FE8"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                                            <TextBlock Text="{Binding Name}" 
+                                                       FontWeight="SemiBold"
+                                                       FontSize="15"
+                                                       Foreground="#3D4F65"/>
+                                            <TextBlock Text="Kliknij aby otworzyc"
+                                                       FontSize="11"
+                                                       Foreground="#B0BAC5"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <!-- Strzalka -->
+                                        <Border Grid.Column="2"
+                                                Width="30" Height="30"
+                                                CornerRadius="8"
+                                                Background="#F4F6F8"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text=">"
+                                                       FontSize="13"
+                                                       FontWeight="Bold"
+                                                       Foreground="#8899A8"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-        <Button Content="Pokaż tabele" 
-                Click="OnSubmitClickShow" 
-                HorizontalAlignment="Stretch" 
-                HorizontalContentAlignment="Center" />
-
-        <TextBlock x:Name="StatusTextBlockShow" 
-                   Text="" 
-                   FontWeight="SemiBold" 
-                   HorizontalAlignment="Center" />
-        
-        
-        <ItemsControl x:Name="ItemsList">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="models:ScheduleInfo">
-                    <!-- Każdy element listy staje się przyciskiem -->
-                    <Button Margin="4"
-                            Padding="10,8"
+                    <!-- Pusty stan -->
+                    <Border x:Name="EmptyStateText"
+                            IsVisible="False"
+                            Background="White"
+                            CornerRadius="14"
+                            Padding="40,44"
                             HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Click="OnItemButtonClick"
-                            Tag="{Binding}"> <!-- Przekazujemy cały obiekt w właściwości Tag -->
-                        
-                        <StackPanel Orientation="Vertical" Spacing="2">
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                            BorderBrush="#E8ECF0"
+                            BorderThickness="1">
+                        <StackPanel HorizontalAlignment="Center" Spacing="10">
+                            <Border Width="56" Height="56"
+                                    CornerRadius="28"
+                                    HorizontalAlignment="Center"
+                                    Background="#F4F6F8">
+                                <TextBlock Text="+"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="#B0BAC5"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Brak grafików"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="#5A6A7A"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Kliknij '+ Nowy grafik' aby utworzyć pierwszy."
+                                       FontSize="13"
+                                       Foreground="#B0BAC5"
+                                       HorizontalAlignment="Center"/>
                         </StackPanel>
-                        
-                    </Button>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-               
-    </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
 
+        <!-- Overlay dialog -->
+        <Border x:Name="DialogOverlay"
+                Background="#60000000"
+                IsVisible="False"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <Border Background="White"
+                    CornerRadius="14"
+                    Padding="30,26"
+                    Width="380"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BoxShadow="0 16 48 0 #25000000">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Nowy grafik"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="#3D4F65"/>
+                    <TextBlock Text="Wybierz miesiąc i rok dla nowego grafiku:"
+                               FontSize="13"
+                               Foreground="#8899A8"/>
+                    <DatePicker x:Name="DialogDatePicker"
+                                DayVisible="False"
+                                MonthFormat="MMMM"
+                                YearFormat="yyyy"
+                                HorizontalAlignment="Stretch"/>
+                    <TextBlock x:Name="DialogErrorText"
+                               Text=""
+                               FontSize="13"
+                               Foreground="#D94F4F"/>
+                    <Button Content="Utwórz grafik"
+                            Click="OnDialogSubmitClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Background="#5B7FE8"
+                            Foreground="White"
+                            FontWeight="SemiBold"
+                            FontSize="14"
+                            Padding="16,11"
+                            CornerRadius="8"
+                            Cursor="Hand"
+                            BorderThickness="0"/>
+                    <Button Content="Anuluj"
+                            Click="OnDialogCancelClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Background="#F7F8FA"
+                            Foreground="#5A6A7A"
+                            FontSize="14"
+                            Padding="16,11"
+                            CornerRadius="8"
+                            Cursor="Hand"
+                            BorderBrush="#E8ECF0"
+                            BorderThickness="1"/>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Grid>
 </Window>

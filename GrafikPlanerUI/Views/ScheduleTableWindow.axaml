@@ -81,6 +81,8 @@
                   Margin="12"
                   AutoGenerateColumns="False" 
                   IsReadOnly="True"
+                  SelectionMode="Single"
+                  CanUserResizeColumns="False"
                   GridLinesVisibility="All"
                   HorizontalGridLinesBrush="#E2E8F0"
                   VerticalGridLinesBrush="#E2E8F0"

@@ -113,7 +113,7 @@ public class ShiftTable : DbConnectionOption
         var schedules = new List<ScheduleInfo>();
 
         var command = _connection.CreateCommand();
-        command.CommandText = @"SELECT substr(ShiftDate, 1, 7) as date FROM ShiftRecords GROUP BY date;";
+        command.CommandText = @"SELECT substr(ShiftDate, 1, 7) as date FROM ShiftRecords GROUP BY date ORDER BY date DESC ;";
         
         using var reader = command.ExecuteReader();
         while (reader.Read())
