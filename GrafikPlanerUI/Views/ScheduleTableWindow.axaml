@@ -3,25 +3,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:GrafikPlanerCore.Models;assembly=GrafikPlanerCore"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
         x:Class="GrafikPlanerUI.Views.ScheduleTableWindow"
         x:DataType="models:ScheduleRow"
         Title="Grafik Pracy"
-        Background="White">
+        Background="#F8F9FA"
+        WindowState="Maximized">
 
     <Window.Styles>
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
 
+        <!-- Naglowki kolumn -->
         <Style Selector="DataGridColumnHeader">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="MinHeight" Value="45" />
+            <Setter Property="Background" Value="#EDF2F7" />
+            <Setter Property="Foreground" Value="#2D3748" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="MinHeight" Value="48" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="Template">
                 <ControlTemplate>
                     <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="2">
+                            BorderBrush="#E2E8F0"
+                            BorderThickness="0,0,1,1"
+                            Padding="4">
                         <ContentPresenter Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
                                           HorizontalAlignment="Center"
@@ -31,7 +36,7 @@
             </Setter>
         </Style>
 
-        <!-- Usunięcie paddingu z komórek aby kolor wypełniał całą przestrzeń -->
+        <!-- Komorki -->
         <Style Selector="DataGridCell">
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0" />
@@ -39,7 +44,8 @@
         <Style Selector="DataGridCell /template/ ContentPresenter">
             <Setter Property="Margin" Value="0" />
         </Style>
-        <!-- Wyłączenie domyślnego podświetlenia wiersza -->
+
+        <!-- Wylaczenie podswietlenia wiersza -->
         <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
             <Setter Property="Fill" Value="Transparent" />
             <Setter Property="Opacity" Value="0" />
@@ -49,38 +55,70 @@
             <Setter Property="Opacity" Value="0" />
         </Style>
     </Window.Styles>
+    
+    <DockPanel>
+        <!-- Naglowek z przyciskiem powrotu -->
+        <Border DockPanel.Dock="Top"
+                Background="White"
+                BorderBrush="#E2E8F0"
+                BorderThickness="0,0,0,1"
+                Padding="16,12">
+            <Button Content="&#x2190; Powrot"
+                    Click="BackButton_Click"
+                    HorizontalAlignment="Left"
+                    Background="Transparent"
+                    BorderBrush="#CBD5E0"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="12,6"
+                    FontSize="13"
+                    Foreground="#4A5568"
+                    Cursor="Hand"/>
+        </Border>
 
-    <Grid Margin="10">
-        <DataGrid x:Name="ScheduleDataGrid" 
+        <!-- Grid zajmujacy cala reszta -->
+        <DataGrid x:Name="ScheduleDataGrid"
+                  Margin="12"
                   AutoGenerateColumns="False" 
                   IsReadOnly="True"
                   GridLinesVisibility="All"
-                  HorizontalGridLinesBrush="#CCCCCC"
-                  VerticalGridLinesBrush="#CCCCCC"
+                  HorizontalGridLinesBrush="#E2E8F0"
+                  VerticalGridLinesBrush="#E2E8F0"
                   BorderThickness="1" 
-                  BorderBrush="#CCCCCC"
+                  BorderBrush="#E2E8F0"
+                  CornerRadius="8"
                   Background="White"
                   RowBackground="White">
             <DataGrid.Columns>
             
-                <DataGridTemplateColumn Header="Pracownik" Width="100">
+                <DataGridTemplateColumn Header="Pracownik" Width="120">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:ScheduleRow">
-                            <StackPanel Margin="5" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding FirstName}" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding LastName}" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding Specialisation}" FontStyle="Italic" Foreground="Gray" FontSize="11"/>
-                                <TextBlock Text="{Binding PhoneNumber}" FontSize="11"/>
-                                <TextBlock Text="{Binding Email}" FontSize="10" Foreground="DarkBlue"/>
+                            <StackPanel Margin="8,6" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
+                                <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
+                                <TextBlock Text="{Binding Specialisation}" FontStyle="Italic" Foreground="#718096" FontSize="11" Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding PhoneNumber}" FontSize="11" Foreground="#4A5568"/>
+                                <TextBlock Text="{Binding Email}" FontSize="10" Foreground="#3182CE"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Suma godzin" 
-                                    Binding="{Binding HoursSummary}" 
-                                    Width="*" />
+                <DataGridTemplateColumn Width="70">
+                    <DataGridTemplateColumn.Header>
+                        <TextBlock Text="Suma&#x0a;godzin" TextAlignment="Center" TextWrapping="Wrap"/>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="models:ScheduleRow">
+                            <TextBlock Text="{Binding HoursSummary}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center"
+                                       FontWeight="SemiBold"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-    </Grid>
+    </DockPanel>
 </Window>

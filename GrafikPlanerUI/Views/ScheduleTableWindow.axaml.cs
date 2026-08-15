@@ -32,6 +32,13 @@ public partial class ScheduleTableWindow : Window
         InitializeComponent();
     }
 
+    private void BackButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var mainWindow = new MainWindow();
+        mainWindow.Show();
+        this.Close();
+    }
+
     public void LoadSchedule(List<ScheduleRow> scheduleRows)
     {
         if (scheduleRows == null || !scheduleRows.Any()) return;
