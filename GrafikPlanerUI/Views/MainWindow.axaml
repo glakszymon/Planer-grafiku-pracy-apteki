@@ -3,6 +3,7 @@
         xmlns:vm="using:GrafikPlanerUI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:GrafikPlanerData.Models;assembly=GrafikPlanerData"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="GrafikPlanerUI.Views.MainWindow"
         x:DataType="vm:MainViewModel"
@@ -52,6 +53,27 @@
                    Text="" 
                    FontWeight="SemiBold" 
                    HorizontalAlignment="Center" />
+        
+        
+        <ItemsControl x:Name="ItemsList">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="models:ScheduleInfo">
+                    <!-- Każdy element listy staje się przyciskiem -->
+                    <Button Margin="4"
+                            Padding="10,8"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Click="OnItemButtonClick"
+                            Tag="{Binding}"> <!-- Przekazujemy cały obiekt w właściwości Tag -->
+                        
+                        <StackPanel Orientation="Vertical" Spacing="2">
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                        </StackPanel>
+                        
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
                
     </StackPanel>
 

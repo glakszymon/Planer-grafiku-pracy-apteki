@@ -107,4 +107,30 @@ public class ShiftTable : DbConnectionOption
             ? Convert.ToInt32(result) 
             : 0;
     }
+
+    public List<ScheduleInfo> GetAllSchedulesDates()
+    {
+        var schedules = new List<ScheduleInfo>();
+
+        var command = _connection.CreateCommand();
+        command.CommandText = @"SELECT substr(ShiftDate, 1, 7) as date FROM ShiftRecords GROUP BY date;";
+        
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            if (!reader.IsDBNull(reader.GetOrdinal("date")))
+            {
+                string dateStr = reader.GetString(reader.GetOrdinal("date"));
+
+                if (DateOnly.TryParse($"{dateStr}-01", out var prasedDate))
+                {
+                    int year = prasedDate.Year;
+                    int month = prasedDate.Month;
+                    
+                    schedules.Add(new ScheduleInfo(month, year));
+                }
+            }
+        }
+        return schedules;
+    }
 }
