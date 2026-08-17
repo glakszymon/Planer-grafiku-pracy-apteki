@@ -9,12 +9,14 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using GrafikPlanerCore;
 using GrafikPlanerCore.Models;
 using GrafikPlanerData.DbScripts;
 using GrafikPlanerData.Models;
+using GrafikPlanerUI.Services;
 using GrafikPlanerUI.ViewModels;
 
 namespace GrafikPlanerUI.Views;
@@ -22,6 +24,7 @@ namespace GrafikPlanerUI.Views;
 public partial class ScheduleTableWindow : Window
 {
     private readonly ContextMenuOptions _contextMenu;
+    private List<ScheduleRow> _scheduleRows = new();
     private static readonly IBrush WeekendBackground = new SolidColorBrush(Color.Parse("#F0F0F0"));
     private static readonly Thickness FocusBorderThickness = new Thickness(3);
     private static readonly IBrush SelectionBorderBrush = new SolidColorBrush(Color.Parse("#3182CE"));
@@ -82,6 +85,58 @@ public partial class ScheduleTableWindow : Window
         this.Close();
     }
 
+    private async void ExportButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_scheduleRows.Count == 0) return;
+
+        var dialog = new ExportDialog(_scheduleRows);
+        await dialog.ShowDialog(this);
+
+        if (!dialog.Confirmed) return;
+
+        var selectedRows = dialog.SelectedEmployees;
+        if (selectedRows.Count == 0) return;
+
+        var exportService = new ScheduleExportService(_contextMenu.Hours.Where(h => h != null).Cast<HoursRecord>().ToList());
+
+        if (dialog.IsExcel)
+        {
+            var saveDialog = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
+            {
+                Title = "Zapisz jako Excel",
+                DefaultExtension = "xlsx",
+                FileTypeChoices = new[]
+                {
+                    new Avalonia.Platform.Storage.FilePickerFileType("Excel") { Patterns = new[] { "*.xlsx" } }
+                },
+                SuggestedFileName = "grafik.xlsx"
+            });
+
+            if (saveDialog != null)
+            {
+                exportService.ExportToExcel(saveDialog.Path.LocalPath, selectedRows, dialog.ExportColors, dialog.ExportLegend);
+            }
+        }
+        else
+        {
+            var saveDialog = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
+            {
+                Title = "Zapisz jako PDF",
+                DefaultExtension = "pdf",
+                FileTypeChoices = new[]
+                {
+                    new Avalonia.Platform.Storage.FilePickerFileType("PDF") { Patterns = new[] { "*.pdf" } }
+                },
+                SuggestedFileName = "grafik.pdf"
+            });
+
+            if (saveDialog != null)
+            {
+                exportService.ExportToPdf(saveDialog.Path.LocalPath, selectedRows, dialog.ExportColors, dialog.ExportLegend);
+            }
+        }
+    }
+
     private void OnFirstActivated(object? sender, EventArgs e)
     {
         Activated -= OnFirstActivated;
@@ -94,6 +149,7 @@ public partial class ScheduleTableWindow : Window
     public void LoadSchedule(List<ScheduleRow> scheduleRows)
     {
         if (scheduleRows == null || !scheduleRows.Any()) return;
+        _scheduleRows = scheduleRows;
 
         var days = scheduleRows
             .SelectMany(r => r.Records)

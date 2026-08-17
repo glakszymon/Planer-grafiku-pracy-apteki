@@ -19,3 +19,5 @@ public class DbInitialization
         shiftTable.CreateTable();
     }
 }
+
+// TODO: dodaj do bazy danych tabele z ustawieniami które obsługuja godziny otwarcia apteki, dni działania apteki, ustawienia godzin pracy i ustawienie oznaczeń 
