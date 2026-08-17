@@ -1,8 +1,10 @@
 using System;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using GrafikPlanerCore;
 using GrafikPlanerData.DbScripts;
 using GrafikPlanerData.Models;
@@ -48,12 +50,11 @@ public partial class MainWindow : Window
 
     private void SetActiveTab(bool isGrafiki)
     {
-        // Wizualne przełączanie zakładek klasera
         if (isGrafiki)
         {
-            TabGrafiki.Background = new SolidColorBrush(Color.Parse("#F4F1EC"));
+            TabGrafiki.Background = new SolidColorBrush(Color.Parse("#F8F7F5"));
             TabGrafiki.BorderThickness = new Avalonia.Thickness(1, 1, 1, 0);
-            TabPracownicy.Background = new SolidColorBrush(Color.Parse("#E5E1DB"));
+            TabPracownicy.Background = new SolidColorBrush(Color.Parse("#EFECEA"));
             TabPracownicy.BorderThickness = new Avalonia.Thickness(1, 1, 1, 1);
 
             PageGrafiki.IsVisible = true;
@@ -63,9 +64,9 @@ public partial class MainWindow : Window
         }
         else
         {
-            TabPracownicy.Background = new SolidColorBrush(Color.Parse("#F4F1EC"));
+            TabPracownicy.Background = new SolidColorBrush(Color.Parse("#F8F7F5"));
             TabPracownicy.BorderThickness = new Avalonia.Thickness(1, 1, 1, 0);
-            TabGrafiki.Background = new SolidColorBrush(Color.Parse("#E5E1DB"));
+            TabGrafiki.Background = new SolidColorBrush(Color.Parse("#EFECEA"));
             TabGrafiki.BorderThickness = new Avalonia.Thickness(1, 1, 1, 1);
 
             PagePracownicy.IsVisible = true;
@@ -145,7 +146,7 @@ public partial class MainWindow : Window
         else
         {
             StatusTextBlock.Text = "Nie udało się otworzyć grafiku.";
-            StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
+            StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#C05050"));
         }
     }
 
@@ -171,18 +172,38 @@ public partial class MainWindow : Window
     private void SelectEmployee(EmployeeRecord emp)
     {
         _selectedEmployee = emp;
+
+        // Animacja: fade out panel, załaduj dane, fade in
+        DetailPanel.Opacity = 0;
+
         ShowDetailView(emp);
         HighlightSelectedEmployee();
+
+        // Fade in (Transition animuje automatycznie)
+        DetailPanel.Opacity = 1;
     }
 
     private void HighlightSelectedEmployee()
     {
-        // Iteracja po elementach listy i ustawienie wizualne "otwartej zakładki"
         if (EmployeesList.ItemsSource == null) return;
 
-        // Wymuszamy przerysowanie przez ponowne przypisanie ItemsSource 
-        // (prostsze niż iteracja po wizualnym drzewie w Avalonia)
-        // Zamiast tego użyjemy stylów — wybrany element jest rozpoznawany w ShowDetailView
+        var panel = EmployeesList.GetVisualChildren().FirstOrDefault();
+        if (panel == null) return;
+
+        foreach (var child in panel.GetVisualChildren())
+        {
+            if (child is Border border && border.Tag is EmployeeRecord rec)
+            {
+                if (rec.Id == _selectedEmployee?.Id)
+                {
+                    border.Background = new SolidColorBrush(Color.Parse("#EDF3EF"));
+                }
+                else
+                {
+                    border.Background = new SolidColorBrush(Color.Parse("#FFFFFF"));
+                }
+            }
+        }
     }
 
     private void ShowDetailView(EmployeeRecord emp)
@@ -192,6 +213,7 @@ public partial class MainWindow : Window
         DetailView.IsVisible = true;
         DeleteConfirmPanel.IsVisible = false;
 
+        ViewAvatar.Text = emp.FirstName.Length > 0 ? emp.FirstName[0].ToString() : "?";
         ViewFirstName.Text = emp.FirstName;
         ViewLastName.Text = emp.LastName;
         ViewSpec.Text = emp.Specialisation;
@@ -205,9 +227,9 @@ public partial class MainWindow : Window
     private void OnAddEmployeeClick(object? sender, RoutedEventArgs e)
     {
         _editingEmployee = null;
-        EditTitle.Text = "Dodaj pracownika";
         EditSubmitBtn.Content = "Dodaj";
         ClearEmployeeForm();
+        EditAvatar.Text = "?";
 
         DetailEmpty.IsVisible = false;
         DetailView.IsVisible = false;
@@ -219,18 +241,18 @@ public partial class MainWindow : Window
         if (_selectedEmployee == null) return;
 
         _editingEmployee = _selectedEmployee;
-        EditTitle.Text = "Edytuj pracownika";
         EditSubmitBtn.Content = "Zapisz zmiany";
 
         EmpFirstNameBox.Text = _selectedEmployee.FirstName;
         EmpLastNameBox.Text = _selectedEmployee.LastName;
-        EmpSpecBox.Text = _selectedEmployee.Specialisation;
+        SelectComboBoxItem(EmpSpecBox, _selectedEmployee.Specialisation);
         EmpEmailBox.Text = _selectedEmployee.Email ?? "";
         EmpPhoneBox.Text = _selectedEmployee.PhoneNumber ?? "";
         EmpVacationDaysBox.Text = _selectedEmployee.VacationDays?.ToString() ?? "";
         EmpUsedVacationBox.Text = _selectedEmployee.UsedVacationDays?.ToString() ?? "";
         EmpUnusedVacationBox.Text = _selectedEmployee.UnusedVacationDaysFromLastYear?.ToString() ?? "";
         EmployeeDialogError.Text = "";
+        EditAvatar.Text = _selectedEmployee.FirstName.Length > 0 ? _selectedEmployee.FirstName[0].ToString() : "?";
 
         DetailEmpty.IsVisible = false;
         DetailView.IsVisible = false;
@@ -268,7 +290,7 @@ public partial class MainWindow : Window
     {
         var firstName = EmpFirstNameBox.Text?.Trim() ?? "";
         var lastName = EmpLastNameBox.Text?.Trim() ?? "";
-        var spec = EmpSpecBox.Text?.Trim() ?? "";
+        var spec = (EmpSpecBox.SelectedItem as ComboBoxItem)?.Content?.ToString()?.Trim() ?? "";
 
         if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(spec))
         {
@@ -333,12 +355,31 @@ public partial class MainWindow : Window
     {
         EmpFirstNameBox.Text = "";
         EmpLastNameBox.Text = "";
-        EmpSpecBox.Text = "";
+        EmpSpecBox.SelectedIndex = -1;
         EmpEmailBox.Text = "";
         EmpPhoneBox.Text = "";
         EmpVacationDaysBox.Text = "";
         EmpUsedVacationBox.Text = "";
         EmpUnusedVacationBox.Text = "";
         EmployeeDialogError.Text = "";
+    }
+
+    private void SelectComboBoxItem(ComboBox comboBox, string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            comboBox.SelectedIndex = -1;
+            return;
+        }
+
+        for (int i = 0; i < comboBox.Items.Count; i++)
+        {
+            if (comboBox.Items[i] is ComboBoxItem item && item.Content?.ToString() == value)
+            {
+                comboBox.SelectedIndex = i;
+                return;
+            }
+        }
+        comboBox.SelectedIndex = -1;
     }
 }
