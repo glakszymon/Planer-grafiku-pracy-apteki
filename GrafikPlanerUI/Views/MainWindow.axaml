@@ -445,10 +445,8 @@
                                             <TextBox x:Name="EmpFirstNameBox" PlaceholderText="Imię *" CornerRadius="5" Padding="10,8" FontSize="14"/>
                                             <TextBox x:Name="EmpLastNameBox" PlaceholderText="Nazwisko *" CornerRadius="5" Padding="10,8" FontSize="14"/>
                                             <ComboBox x:Name="EmpSpecBox" PlaceholderText="Specjalizacja *" CornerRadius="5" Padding="10,8" FontSize="14" HorizontalAlignment="Stretch">
-                                                <ComboBoxItem Content="Farmaceuta"/>
-                                                <ComboBoxItem Content="Farmaceutka"/>
-                                                <ComboBoxItem Content="Technik farmacji"/>
-                                                <ComboBoxItem Content="Techniczka farmacji"/>
+                                                <ComboBoxItem Content="Farmaceuta/ka"/>
+                                                <ComboBoxItem Content="Technik/czka farmacji"/>
                                             </ComboBox>
                                         </StackPanel>
                                     </Grid>
