@@ -109,7 +109,6 @@
                       IsReadOnly="True"
                       SelectionMode="Single"
                       CanUserResizeColumns="False"
-                      RowHeight="70"
                       GridLinesVisibility="All"
                       HorizontalGridLinesBrush="#E2E8F0"
                       VerticalGridLinesBrush="#E2E8F0"
@@ -117,7 +116,8 @@
                       BorderBrush="#E2E8F0"
                       CornerRadius="8"
                       Background="White"
-                      RowBackground="White">
+                      RowBackground="White"
+                      RowHeight="70">
                 <DataGrid.Columns>
                 
                     <DataGridTemplateColumn Header="Pracownik" Width="120">

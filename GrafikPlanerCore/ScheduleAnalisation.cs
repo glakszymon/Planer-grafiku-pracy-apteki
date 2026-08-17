@@ -12,9 +12,6 @@ public class ScheduleAnalisation
     {
         GetSettings();
         
-        System.Diagnostics.Debug.WriteLine($"[ANALISATION] Settings loaded: OpeningTime={_settings.OpeningTime}, ClosingTime={_settings.ClosingTime}");
-        System.Diagnostics.Debug.WriteLine($"[ANALISATION] Checking month={month}, year={year}, rows={scheduleRows.Count}");
-        
         List<DateTime> emptyHours = new List<DateTime>();
         var numberOfDaysInMonth = DateTime.DaysInMonth(year, month);
 
@@ -24,7 +21,6 @@ public class ScheduleAnalisation
             emptyHours.AddRange(dates);
         }
         
-        System.Diagnostics.Debug.WriteLine($"[ANALISATION] Total empty hour slots found: {emptyHours.Count}");
         return emptyHours;
     }
 
@@ -46,8 +42,6 @@ public class ScheduleAnalisation
                              && record.EndTime.HasValue)
             .ToList();
 
-        System.Diagnostics.Debug.WriteLine($"[ANALISATION] CheckOneDay date={targetDate}, shiftsForDay={shiftsForDay.Count}, OpeningTime={_settings.OpeningTime}, ClosingTime={_settings.ClosingTime}");
-
         for (var i = _settings.OpeningTime; i < _settings.ClosingTime; i = i.AddHours(1))
         {
             bool ktosPracuje = shiftsForDay.Any(z => z.StartTime <= i && z.EndTime >= i.AddHours(1));
@@ -58,9 +52,6 @@ public class ScheduleAnalisation
                 ans.Add(fullDateTime);
             }
         }
-
-        if (ans.Count > 0)
-            System.Diagnostics.Debug.WriteLine($"[ANALISATION] CheckOneDay date={targetDate} => {ans.Count} gaps");
 
         return ans;
     }

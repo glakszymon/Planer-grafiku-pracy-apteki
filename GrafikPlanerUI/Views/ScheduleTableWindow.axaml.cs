@@ -160,12 +160,9 @@ public partial class ScheduleTableWindow : Window
         if (scheduleRows == null || !scheduleRows.Any()) return;
         _scheduleRows = scheduleRows;
 
-        System.Diagnostics.Debug.WriteLine($"[LOAD] LoadSchedule called with {scheduleRows.Count} rows");
-        System.Diagnostics.Debug.WriteLine($"[LOAD] First row records count: {scheduleRows[0].Records?.Count ?? 0}");
         if (scheduleRows[0].Records?.Count > 0)
         {
             var firstRec = scheduleRows[0].Records[0];
-            System.Diagnostics.Debug.WriteLine($"[LOAD] First record: Date={firstRec.ShiftDate}, StartTime={firstRec.StartTime}, EndTime={firstRec.EndTime}, Symbol={firstRec.Symbol}");
         }
 
         var days = scheduleRows
@@ -186,7 +183,7 @@ public partial class ScheduleTableWindow : Window
             var dayColumn = new DataGridTemplateColumn
             {
                 Header = CreateHeaderTextBlock(day),
-                Width = new DataGridLength(1, DataGridLengthUnitType.Star),
+                Width = new DataGridLength(CalculateDayColumnWidth(days.Count), DataGridLengthUnitType.Pixel),
 
                 CellTemplate = new FuncDataTemplate<ScheduleRow>((row, namescope) =>
                 {
@@ -201,7 +198,6 @@ public partial class ScheduleTableWindow : Window
                     var shift = row.Records?.FirstOrDefault(r => r.ShiftDate == day);
                     bool isWeekend = day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday;
 
-                    System.Diagnostics.Debug.WriteLine($"[TEMPLATE] Creating cell for Row={row.FirstName} {row.LastName}, Day={day}, Shift={shift?.Symbol ?? "null"}, ShiftId={shift?.Id}");
 
                     IBrush cellBackground;
                     if (!string.IsNullOrWhiteSpace(shift?.PoleColor))
@@ -243,7 +239,6 @@ public partial class ScheduleTableWindow : Window
                     CellInfo cellInfo;
                     if (_cellsByKey.TryGetValue(key, out var existingCell))
                     {
-                        System.Diagnostics.Debug.WriteLine($"[TEMPLATE-REUSE] Re-creating for Row={row.FirstName}, Day={day}. Old border hash={existingCell.Border.GetHashCode()}, New={border.GetHashCode()}");
                         // Template was re-created, update references
                         _cellRegistry.Remove(existingCell.Border);
                         existingCell.Border = border;
@@ -257,7 +252,6 @@ public partial class ScheduleTableWindow : Window
                         if (cellInfo.Shift != null)
                         {
                             var hour = _contextMenu.Hours.FirstOrDefault(h => h?.Id == cellInfo.Shift.ShiftHourId);
-                            System.Diagnostics.Debug.WriteLine($"[TEMPLATE-REUSE] Re-applying visuals: Symbol={hour?.Symbol}, Color={cellInfo.Shift.PoleColor}, Icon={cellInfo.Shift.PoleIcon}");
                             UpdateCellVisuals(hour, cellInfo.Shift.PoleColor, cellInfo.Shift.PoleIcon, cellGrid, border, day);
                         }
                     }
@@ -272,7 +266,6 @@ public partial class ScheduleTableWindow : Window
                             Day = day
                         };
                         _cellsByKey[key] = cellInfo;
-                        System.Diagnostics.Debug.WriteLine($"[TEMPLATE-NEW] Registered new cell for Row={row.FirstName}, Day={day}");
                     }
                     _cellRegistry[border] = cellInfo;
 
@@ -281,7 +274,6 @@ public partial class ScheduleTableWindow : Window
                     {
                         border.BorderBrush = SelectionBorderBrush;
                         border.BorderThickness = FocusBorderThickness;
-                        System.Diagnostics.Debug.WriteLine($"[TEMPLATE] Re-applied selection styling for Row={row.FirstName}, Day={day}");
                     }
 
                     // Start drag on left press
@@ -289,12 +281,10 @@ public partial class ScheduleTableWindow : Window
                     {
                         if (e.GetCurrentPoint(border).Properties.IsLeftButtonPressed)
                         {
-                            System.Diagnostics.Debug.WriteLine($"[CLICK-LEFT] Row={cellInfo.Row.FirstName}, Day={cellInfo.Day}, SelectedCells before clear={_selectedCells.Count}");
                             ClearSelection();
                             _isDragging = true;
                             SelectCell(cellInfo);
                             ScheduleDataGrid.SelectedItem = null; // Prevent DataGrid row selection from painting over cells
-                            System.Diagnostics.Debug.WriteLine($"[CLICK-LEFT] After select. SelectedCells={_selectedCells.Count}");
                             e.Handled = true; // Prevent DataGrid from re-rendering the row
                         }
                     };
@@ -304,7 +294,6 @@ public partial class ScheduleTableWindow : Window
                     {
                         if (e.GetCurrentPoint(border).Properties.IsRightButtonPressed)
                         {
-                            System.Diagnostics.Debug.WriteLine($"[CLICK-RIGHT] Row={cellInfo.Row.FirstName}, Day={cellInfo.Day}, SelectedCells={_selectedCells.Count}");
                             // If this cell is not in selection, select only it
                             if (!_selectedCells.Contains(cellInfo))
                             {
@@ -337,6 +326,7 @@ public partial class ScheduleTableWindow : Window
             Id = -1,
             FirstName = "",
             LastName = "",
+            HoursSummary = 0,
             Records = new List<ScheduleColumn>()
         };
         var allRows = new List<ScheduleRow>(scheduleRows) { _gapRow };
@@ -363,7 +353,6 @@ public partial class ScheduleTableWindow : Window
 
                 if (!_selectedCells.Contains(cellInfo))
                 {
-                    System.Diagnostics.Debug.WriteLine($"[DRAG] Adding cell Row={cellInfo.Row.FirstName}, Day={cellInfo.Day}. Total selected={_selectedCells.Count + 1}");
                     SelectCell(cellInfo);
                 }
             }
@@ -395,10 +384,8 @@ public partial class ScheduleTableWindow : Window
 
     private void ClearSelection()
     {
-        System.Diagnostics.Debug.WriteLine($"[CLEAR] Clearing {_selectedCells.Count} cells");
         foreach (var cell in _selectedCells)
         {
-            System.Diagnostics.Debug.WriteLine($"[CLEAR] Resetting border for Row={cell.Row.FirstName}, Day={cell.Day}, Border hash={cell.Border.GetHashCode()}, HasParent={cell.Border.GetVisualParent() != null}");
             cell.Border.BorderBrush = new SolidColorBrush(Color.Parse("#CCCCCC"));
             cell.Border.BorderThickness = new Thickness(1, 0, 0, 0);
         }
@@ -546,7 +533,6 @@ public partial class ScheduleTableWindow : Window
         cell.Shift.Symbol = selectedHour?.Symbol ?? "";
         cell.Shift.StartTime = selectedHour?.StartTime;
         cell.Shift.EndTime = selectedHour?.EndTime;
-        System.Diagnostics.Debug.WriteLine($"[APPLY-HOUR] day={cell.Day}, hour={selectedHour?.Symbol}, StartTime={cell.Shift.StartTime}, EndTime={cell.Shift.EndTime}");
         UpdateCellVisuals(selectedHour, cell.Shift.PoleColor, cell.Shift.PoleIcon, cell.CellGrid, cell.Border, cell.Day);
     }
 
@@ -695,6 +681,14 @@ public partial class ScheduleTableWindow : Window
 
     // ===== Gap Indicator Methods =====
 
+    private double CalculateDayColumnWidth(int dayCount)
+    {
+        // Use screen width or fallback to 1920; subtract fixed columns (120+70) and some padding
+        var screenWidth = Screens.Primary?.Bounds.Width ?? 1920;
+        var available = screenWidth - 190 - 40; // 190 for fixed cols, 40 for scrollbar/padding
+        return Math.Max(35, available / dayCount);
+    }
+
     private TextBlock CreateHeaderTextBlock(DateOnly day)
     {
         var tb = new TextBlock
@@ -711,7 +705,6 @@ public partial class ScheduleTableWindow : Window
     private Border CreateGapCell(DateOnly day)
     {
         var hasGap = _gapCache.TryGetValue(day, out var text);
-        System.Diagnostics.Debug.WriteLine($"[GAP-CELL] CreateGapCell day={day}, hasGap={hasGap}, text=\"{text ?? ""}\"");
         
         var textBlock = new TextBlock
         {
@@ -720,8 +713,7 @@ public partial class ScheduleTableWindow : Window
             VerticalAlignment = VerticalAlignment.Center,
             TextAlignment = TextAlignment.Center,
             FontSize = 10,
-            Foreground = GapHeaderForeground,
-            TextWrapping = TextWrapping.Wrap
+            Foreground = GapHeaderForeground
         };
         _gapCellTextBlocks[day] = textBlock;
 
@@ -741,25 +733,9 @@ public partial class ScheduleTableWindow : Window
         var firstDay = days.FirstOrDefault();
         if (firstDay == default) return;
 
-        System.Diagnostics.Debug.WriteLine($"[GAP-INIT] Starting gap analysis for month={firstDay.Month}, year={firstDay.Year}, scheduleRows={_scheduleRows.Count}");
-        
         var allGaps = _analiser.CheckEmptyHoursInSchedule(_scheduleRows, firstDay.Month, firstDay.Year);
-        
-        System.Diagnostics.Debug.WriteLine($"[GAP-INIT] CheckEmptyHoursInSchedule returned {allGaps.Count} gap slots");
-        foreach (var gap in allGaps.Take(10))
-        {
-            System.Diagnostics.Debug.WriteLine($"[GAP-INIT]   Gap slot: {gap:yyyy-MM-dd HH:mm}");
-        }
-        if (allGaps.Count > 10)
-            System.Diagnostics.Debug.WriteLine($"[GAP-INIT]   ... and {allGaps.Count - 10} more");
 
         _gapCache = GapFormatter.FormatGaps(allGaps);
-        
-        System.Diagnostics.Debug.WriteLine($"[GAP-INIT] GapCache has {_gapCache.Count} days with gaps:");
-        foreach (var kvp in _gapCache)
-        {
-            System.Diagnostics.Debug.WriteLine($"[GAP-INIT]   {kvp.Key} => \"{kvp.Value}\"");
-        }
 
         // Apply colors to headers
         foreach (var day in days)
@@ -773,23 +749,19 @@ public partial class ScheduleTableWindow : Window
             UpdateGapRowCell(day);
         }
         
-        System.Diagnostics.Debug.WriteLine($"[GAP-INIT] Done. HeaderTextBlocks registered: {_headerTextBlocks.Count}, GapCellTextBlocks registered: {_gapCellTextBlocks.Count}");
     }
 
     private void RefreshGapForDay(DateOnly editedDay)
     {
-        System.Diagnostics.Debug.WriteLine($"[GAP-REFRESH] Refreshing day={editedDay}, scheduleRows={_scheduleRows.Count}");
         
         var dayGaps = _analiser.CheckOneDay(_scheduleRows, editedDay);
         
-        System.Diagnostics.Debug.WriteLine($"[GAP-REFRESH] CheckOneDay returned {dayGaps.Count} gaps for {editedDay}");
 
         if (dayGaps.Count == 0)
             _gapCache.Remove(editedDay);
         else
             _gapCache[editedDay] = GapFormatter.FormatGaps(dayGaps)[editedDay];
 
-        System.Diagnostics.Debug.WriteLine($"[GAP-REFRESH] Cache for {editedDay}: {(_gapCache.TryGetValue(editedDay, out var v) ? v : "(none)")}");
 
         UpdateColumnHeader(editedDay);
         UpdateGapRowCell(editedDay);
@@ -807,12 +779,10 @@ public partial class ScheduleTableWindow : Window
     {
         if (!_headerTextBlocks.TryGetValue(day, out var tb))
         {
-            System.Diagnostics.Debug.WriteLine($"[GAP-HEADER] No TextBlock registered for day={day}");
             return;
         }
 
         var hasGap = _gapCache.ContainsKey(day);
-        System.Diagnostics.Debug.WriteLine($"[GAP-HEADER] day={day}, hasGap={hasGap}");
         tb.Foreground = hasGap ? GapHeaderForeground : Brushes.Black;
         tb.FontWeight = hasGap ? FontWeight.Bold : FontWeight.Normal;
     }
@@ -821,12 +791,10 @@ public partial class ScheduleTableWindow : Window
     {
         if (!_gapCellTextBlocks.TryGetValue(day, out var tb))
         {
-            System.Diagnostics.Debug.WriteLine($"[GAP-ROW] No gap cell TextBlock registered for day={day}");
             return;
         }
 
         var hasGap = _gapCache.TryGetValue(day, out var text);
-        System.Diagnostics.Debug.WriteLine($"[GAP-ROW] day={day}, hasGap={hasGap}, text=\"{text ?? ""}\", tb.Parent is Border={tb.Parent is Border}");
         tb.Text = hasGap ? text : "";
 
         if (tb.Parent is Border border)
