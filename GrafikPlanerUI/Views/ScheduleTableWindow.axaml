@@ -55,6 +55,18 @@
             <Setter Property="Fill" Value="Transparent" />
             <Setter Property="Opacity" Value="0" />
         </Style>
+        <Style Selector="DataGridRow:selected">
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="DataGridRow:pointerover">
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="DataGridRow:selected DataGridCell">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="DataGridRow:pointerover DataGridCell">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
     </Window.Styles>
     
     <Grid>

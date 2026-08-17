@@ -180,18 +180,12 @@ public partial class ScheduleTableWindow : Window
                             existingCell.Shift = shift;
                         cellInfo = existingCell;
                         
-                        // Re-apply visual state from model (shift may have been modified)
-                        if (cellInfo.Shift != null && (cellInfo.Shift.ShiftHourId != null || 
-                            !string.IsNullOrWhiteSpace(cellInfo.Shift.PoleColor) || 
-                            !string.IsNullOrWhiteSpace(cellInfo.Shift.PoleIcon)))
+                        // Re-apply visual state from model (always re-apply to prevent blank cells after recycling)
+                        if (cellInfo.Shift != null)
                         {
                             var hour = _contextMenu.Hours.FirstOrDefault(h => h?.Id == cellInfo.Shift.ShiftHourId);
                             System.Diagnostics.Debug.WriteLine($"[TEMPLATE-REUSE] Re-applying visuals: Symbol={hour?.Symbol}, Color={cellInfo.Shift.PoleColor}, Icon={cellInfo.Shift.PoleIcon}");
                             UpdateCellVisuals(hour, cellInfo.Shift.PoleColor, cellInfo.Shift.PoleIcon, cellGrid, border, day);
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[TEMPLATE-REUSE] No visuals to re-apply. Shift null={cellInfo.Shift == null}, HourId={cellInfo.Shift?.ShiftHourId}, Color={cellInfo.Shift?.PoleColor}, Icon={cellInfo.Shift?.PoleIcon}");
                         }
                     }
                     else
@@ -226,6 +220,7 @@ public partial class ScheduleTableWindow : Window
                             ClearSelection();
                             _isDragging = true;
                             SelectCell(cellInfo);
+                            ScheduleDataGrid.SelectedItem = null; // Prevent DataGrid row selection from painting over cells
                             System.Diagnostics.Debug.WriteLine($"[CLICK-LEFT] After select. SelectedCells={_selectedCells.Count}");
                             e.Handled = true; // Prevent DataGrid from re-rendering the row
                         }
