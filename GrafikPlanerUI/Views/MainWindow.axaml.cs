@@ -17,6 +17,7 @@ public partial class MainWindow : Window
     private CoreProgram _coreProgram = new CoreProgram();
     private EmployeeRecord? _editingEmployee = null;
     private EmployeeRecord? _selectedEmployee = null;
+    private ScheduleInfo? _scheduleToDelete = null;
 
     public MainWindow()
     {
@@ -123,9 +124,15 @@ public partial class MainWindow : Window
         EmptyStateText.IsVisible = schedules == null || schedules.Count == 0;
     }
 
-    private void OnItemButtonClick(object? sender, RoutedEventArgs e)
+    private void OnScheduleItemClick(object? sender, PointerPressedEventArgs e)
     {
-        if (sender is Button button && button.Tag is ScheduleInfo selectedRecord)
+        // Don't open schedule if click came from the delete button
+        if (e.Source is Avalonia.Controls.Button || 
+            (e.Source is Avalonia.Visual v && v.FindAncestorOfType<Button>() != null && 
+             v.FindAncestorOfType<Button>() != sender))
+            return;
+
+        if (sender is Border border && border.Tag is ScheduleInfo selectedRecord)
         {
             OpenSchedule(selectedRecord.Month, selectedRecord.Year);
         }
@@ -148,6 +155,38 @@ public partial class MainWindow : Window
             StatusTextBlock.Text = "Nie udało się otworzyć grafiku.";
             StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#C05050"));
         }
+    }
+
+    private void OnDeleteScheduleClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is ScheduleInfo schedule)
+        {
+            _scheduleToDelete = schedule;
+            DeleteScheduleMessage.Text = $"Czy na pewno chcesz usunąć grafik \"{schedule.Name}\"? Wszystkie dane zmianowe zostaną trwale usunięte.";
+            DeleteScheduleOverlay.IsVisible = true;
+        }
+    }
+
+    private void OnConfirmDeleteScheduleClick(object? sender, RoutedEventArgs e)
+    {
+        if (_scheduleToDelete == null) return;
+
+        var shiftTable = new ShiftTable();
+        shiftTable.StartConnectionWithDatabase();
+        shiftTable.DeleteSchedule(_scheduleToDelete.Month, _scheduleToDelete.Year);
+
+        StatusTextBlock.Text = $"Usunięto grafik: {_scheduleToDelete.Name}";
+        StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#C05050"));
+
+        _scheduleToDelete = null;
+        DeleteScheduleOverlay.IsVisible = false;
+        LoadListOfSchedules();
+    }
+
+    private void OnCancelDeleteScheduleClick(object? sender, RoutedEventArgs e)
+    {
+        _scheduleToDelete = null;
+        DeleteScheduleOverlay.IsVisible = false;
     }
 
     // ==================== EMPLOYEES ====================

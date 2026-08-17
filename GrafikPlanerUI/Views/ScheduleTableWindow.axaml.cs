@@ -55,6 +55,24 @@ public partial class ScheduleTableWindow : Window
         // Global pointer events for drag selection
         PointerMoved += OnGlobalPointerMoved;
         PointerReleased += OnGlobalPointerReleased;
+
+        LoadLegend();
+    }
+
+    private void LoadLegend()
+    {
+        var hoursTable = new HoursTable();
+        hoursTable.StartConnectionWithDatabase();
+        var hours = hoursTable.GetAllHours();
+
+        var legendData = hours.Select(h => new LegendItem
+        {
+            Symbol = h.Symbol,
+            Description = $"{h.StartTime:HH:mm} – {h.EndTime:HH:mm}"
+        }).ToList();
+
+        LegendItems.ItemsSource = legendData;
+        LegendPanel.IsVisible = legendData.Count > 0;
     }
 
     private void BackButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -586,4 +604,10 @@ public partial class ScheduleTableWindow : Window
             cellGrid.Children.Add(badgeImage);
         }
     }
+}
+
+public class LegendItem
+{
+    public string Symbol { get; set; } = "";
+    public string Description { get; set; } = "";
 }

@@ -99,18 +99,17 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="models:ScheduleInfo">
-                                        <Button Margin="0,2"
+                                        <Border Margin="0,2"
                                                 Padding="16,14"
                                                 HorizontalAlignment="Stretch"
-                                                HorizontalContentAlignment="Stretch"
-                                                Click="OnItemButtonClick"
-                                                Tag="{Binding}"
                                                 Background="White"
                                                 BorderBrush="#E8E5E0"
                                                 BorderThickness="1"
                                                 CornerRadius="8"
-                                                Cursor="Hand">
-                                            <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
+                                                Cursor="Hand"
+                                                PointerPressed="OnScheduleItemClick"
+                                                Tag="{Binding}">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" HorizontalAlignment="Stretch">
                                                 <Border Grid.Column="0"
                                                         Width="40" Height="40"
                                                         CornerRadius="8"
@@ -137,9 +136,26 @@
                                                            Text="→"
                                                            FontSize="16"
                                                            Foreground="#A0A0A0"
-                                                           VerticalAlignment="Center"/>
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,8,0"/>
+                                                <Button Grid.Column="3"
+                                                        Content="✕"
+                                                        Click="OnDeleteScheduleClick"
+                                                        Tag="{Binding}"
+                                                        Background="#FDF5F5"
+                                                        Foreground="#C05050"
+                                                        FontSize="13"
+                                                        FontWeight="Bold"
+                                                        Width="32" Height="32"
+                                                        Padding="0"
+                                                        CornerRadius="6"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        VerticalAlignment="Center"
+                                                        HorizontalContentAlignment="Center"
+                                                        VerticalContentAlignment="Center"/>
                                             </Grid>
-                                        </Button>
+                                        </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -562,6 +578,58 @@
                             BorderThickness="0"/>
                     <Button Content="Anuluj"
                             Click="OnDialogCancelClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Background="#F3F2F0"
+                            Foreground="#4A4A4A"
+                            FontSize="13"
+                            Padding="14,9"
+                            CornerRadius="6"
+                            Cursor="Hand"
+                            BorderBrush="#E8E5E0"
+                            BorderThickness="1"/>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- ============ OVERLAY: Potwierdź usunięcie grafiku ============ -->
+        <Border x:Name="DeleteScheduleOverlay"
+                Grid.RowSpan="2"
+                Background="#40000000"
+                IsVisible="False"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <Border Background="White"
+                    CornerRadius="10"
+                    Padding="28,24"
+                    Width="380"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BoxShadow="0 12 40 0 #20000000">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Usuń grafik"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="#C05050"/>
+                    <TextBlock x:Name="DeleteScheduleMessage"
+                               Text="Czy na pewno chcesz usunąć ten grafik? Wszystkie dane zmianowe zostaną trwale usunięte."
+                               FontSize="13"
+                               Foreground="#4A4A4A"
+                               TextWrapping="Wrap"/>
+                    <Button Content="Tak, usuń grafik"
+                            Click="OnConfirmDeleteScheduleClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Background="#C05050"
+                            Foreground="White"
+                            FontWeight="SemiBold"
+                            FontSize="13"
+                            Padding="14,9"
+                            CornerRadius="6"
+                            Cursor="Hand"
+                            BorderThickness="0"/>
+                    <Button Content="Anuluj"
+                            Click="OnCancelDeleteScheduleClick"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             Background="#F3F2F0"

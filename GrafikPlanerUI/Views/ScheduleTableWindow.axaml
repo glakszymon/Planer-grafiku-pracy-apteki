@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:GrafikPlanerCore.Models;assembly=GrafikPlanerCore"
+        xmlns:views="clr-namespace:GrafikPlanerUI.Views"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
         x:Class="GrafikPlanerUI.Views.ScheduleTableWindow"
         x:DataType="models:ScheduleRow"
@@ -56,71 +57,105 @@
         </Style>
     </Window.Styles>
     
-    <DockPanel>
-        <!-- Naglowek z przyciskiem powrotu -->
-        <Border DockPanel.Dock="Top"
-                Background="White"
-                BorderBrush="#E2E8F0"
-                BorderThickness="0,0,0,1"
-                Padding="16,12">
-            <Button Content="&#x2190; Powrot"
-                    Click="BackButton_Click"
-                    HorizontalAlignment="Left"
-                    Background="Transparent"
-                    BorderBrush="#CBD5E0"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Padding="12,6"
-                    FontSize="13"
-                    Foreground="#4A5568"
-                    Cursor="Hand"/>
-        </Border>
+    <Grid>
+        <DockPanel>
+            <!-- Naglowek z przyciskiem powrotu -->
+            <Border DockPanel.Dock="Top"
+                    Background="White"
+                    BorderBrush="#E2E8F0"
+                    BorderThickness="0,0,0,1"
+                    Padding="16,12">
+                <Button Content="&#x2190; Powrot"
+                        Click="BackButton_Click"
+                        HorizontalAlignment="Left"
+                        Background="Transparent"
+                        BorderBrush="#CBD5E0"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="12,6"
+                        FontSize="13"
+                        Foreground="#4A5568"
+                        Cursor="Hand"/>
+            </Border>
 
-        <!-- Grid zajmujacy cala reszta -->
-        <DataGrid x:Name="ScheduleDataGrid"
-                  Margin="12"
-                  AutoGenerateColumns="False" 
-                  IsReadOnly="True"
-                  SelectionMode="Single"
-                  CanUserResizeColumns="False"
-                  GridLinesVisibility="All"
-                  HorizontalGridLinesBrush="#E2E8F0"
-                  VerticalGridLinesBrush="#E2E8F0"
-                  BorderThickness="1" 
-                  BorderBrush="#E2E8F0"
-                  CornerRadius="8"
-                  Background="White"
-                  RowBackground="White">
-            <DataGrid.Columns>
-            
-                <DataGridTemplateColumn Header="Pracownik" Width="120">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate DataType="models:ScheduleRow">
-                            <StackPanel Margin="8,6" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
-                                <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
-                                <TextBlock Text="{Binding Specialisation}" FontStyle="Italic" Foreground="#718096" FontSize="11" Margin="0,2,0,0"/>
-                                <TextBlock Text="{Binding PhoneNumber}" FontSize="11" Foreground="#4A5568"/>
-                                <TextBlock Text="{Binding Email}" FontSize="10" Foreground="#3182CE"/>
+            <!-- Grid zajmujacy cala reszta -->
+            <DataGrid x:Name="ScheduleDataGrid"
+                      Margin="12"
+                      AutoGenerateColumns="False" 
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      CanUserResizeColumns="False"
+                      GridLinesVisibility="All"
+                      HorizontalGridLinesBrush="#E2E8F0"
+                      VerticalGridLinesBrush="#E2E8F0"
+                      BorderThickness="1" 
+                      BorderBrush="#E2E8F0"
+                      CornerRadius="8"
+                      Background="White"
+                      RowBackground="White">
+                <DataGrid.Columns>
+                
+                    <DataGridTemplateColumn Header="Pracownik" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="models:ScheduleRow">
+                                <StackPanel Margin="8,6" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
+                                    <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
+                                    <TextBlock Text="{Binding Specialisation}" FontStyle="Italic" Foreground="#718096" FontSize="11" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding PhoneNumber}" FontSize="11" Foreground="#4A5568"/>
+                                    <TextBlock Text="{Binding Email}" FontSize="10" Foreground="#3182CE"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="70">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="Suma&#x0a;godzin" TextAlignment="Center" TextWrapping="Wrap"/>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="models:ScheduleRow">
+                                <TextBlock Text="{Binding HoursSummary}" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+
+        <!-- Legenda oznaczeń godzinowych — lewy dolny róg -->
+        <Border x:Name="LegendPanel"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="16,0,0,16"
+                Background="#FFFFFFEE"
+                BorderBrush="#E2E8F0"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="14,10"
+                BoxShadow="0 2 8 0 #18000000">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Legenda" FontSize="12" FontWeight="SemiBold" Foreground="#2D3748" Margin="0,0,0,4"/>
+                <ItemsControl x:Name="LegendItems">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="views:LegendItem">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
+                                <Border Width="28" Height="20" CornerRadius="3" Background="#EDF2F7" 
+                                        BorderBrush="#CBD5E0" BorderThickness="1">
+                                    <TextBlock Text="{Binding Symbol}" 
+                                               FontSize="11" FontWeight="Bold" Foreground="#2D3748"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding Description}" 
+                                           FontSize="12" Foreground="#4A5568" VerticalAlignment="Center"/>
                             </StackPanel>
                         </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <DataGridTemplateColumn Width="70">
-                    <DataGridTemplateColumn.Header>
-                        <TextBlock Text="Suma&#x0a;godzin" TextAlignment="Center" TextWrapping="Wrap"/>
-                    </DataGridTemplateColumn.Header>
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate DataType="models:ScheduleRow">
-                            <TextBlock Text="{Binding HoursSummary}" 
-                                       HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center"
-                                       FontWeight="SemiBold"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-    </DockPanel>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>

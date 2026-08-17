@@ -133,4 +133,14 @@ public class ShiftTable : DbConnectionOption
         }
         return schedules;
     }
+
+    public void DeleteSchedule(int month, int year)
+    {
+        string monthPattern = $"{year:D4}-{month:D2}-%";
+
+        var command = _connection.CreateCommand();
+        command.CommandText = @"DELETE FROM ShiftRecords WHERE ShiftDate LIKE @monthPattern;";
+        command.Parameters.AddWithValue("@monthPattern", monthPattern);
+        command.ExecuteNonQuery();
+    }
 }
