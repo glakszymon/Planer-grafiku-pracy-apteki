@@ -65,7 +65,7 @@ public class SettingsTable : DbConnectionOption
         command.ExecuteNonQuery();
     }
 
-    public SettingsRecord? GetSettings()
+    public SettingsRecord GetSettings()
     {
         using var command = _connection.CreateCommand();
         command.CommandText = @"SELECT * FROM Settings WHERE Id = 1;";
