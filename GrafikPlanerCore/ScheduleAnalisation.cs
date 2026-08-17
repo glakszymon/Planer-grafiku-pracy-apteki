@@ -11,7 +11,10 @@ public class ScheduleAnalisation
     public List<DateTime> CheckEmptyHoursInSchedule(List<ScheduleRow> scheduleRows, int month, int year)
     {
         GetSettings();
-
+        
+        System.Diagnostics.Debug.WriteLine($"[ANALISATION] Settings loaded: OpeningTime={_settings.OpeningTime}, ClosingTime={_settings.ClosingTime}");
+        System.Diagnostics.Debug.WriteLine($"[ANALISATION] Checking month={month}, year={year}, rows={scheduleRows.Count}");
+        
         List<DateTime> emptyHours = new List<DateTime>();
         var numberOfDaysInMonth = DateTime.DaysInMonth(year, month);
 
@@ -21,17 +24,18 @@ public class ScheduleAnalisation
             emptyHours.AddRange(dates);
         }
         
+        System.Diagnostics.Debug.WriteLine($"[ANALISATION] Total empty hour slots found: {emptyHours.Count}");
         return emptyHours;
     }
 
-    private void GetSettings()
+    public void GetSettings()
     {
         var settingsTable = new SettingsTable();
         settingsTable.StartConnectionWithDatabase();
         _settings = settingsTable.GetSettings();
     }
 
-    private List<DateTime> CheckOneDay(List<ScheduleRow> scheduleRows, DateOnly targetDate)
+    public List<DateTime> CheckOneDay(List<ScheduleRow> scheduleRows, DateOnly targetDate)
     {
         var ans = new List<DateTime>();
     
@@ -42,6 +46,8 @@ public class ScheduleAnalisation
                              && record.EndTime.HasValue)
             .ToList();
 
+        System.Diagnostics.Debug.WriteLine($"[ANALISATION] CheckOneDay date={targetDate}, shiftsForDay={shiftsForDay.Count}, OpeningTime={_settings.OpeningTime}, ClosingTime={_settings.ClosingTime}");
+
         for (var i = _settings.OpeningTime; i < _settings.ClosingTime; i = i.AddHours(1))
         {
             bool ktosPracuje = shiftsForDay.Any(z => z.StartTime <= i && z.EndTime >= i.AddHours(1));
@@ -49,10 +55,12 @@ public class ScheduleAnalisation
             if (!ktosPracuje)
             {
                 DateTime fullDateTime = targetDate.ToDateTime(i);
-            
                 ans.Add(fullDateTime);
             }
         }
+
+        if (ans.Count > 0)
+            System.Diagnostics.Debug.WriteLine($"[ANALISATION] CheckOneDay date={targetDate} => {ans.Count} gaps");
 
         return ans;
     }

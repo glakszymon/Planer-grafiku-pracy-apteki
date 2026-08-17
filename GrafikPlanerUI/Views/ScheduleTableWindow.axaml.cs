@@ -28,6 +28,15 @@ public partial class ScheduleTableWindow : Window
     private static readonly IBrush WeekendBackground = new SolidColorBrush(Color.Parse("#E2E8F0"));
     private static readonly Thickness FocusBorderThickness = new Thickness(3);
     private static readonly IBrush SelectionBorderBrush = new SolidColorBrush(Color.Parse("#3182CE"));
+    private static readonly IBrush GapRowBackground = new SolidColorBrush(Color.Parse("#FEE2E2"));
+    private static readonly IBrush GapHeaderForeground = new SolidColorBrush(Color.Parse("#DC2626"));
+
+    // Gap indicator state
+    private Dictionary<DateOnly, string> _gapCache = new();
+    private readonly ScheduleAnalisation _analiser = new();
+    private ScheduleRow? _gapRow;
+    private readonly Dictionary<DateOnly, TextBlock> _headerTextBlocks = new();
+    private readonly Dictionary<DateOnly, TextBlock> _gapCellTextBlocks = new();
 
     // Multi-select state
     private bool _isDragging;
@@ -151,6 +160,14 @@ public partial class ScheduleTableWindow : Window
         if (scheduleRows == null || !scheduleRows.Any()) return;
         _scheduleRows = scheduleRows;
 
+        System.Diagnostics.Debug.WriteLine($"[LOAD] LoadSchedule called with {scheduleRows.Count} rows");
+        System.Diagnostics.Debug.WriteLine($"[LOAD] First row records count: {scheduleRows[0].Records?.Count ?? 0}");
+        if (scheduleRows[0].Records?.Count > 0)
+        {
+            var firstRec = scheduleRows[0].Records[0];
+            System.Diagnostics.Debug.WriteLine($"[LOAD] First record: Date={firstRec.ShiftDate}, StartTime={firstRec.StartTime}, EndTime={firstRec.EndTime}, Symbol={firstRec.Symbol}");
+        }
+
         var days = scheduleRows
             .SelectMany(r => r.Records)
             .Select(c => c.ShiftDate)
@@ -168,18 +185,18 @@ public partial class ScheduleTableWindow : Window
         {
             var dayColumn = new DataGridTemplateColumn
             {
-                Header = new TextBlock
-                {
-                    Text = day.ToString("dd.MM\nddd"),
-                    TextAlignment = TextAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                },
+                Header = CreateHeaderTextBlock(day),
                 Width = new DataGridLength(1, DataGridLengthUnitType.Star),
 
                 CellTemplate = new FuncDataTemplate<ScheduleRow>((row, namescope) =>
                 {
                     if (row == null) return new Border();
+
+                    // Gap row - special rendering
+                    if (row.Id == -1)
+                    {
+                        return CreateGapCell(day);
+                    }
 
                     var shift = row.Records?.FirstOrDefault(r => r.ShiftDate == day);
                     bool isWeekend = day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday;
@@ -314,7 +331,19 @@ public partial class ScheduleTableWindow : Window
             ScheduleDataGrid.Columns.Add(lastColumn);
         }
 
-        ScheduleDataGrid.ItemsSource = scheduleRows;
+        // Add gap row at the bottom
+        _gapRow = new ScheduleRow
+        {
+            Id = -1,
+            FirstName = "",
+            LastName = "",
+            Records = new List<ScheduleColumn>()
+        };
+        var allRows = new List<ScheduleRow>(scheduleRows) { _gapRow };
+        ScheduleDataGrid.ItemsSource = allRows;
+
+        // Initialize gap cache
+        InitGapCache(days);
     }
 
     private void OnGlobalPointerMoved(object? sender, PointerEventArgs e)
@@ -496,10 +525,15 @@ public partial class ScheduleTableWindow : Window
             var table = new ShiftTable();
             table.StartConnectionWithDatabase();
 
+            var editedDays = new HashSet<DateOnly>();
             foreach (var cell in _selectedCells.ToList())
             {
                 SaveCellToDatabase(table, cell);
+                editedDays.Add(cell.Day);
             }
+
+            // Refresh gap indicators for edited days
+            RefreshGapsForDays(editedDays);
         };
 
         return flyout;
@@ -510,6 +544,9 @@ public partial class ScheduleTableWindow : Window
         EnsureShiftExists(cell);
         cell.Shift!.ShiftHourId = selectedHour?.Id;
         cell.Shift.Symbol = selectedHour?.Symbol ?? "";
+        cell.Shift.StartTime = selectedHour?.StartTime;
+        cell.Shift.EndTime = selectedHour?.EndTime;
+        System.Diagnostics.Debug.WriteLine($"[APPLY-HOUR] day={cell.Day}, hour={selectedHour?.Symbol}, StartTime={cell.Shift.StartTime}, EndTime={cell.Shift.EndTime}");
         UpdateCellVisuals(selectedHour, cell.Shift.PoleColor, cell.Shift.PoleIcon, cell.CellGrid, cell.Border, cell.Day);
     }
 
@@ -653,6 +690,148 @@ public partial class ScheduleTableWindow : Window
         {
             var badgeImage = LoadImageFromDbName(selectedIcon);
             cellGrid.Children.Add(badgeImage);
+        }
+    }
+
+    // ===== Gap Indicator Methods =====
+
+    private TextBlock CreateHeaderTextBlock(DateOnly day)
+    {
+        var tb = new TextBlock
+        {
+            Text = day.ToString("dd.MM\nddd"),
+            TextAlignment = TextAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        _headerTextBlocks[day] = tb;
+        return tb;
+    }
+
+    private Border CreateGapCell(DateOnly day)
+    {
+        var hasGap = _gapCache.TryGetValue(day, out var text);
+        System.Diagnostics.Debug.WriteLine($"[GAP-CELL] CreateGapCell day={day}, hasGap={hasGap}, text=\"{text ?? ""}\"");
+        
+        var textBlock = new TextBlock
+        {
+            Text = hasGap ? text! : "",
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
+            FontSize = 10,
+            Foreground = GapHeaderForeground,
+            TextWrapping = TextWrapping.Wrap
+        };
+        _gapCellTextBlocks[day] = textBlock;
+
+        return new Border
+        {
+            Background = hasGap ? GapRowBackground : Brushes.Transparent,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            BorderThickness = new Thickness(1, 0, 0, 0),
+            BorderBrush = new SolidColorBrush(Color.Parse("#CCCCCC")),
+            Child = textBlock
+        };
+    }
+
+    private void InitGapCache(List<DateOnly> days)
+    {
+        var firstDay = days.FirstOrDefault();
+        if (firstDay == default) return;
+
+        System.Diagnostics.Debug.WriteLine($"[GAP-INIT] Starting gap analysis for month={firstDay.Month}, year={firstDay.Year}, scheduleRows={_scheduleRows.Count}");
+        
+        var allGaps = _analiser.CheckEmptyHoursInSchedule(_scheduleRows, firstDay.Month, firstDay.Year);
+        
+        System.Diagnostics.Debug.WriteLine($"[GAP-INIT] CheckEmptyHoursInSchedule returned {allGaps.Count} gap slots");
+        foreach (var gap in allGaps.Take(10))
+        {
+            System.Diagnostics.Debug.WriteLine($"[GAP-INIT]   Gap slot: {gap:yyyy-MM-dd HH:mm}");
+        }
+        if (allGaps.Count > 10)
+            System.Diagnostics.Debug.WriteLine($"[GAP-INIT]   ... and {allGaps.Count - 10} more");
+
+        _gapCache = GapFormatter.FormatGaps(allGaps);
+        
+        System.Diagnostics.Debug.WriteLine($"[GAP-INIT] GapCache has {_gapCache.Count} days with gaps:");
+        foreach (var kvp in _gapCache)
+        {
+            System.Diagnostics.Debug.WriteLine($"[GAP-INIT]   {kvp.Key} => \"{kvp.Value}\"");
+        }
+
+        // Apply colors to headers
+        foreach (var day in days)
+        {
+            UpdateColumnHeader(day);
+        }
+        
+        // Update gap row cells (template already rendered with empty cache)
+        foreach (var day in days)
+        {
+            UpdateGapRowCell(day);
+        }
+        
+        System.Diagnostics.Debug.WriteLine($"[GAP-INIT] Done. HeaderTextBlocks registered: {_headerTextBlocks.Count}, GapCellTextBlocks registered: {_gapCellTextBlocks.Count}");
+    }
+
+    private void RefreshGapForDay(DateOnly editedDay)
+    {
+        System.Diagnostics.Debug.WriteLine($"[GAP-REFRESH] Refreshing day={editedDay}, scheduleRows={_scheduleRows.Count}");
+        
+        var dayGaps = _analiser.CheckOneDay(_scheduleRows, editedDay);
+        
+        System.Diagnostics.Debug.WriteLine($"[GAP-REFRESH] CheckOneDay returned {dayGaps.Count} gaps for {editedDay}");
+
+        if (dayGaps.Count == 0)
+            _gapCache.Remove(editedDay);
+        else
+            _gapCache[editedDay] = GapFormatter.FormatGaps(dayGaps)[editedDay];
+
+        System.Diagnostics.Debug.WriteLine($"[GAP-REFRESH] Cache for {editedDay}: {(_gapCache.TryGetValue(editedDay, out var v) ? v : "(none)")}");
+
+        UpdateColumnHeader(editedDay);
+        UpdateGapRowCell(editedDay);
+    }
+
+    private void RefreshGapsForDays(IEnumerable<DateOnly> days)
+    {
+        foreach (var day in days.Distinct())
+        {
+            RefreshGapForDay(day);
+        }
+    }
+
+    private void UpdateColumnHeader(DateOnly day)
+    {
+        if (!_headerTextBlocks.TryGetValue(day, out var tb))
+        {
+            System.Diagnostics.Debug.WriteLine($"[GAP-HEADER] No TextBlock registered for day={day}");
+            return;
+        }
+
+        var hasGap = _gapCache.ContainsKey(day);
+        System.Diagnostics.Debug.WriteLine($"[GAP-HEADER] day={day}, hasGap={hasGap}");
+        tb.Foreground = hasGap ? GapHeaderForeground : Brushes.Black;
+        tb.FontWeight = hasGap ? FontWeight.Bold : FontWeight.Normal;
+    }
+
+    private void UpdateGapRowCell(DateOnly day)
+    {
+        if (!_gapCellTextBlocks.TryGetValue(day, out var tb))
+        {
+            System.Diagnostics.Debug.WriteLine($"[GAP-ROW] No gap cell TextBlock registered for day={day}");
+            return;
+        }
+
+        var hasGap = _gapCache.TryGetValue(day, out var text);
+        System.Diagnostics.Debug.WriteLine($"[GAP-ROW] day={day}, hasGap={hasGap}, text=\"{text ?? ""}\", tb.Parent is Border={tb.Parent is Border}");
+        tb.Text = hasGap ? text : "";
+
+        if (tb.Parent is Border border)
+        {
+            border.Background = hasGap ? GapRowBackground : Brushes.Transparent;
         }
     }
 }

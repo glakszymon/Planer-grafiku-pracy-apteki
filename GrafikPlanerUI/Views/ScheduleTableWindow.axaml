@@ -137,7 +137,7 @@
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="models:ScheduleRow">
-                                <TextBlock Text="{Binding HoursSummary}" 
+                                <TextBlock Text="{Binding HoursSummary, StringFormat='{}{0:#;;}'}" 
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"
                                            FontWeight="SemiBold"/>
