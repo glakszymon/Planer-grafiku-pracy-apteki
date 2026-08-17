@@ -97,6 +97,7 @@
                       IsReadOnly="True"
                       SelectionMode="Single"
                       CanUserResizeColumns="False"
+                      RowHeight="70"
                       GridLinesVisibility="All"
                       HorizontalGridLinesBrush="#E2E8F0"
                       VerticalGridLinesBrush="#E2E8F0"
@@ -113,9 +114,6 @@
                                 <StackPanel Margin="8,6" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
                                     <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
-                                    <TextBlock Text="{Binding Specialisation}" FontStyle="Italic" Foreground="#718096" FontSize="11" Margin="0,2,0,0"/>
-                                    <TextBlock Text="{Binding PhoneNumber}" FontSize="11" Foreground="#4A5568"/>
-                                    <TextBlock Text="{Binding Email}" FontSize="10" Foreground="#3182CE"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
