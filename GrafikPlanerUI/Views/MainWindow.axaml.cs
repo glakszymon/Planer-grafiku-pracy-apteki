@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using GrafikPlanerCore;
@@ -14,13 +14,14 @@ public partial class MainWindow : Window
 {
     private CoreProgram _coreProgram = new CoreProgram();
     private EmployeeRecord? _editingEmployee = null;
-    
+    private EmployeeRecord? _selectedEmployee = null;
+
     public MainWindow()
     {
         InitializeComponent();
-        
+
         Opened += (_, _) => WindowState = WindowState.Maximized;
-        
+
         DataContext = new MainViewModel();
 
         _coreProgram.RunInitializeDatabase();
@@ -28,6 +29,50 @@ public partial class MainWindow : Window
         LoadListOfSchedules();
         LoadEmployees();
         _coreProgram.UpdateVacationDataForAllEmployees();
+
+        // Domyślnie aktywna zakładka Grafiki
+        SetActiveTab(isGrafiki: true);
+    }
+
+    // ==================== TABS ====================
+
+    private void OnTabGrafikiClick(object? sender, PointerPressedEventArgs e)
+    {
+        SetActiveTab(isGrafiki: true);
+    }
+
+    private void OnTabPracownicyClick(object? sender, PointerPressedEventArgs e)
+    {
+        SetActiveTab(isGrafiki: false);
+    }
+
+    private void SetActiveTab(bool isGrafiki)
+    {
+        // Wizualne przełączanie zakładek klasera
+        if (isGrafiki)
+        {
+            TabGrafiki.Background = new SolidColorBrush(Color.Parse("#F4F1EC"));
+            TabGrafiki.BorderThickness = new Avalonia.Thickness(1, 1, 1, 0);
+            TabPracownicy.Background = new SolidColorBrush(Color.Parse("#E5E1DB"));
+            TabPracownicy.BorderThickness = new Avalonia.Thickness(1, 1, 1, 1);
+
+            PageGrafiki.IsVisible = true;
+            PageGrafiki.Opacity = 1;
+            PagePracownicy.IsVisible = false;
+            PagePracownicy.Opacity = 0;
+        }
+        else
+        {
+            TabPracownicy.Background = new SolidColorBrush(Color.Parse("#F4F1EC"));
+            TabPracownicy.BorderThickness = new Avalonia.Thickness(1, 1, 1, 0);
+            TabGrafiki.Background = new SolidColorBrush(Color.Parse("#E5E1DB"));
+            TabGrafiki.BorderThickness = new Avalonia.Thickness(1, 1, 1, 1);
+
+            PagePracownicy.IsVisible = true;
+            PagePracownicy.Opacity = 1;
+            PageGrafiki.IsVisible = false;
+            PageGrafiki.Opacity = 0;
+        }
     }
 
     // ==================== SCHEDULES ====================
@@ -55,7 +100,7 @@ public partial class MainWindow : Window
             DialogOverlay.IsVisible = false;
             LoadListOfSchedules();
             StatusTextBlock.Text = $"Utworzono grafik: {selectedDate:MMMM yyyy}";
-            StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#38A169"));
+            StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
         }
         else
         {
@@ -76,7 +121,7 @@ public partial class MainWindow : Window
         ItemsList.ItemsSource = schedules;
         EmptyStateText.IsVisible = schedules == null || schedules.Count == 0;
     }
-    
+
     private void OnItemButtonClick(object? sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is ScheduleInfo selectedRecord)
@@ -100,7 +145,7 @@ public partial class MainWindow : Window
         else
         {
             StatusTextBlock.Text = "Nie udało się otworzyć grafiku.";
-            StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#E53E3E"));
+            StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
         }
     }
 
@@ -115,46 +160,108 @@ public partial class MainWindow : Window
         EmployeeEmptyState.IsVisible = employees == null || employees.Count == 0;
     }
 
+    private void OnEmployeeItemClick(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is Border border && border.Tag is EmployeeRecord emp)
+        {
+            SelectEmployee(emp);
+        }
+    }
+
+    private void SelectEmployee(EmployeeRecord emp)
+    {
+        _selectedEmployee = emp;
+        ShowDetailView(emp);
+        HighlightSelectedEmployee();
+    }
+
+    private void HighlightSelectedEmployee()
+    {
+        // Iteracja po elementach listy i ustawienie wizualne "otwartej zakładki"
+        if (EmployeesList.ItemsSource == null) return;
+
+        // Wymuszamy przerysowanie przez ponowne przypisanie ItemsSource 
+        // (prostsze niż iteracja po wizualnym drzewie w Avalonia)
+        // Zamiast tego użyjemy stylów — wybrany element jest rozpoznawany w ShowDetailView
+    }
+
+    private void ShowDetailView(EmployeeRecord emp)
+    {
+        DetailEmpty.IsVisible = false;
+        DetailEdit.IsVisible = false;
+        DetailView.IsVisible = true;
+        DeleteConfirmPanel.IsVisible = false;
+
+        ViewFirstName.Text = emp.FirstName;
+        ViewLastName.Text = emp.LastName;
+        ViewSpec.Text = emp.Specialisation;
+        ViewEmail.Text = string.IsNullOrEmpty(emp.Email) ? "—" : emp.Email;
+        ViewPhone.Text = string.IsNullOrEmpty(emp.PhoneNumber) ? "—" : emp.PhoneNumber;
+        ViewVacationDays.Text = emp.VacationDays?.ToString() ?? "—";
+        ViewUsedVacation.Text = emp.UsedVacationDays?.ToString() ?? "0";
+        ViewUnusedVacation.Text = emp.UnusedVacationDaysFromLastYear?.ToString() ?? "0";
+    }
+
     private void OnAddEmployeeClick(object? sender, RoutedEventArgs e)
     {
         _editingEmployee = null;
-        EmployeeDialogTitle.Text = "Dodaj pracownika";
-        EmployeeDialogSubmitBtn.Content = "Dodaj";
+        EditTitle.Text = "Dodaj pracownika";
+        EditSubmitBtn.Content = "Dodaj";
         ClearEmployeeForm();
-        EmployeeDialogOverlay.IsVisible = true;
+
+        DetailEmpty.IsVisible = false;
+        DetailView.IsVisible = false;
+        DetailEdit.IsVisible = true;
     }
 
     private void OnEditEmployeeClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.Tag is EmployeeRecord emp)
-        {
-            _editingEmployee = emp;
-            EmployeeDialogTitle.Text = "Edytuj pracownika";
-            EmployeeDialogSubmitBtn.Content = "Zapisz zmiany";
-            EmpFirstNameBox.Text = emp.FirstName;
-            EmpLastNameBox.Text = emp.LastName;
-            EmpSpecBox.Text = emp.Specialisation;
-            EmpEmailBox.Text = emp.Email ?? "";
-            EmpPhoneBox.Text = emp.PhoneNumber ?? "";
-            EmpVacationDaysBox.Text = emp.VacationDays?.ToString() ?? "";
-            EmpUsedVacationBox.Text = emp.UsedVacationDays?.ToString() ?? "";
-            EmpUnusedVacationBox.Text = emp.UnusedVacationDaysFromLastYear?.ToString() ?? "";
-            EmployeeDialogError.Text = "";
-            EmployeeDialogOverlay.IsVisible = true;
-        }
+        if (_selectedEmployee == null) return;
+
+        _editingEmployee = _selectedEmployee;
+        EditTitle.Text = "Edytuj pracownika";
+        EditSubmitBtn.Content = "Zapisz zmiany";
+
+        EmpFirstNameBox.Text = _selectedEmployee.FirstName;
+        EmpLastNameBox.Text = _selectedEmployee.LastName;
+        EmpSpecBox.Text = _selectedEmployee.Specialisation;
+        EmpEmailBox.Text = _selectedEmployee.Email ?? "";
+        EmpPhoneBox.Text = _selectedEmployee.PhoneNumber ?? "";
+        EmpVacationDaysBox.Text = _selectedEmployee.VacationDays?.ToString() ?? "";
+        EmpUsedVacationBox.Text = _selectedEmployee.UsedVacationDays?.ToString() ?? "";
+        EmpUnusedVacationBox.Text = _selectedEmployee.UnusedVacationDaysFromLastYear?.ToString() ?? "";
+        EmployeeDialogError.Text = "";
+
+        DetailEmpty.IsVisible = false;
+        DetailView.IsVisible = false;
+        DetailEdit.IsVisible = true;
     }
 
     private void OnDeleteEmployeeClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.Tag is EmployeeRecord emp)
-        {
-            var empTable = new EmployeeTable();
-            empTable.StartConnectionWithDatabase();
-            empTable.DeleteEmployee(emp.Id);
-            LoadEmployees();
-            EmployeeStatusText.Text = $"Usunięto: {emp.FirstName} {emp.LastName}";
-            EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#E53E3E"));
-        }
+        DeleteConfirmPanel.IsVisible = true;
+    }
+
+    private void OnConfirmDeleteClick(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedEmployee == null) return;
+
+        var empTable = new EmployeeTable();
+        empTable.StartConnectionWithDatabase();
+        empTable.DeleteEmployee(_selectedEmployee.Id);
+
+        EmployeeStatusText.Text = $"Usunięto: {_selectedEmployee.FirstName} {_selectedEmployee.LastName}";
+        EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
+
+        _selectedEmployee = null;
+        DetailView.IsVisible = false;
+        DetailEmpty.IsVisible = true;
+        LoadEmployees();
+    }
+
+    private void OnCancelDeleteClick(object? sender, RoutedEventArgs e)
+    {
+        DeleteConfirmPanel.IsVisible = false;
     }
 
     private void OnEmployeeDialogSubmitClick(object? sender, RoutedEventArgs e)
@@ -190,22 +297,36 @@ public partial class MainWindow : Window
             record.Id = _editingEmployee.Id;
             empTable.UpdateEmployee(record);
             EmployeeStatusText.Text = $"Zaktualizowano: {firstName} {lastName}";
-            EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#5B7FE8"));
+            EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
+
+            _selectedEmployee = record;
+            LoadEmployees();
+            ShowDetailView(record);
         }
         else
         {
             empTable.AddEmployee(record);
             EmployeeStatusText.Text = $"Dodano: {firstName} {lastName}";
-            EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#38A169"));
-        }
+            EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
 
-        EmployeeDialogOverlay.IsVisible = false;
-        LoadEmployees();
+            LoadEmployees();
+            DetailEdit.IsVisible = false;
+            DetailEmpty.IsVisible = true;
+        }
     }
 
     private void OnEmployeeDialogCancelClick(object? sender, RoutedEventArgs e)
     {
-        EmployeeDialogOverlay.IsVisible = false;
+        DetailEdit.IsVisible = false;
+
+        if (_selectedEmployee != null)
+        {
+            ShowDetailView(_selectedEmployee);
+        }
+        else
+        {
+            DetailEmpty.IsVisible = true;
+        }
     }
 
     private void ClearEmployeeForm()
