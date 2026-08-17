@@ -2,6 +2,8 @@ using GrafikPlanerCore.Models;
 using GrafikPlanerCore.Models.Responses;
 using GrafikPlanerCore.ScheduleScripts;
 using GrafikPlanerData;
+using GrafikPlanerData.DbScripts;
+using GrafikPlanerData.Models;
 
 namespace GrafikPlanerCore;
 
@@ -51,7 +53,58 @@ public class CoreProgram
         
         return contextMenuOptions;
     }
-    
+
+    public void UpdateVacationDataForAllEmployees()
+    {
+        int currentYear = DateTime.Now.Year;
+        
+        var employeeTable =  new EmployeeTable();
+        employeeTable.StartConnectionWithDatabase();
+
+        var employees = employeeTable.GetAllEmployees();
+        
+        bool DataWasChanged = false;
+
+        foreach (var employee in employees)
+        {
+            var worker = employee;
+            if (currentYear != worker.YearOfVacationData)
+            {
+                 worker = StartNewYearCalculations(worker);
+                 DataWasChanged = true;
+            }
+
+            if (worker.UnusedVacationDaysFromLastYear != 0 && DateTime.Now.Month > 9)
+            {
+                worker = LostLastYearVacations(worker);
+                DataWasChanged = true;
+            }
+
+            if (DataWasChanged)
+            {
+                employeeTable.UpdateEmployee(worker);
+            }
+        }
+    }
+
+    private EmployeeRecord StartNewYearCalculations(EmployeeRecord employeeRecord)
+    {
+        var worker = employeeRecord;
+
+        worker.UnusedVacationDaysFromLastYear = worker.VacationDays - worker.UsedVacationDays;
+        worker.UsedVacationDays = 0;
+        worker.YearOfVacationData = DateTime.Now.Year;
+        
+        return worker;
+    }
+
+    private EmployeeRecord LostLastYearVacations(EmployeeRecord employeeRecord)
+    {
+        var worker = employeeRecord;
+
+        worker.UnusedVacationDaysFromLastYear = 0;
+        return worker;
+    }
     
     
 }

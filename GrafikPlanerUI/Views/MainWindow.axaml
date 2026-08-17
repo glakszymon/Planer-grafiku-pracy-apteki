@@ -24,146 +24,309 @@
                     BorderThickness="0,0,0,1"
                     BorderBrush="#E8ECF0"
                     Background="#FCFCFD">
-                <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock Text="Grafik Planer" 
-                                   FontSize="26" 
-                                   FontWeight="Bold"
-                                   Foreground="#3D4F65"/>
-                        <TextBlock Text="Zarządzanie grafikami pracy" 
-                                   FontSize="13" 
-                                   Foreground="#8899A8"
-                                   Margin="0,4,0,0"/>
-                    </StackPanel>
-                    <Button Grid.Column="1"
-                            Content="+ Nowy grafik"
-                            Click="OnAddNewScheduleClick"
-                            Background="#5B7FE8"
-                            Foreground="White"
-                            FontWeight="SemiBold"
-                            FontSize="14"
-                            Padding="22,11"
-                            CornerRadius="8"
-                            Cursor="Hand"
-                            BorderThickness="0"/>
-                </Grid>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Grafik Planer" 
+                               FontSize="26" 
+                               FontWeight="Bold"
+                               Foreground="#3D4F65"/>
+                    <TextBlock Text="Zarządzanie grafikami pracy" 
+                               FontSize="13" 
+                               Foreground="#8899A8"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
             </Border>
 
-            <!-- Main content -->
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="40,28" Spacing="16">
-                    
-                    <TextBlock Text="Twoje grafiki" 
-                               FontSize="18" 
-                               FontWeight="SemiBold" 
-                               Foreground="#3D4F65"/>
-                    
-                    <TextBlock x:Name="StatusTextBlock" 
-                               Text="" 
-                               FontSize="13"
-                               FontWeight="SemiBold" 
-                               HorizontalAlignment="Left" />
+            <!-- Tab Control -->
+            <TabControl Margin="40,20" x:Name="MainTabControl">
+                <TabControl.Styles>
+                    <Style Selector="TabItem">
+                        <Setter Property="FontSize" Value="15"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="16,10"/>
+                        <Setter Property="Margin" Value="0,0,8,0"/>
+                    </Style>
+                </TabControl.Styles>
 
-                    <!-- Lista grafików -->
-                    <ItemsControl x:Name="ItemsList" HorizontalAlignment="Stretch">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel HorizontalAlignment="Stretch"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="models:ScheduleInfo">
-                                <Button Margin="0,4"
-                                        Padding="18,14"
-                                        HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Stretch"
-                                        Click="OnItemButtonClick"
-                                        Tag="{Binding}"
+                <!-- ==================== TAB: GRAFIKI ==================== -->
+                <TabItem Header="Grafiki">
+                    <DockPanel Margin="0,16,0,0">
+                        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                            <TextBlock Grid.Column="0" Text="Twoje grafiki" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#3D4F65"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1"
+                                    Content="+ Nowy grafik"
+                                    Click="OnAddNewScheduleClick"
+                                    Background="#5B7FE8"
+                                    Foreground="White"
+                                    FontWeight="SemiBold"
+                                    FontSize="14"
+                                    Padding="22,11"
+                                    CornerRadius="8"
+                                    Cursor="Hand"
+                                    BorderThickness="0"/>
+                        </Grid>
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="8">
+                                <TextBlock x:Name="StatusTextBlock" 
+                                           Text="" 
+                                           FontSize="13"
+                                           FontWeight="SemiBold" 
+                                           HorizontalAlignment="Left" />
+
+                                <ItemsControl x:Name="ItemsList" HorizontalAlignment="Stretch">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel HorizontalAlignment="Stretch"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="models:ScheduleInfo">
+                                            <Button Margin="0,4"
+                                                    Padding="18,14"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    Click="OnItemButtonClick"
+                                                    Tag="{Binding}"
+                                                    Background="White"
+                                                    BorderBrush="#E8ECF0"
+                                                    BorderThickness="1"
+                                                    CornerRadius="10"
+                                                    Cursor="Hand">
+                                                <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
+                                                    <Border Grid.Column="0"
+                                                            Width="42" Height="42"
+                                                            CornerRadius="10"
+                                                            Background="#EEF2FF"
+                                                            VerticalAlignment="Center">
+                                                        <TextBlock Text="G"
+                                                                   FontSize="16"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="#5B7FE8"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                                                        <TextBlock Text="{Binding Name}" 
+                                                                   FontWeight="SemiBold"
+                                                                   FontSize="15"
+                                                                   Foreground="#3D4F65"/>
+                                                        <TextBlock Text="Kliknij aby otworzyc"
+                                                                   FontSize="11"
+                                                                   Foreground="#B0BAC5"
+                                                                   Margin="0,2,0,0"/>
+                                                    </StackPanel>
+                                                    <Border Grid.Column="2"
+                                                            Width="30" Height="30"
+                                                            CornerRadius="8"
+                                                            Background="#F4F6F8"
+                                                            VerticalAlignment="Center">
+                                                        <TextBlock Text=">"
+                                                                   FontSize="13"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="#8899A8"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <Border x:Name="EmptyStateText"
+                                        IsVisible="False"
                                         Background="White"
+                                        CornerRadius="14"
+                                        Padding="40,44"
+                                        HorizontalAlignment="Stretch"
                                         BorderBrush="#E8ECF0"
-                                        BorderThickness="1"
-                                        CornerRadius="10"
-                                        Cursor="Hand">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
-                                        <!-- Kolorowa ikona -->
-                                        <Border Grid.Column="0"
-                                                Width="42" Height="42"
-                                                CornerRadius="10"
-                                                Background="#EEF2FF"
-                                                VerticalAlignment="Center">
-                                            <TextBlock Text="G"
-                                                       FontSize="16"
+                                        BorderThickness="1">
+                                    <StackPanel HorizontalAlignment="Center" Spacing="10">
+                                        <Border Width="56" Height="56"
+                                                CornerRadius="28"
+                                                HorizontalAlignment="Center"
+                                                Background="#F4F6F8">
+                                            <TextBlock Text="+"
+                                                       FontSize="24"
                                                        FontWeight="Bold"
-                                                       Foreground="#5B7FE8"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                                            <TextBlock Text="{Binding Name}" 
-                                                       FontWeight="SemiBold"
-                                                       FontSize="15"
-                                                       Foreground="#3D4F65"/>
-                                            <TextBlock Text="Kliknij aby otworzyc"
-                                                       FontSize="11"
                                                        Foreground="#B0BAC5"
-                                                       Margin="0,2,0,0"/>
-                                        </StackPanel>
-                                        <!-- Strzalka -->
-                                        <Border Grid.Column="2"
-                                                Width="30" Height="30"
-                                                CornerRadius="8"
-                                                Background="#F4F6F8"
-                                                VerticalAlignment="Center">
-                                            <TextBlock Text=">"
-                                                       FontSize="13"
-                                                       FontWeight="Bold"
-                                                       Foreground="#8899A8"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"/>
                                         </Border>
-                                    </Grid>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                        <TextBlock Text="Brak grafików"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#5A6A7A"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Kliknij '+ Nowy grafik' aby utworzyć pierwszy."
+                                                   FontSize="13"
+                                                   Foreground="#B0BAC5"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
+                </TabItem>
 
-                    <!-- Pusty stan -->
-                    <Border x:Name="EmptyStateText"
-                            IsVisible="False"
-                            Background="White"
-                            CornerRadius="14"
-                            Padding="40,44"
-                            HorizontalAlignment="Stretch"
-                            BorderBrush="#E8ECF0"
-                            BorderThickness="1">
-                        <StackPanel HorizontalAlignment="Center" Spacing="10">
-                            <Border Width="56" Height="56"
-                                    CornerRadius="28"
-                                    HorizontalAlignment="Center"
-                                    Background="#F4F6F8">
-                                <TextBlock Text="+"
-                                           FontSize="24"
-                                           FontWeight="Bold"
-                                           Foreground="#B0BAC5"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Brak grafików"
-                                       FontSize="15"
-                                       FontWeight="SemiBold"
-                                       Foreground="#5A6A7A"
-                                       HorizontalAlignment="Center"/>
-                            <TextBlock Text="Kliknij '+ Nowy grafik' aby utworzyć pierwszy."
-                                       FontSize="13"
-                                       Foreground="#B0BAC5"
-                                       HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </ScrollViewer>
+                <!-- ==================== TAB: PRACOWNICY ==================== -->
+                <TabItem Header="Pracownicy">
+                    <DockPanel Margin="0,16,0,0">
+                        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                            <TextBlock Grid.Column="0" Text="Lista pracowników" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#3D4F65"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1"
+                                    Content="+ Dodaj pracownika"
+                                    Click="OnAddEmployeeClick"
+                                    Background="#38A169"
+                                    Foreground="White"
+                                    FontWeight="SemiBold"
+                                    FontSize="14"
+                                    Padding="22,11"
+                                    CornerRadius="8"
+                                    Cursor="Hand"
+                                    BorderThickness="0"/>
+                        </Grid>
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="8">
+                                <TextBlock x:Name="EmployeeStatusText" 
+                                           Text="" 
+                                           FontSize="13"
+                                           FontWeight="SemiBold" 
+                                           HorizontalAlignment="Left" />
+
+                                <ItemsControl x:Name="EmployeesList" HorizontalAlignment="Stretch">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel HorizontalAlignment="Stretch"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="models:EmployeeRecord">
+                                            <Border Margin="0,4"
+                                                    Padding="18,14"
+                                                    Background="White"
+                                                    BorderBrush="#E8ECF0"
+                                                    BorderThickness="1"
+                                                    CornerRadius="10">
+                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                                    <!-- Avatar -->
+                                                    <Border Grid.Column="0"
+                                                            Width="46" Height="46"
+                                                            CornerRadius="23"
+                                                            Background="#E8F5E9"
+                                                            VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding FirstName[0]}"
+                                                                   FontSize="18"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="#38A169"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <!-- Info -->
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding FirstName}" 
+                                                                       FontWeight="SemiBold"
+                                                                       FontSize="15"
+                                                                       Foreground="#3D4F65"/>
+                                                            <TextBlock Text="{Binding LastName}" 
+                                                                       FontWeight="SemiBold"
+                                                                       FontSize="15"
+                                                                       Foreground="#3D4F65"/>
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,3,0,0">
+                                                            <TextBlock Text="{Binding Specialisation}"
+                                                                       FontSize="12"
+                                                                       Foreground="#5B7FE8"
+                                                                       FontWeight="Medium"/>
+                                                            <TextBlock Text="{Binding Email}"
+                                                                       FontSize="12"
+                                                                       Foreground="#8899A8"/>
+                                                            <TextBlock Text="{Binding PhoneNumber}"
+                                                                       FontSize="12"
+                                                                       Foreground="#8899A8"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <!-- Edit button -->
+                                                    <Button Grid.Column="2"
+                                                            Content="Edytuj"
+                                                            Click="OnEditEmployeeClick"
+                                                            Tag="{Binding}"
+                                                            Background="#EEF2FF"
+                                                            Foreground="#5B7FE8"
+                                                            FontSize="12"
+                                                            FontWeight="SemiBold"
+                                                            Padding="14,8"
+                                                            CornerRadius="6"
+                                                            Cursor="Hand"
+                                                            BorderThickness="0"
+                                                            Margin="8,0"
+                                                            VerticalAlignment="Center"/>
+                                                    <!-- Delete button -->
+                                                    <Button Grid.Column="3"
+                                                            Content="Usuń"
+                                                            Click="OnDeleteEmployeeClick"
+                                                            Tag="{Binding}"
+                                                            Background="#FFF5F5"
+                                                            Foreground="#E53E3E"
+                                                            FontSize="12"
+                                                            FontWeight="SemiBold"
+                                                            Padding="14,8"
+                                                            CornerRadius="6"
+                                                            Cursor="Hand"
+                                                            BorderThickness="0"
+                                                            VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Empty state -->
+                                <Border x:Name="EmployeeEmptyState"
+                                        IsVisible="False"
+                                        Background="White"
+                                        CornerRadius="14"
+                                        Padding="40,44"
+                                        HorizontalAlignment="Stretch"
+                                        BorderBrush="#E8ECF0"
+                                        BorderThickness="1">
+                                    <StackPanel HorizontalAlignment="Center" Spacing="10">
+                                        <Border Width="56" Height="56"
+                                                CornerRadius="28"
+                                                HorizontalAlignment="Center"
+                                                Background="#E8F5E9">
+                                            <TextBlock Text="P"
+                                                       FontSize="22"
+                                                       FontWeight="Bold"
+                                                       Foreground="#38A169"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Brak pracowników"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#5A6A7A"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Kliknij '+ Dodaj pracownika' aby dodać pierwszego."
+                                                   FontSize="13"
+                                                   Foreground="#B0BAC5"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
         </DockPanel>
 
-        <!-- Overlay dialog -->
+        <!-- Overlay dialog - Nowy Grafik -->
         <Border x:Name="DialogOverlay"
                 Background="#60000000"
                 IsVisible="False"
@@ -207,6 +370,81 @@
                             BorderThickness="0"/>
                     <Button Content="Anuluj"
                             Click="OnDialogCancelClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Background="#F7F8FA"
+                            Foreground="#5A6A7A"
+                            FontSize="14"
+                            Padding="16,11"
+                            CornerRadius="8"
+                            Cursor="Hand"
+                            BorderBrush="#E8ECF0"
+                            BorderThickness="1"/>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- Overlay dialog - Pracownik (Add/Edit) -->
+        <Border x:Name="EmployeeDialogOverlay"
+                Background="#60000000"
+                IsVisible="False"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <Border Background="White"
+                    CornerRadius="14"
+                    Padding="30,26"
+                    Width="420"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BoxShadow="0 16 48 0 #25000000">
+                <StackPanel Spacing="14">
+                    <TextBlock x:Name="EmployeeDialogTitle"
+                               Text="Dodaj pracownika"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="#3D4F65"/>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Imię *" FontSize="12" Foreground="#5A6A7A" FontWeight="Medium"/>
+                        <TextBox x:Name="EmpFirstNameBox" PlaceholderText="np. Jan" CornerRadius="6" Padding="10,8"/>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Nazwisko *" FontSize="12" Foreground="#5A6A7A" FontWeight="Medium"/>
+                        <TextBox x:Name="EmpLastNameBox" PlaceholderText="np. Kowalski" CornerRadius="6" Padding="10,8"/>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Specjalizacja *" FontSize="12" Foreground="#5A6A7A" FontWeight="Medium"/>
+                        <TextBox x:Name="EmpSpecBox" PlaceholderText="np. Pielęgniarka" CornerRadius="6" Padding="10,8"/>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Email" FontSize="12" Foreground="#5A6A7A" FontWeight="Medium"/>
+                        <TextBox x:Name="EmpEmailBox" PlaceholderText="np. jan@email.com" CornerRadius="6" Padding="10,8"/>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Telefon" FontSize="12" Foreground="#5A6A7A" FontWeight="Medium"/>
+                        <TextBox x:Name="EmpPhoneBox" PlaceholderText="np. 123 456 789" CornerRadius="6" Padding="10,8"/>
+                    </StackPanel>
+
+                    <TextBlock x:Name="EmployeeDialogError"
+                               Text=""
+                               FontSize="13"
+                               Foreground="#D94F4F"/>
+
+                    <Button x:Name="EmployeeDialogSubmitBtn"
+                            Content="Dodaj"
+                            Click="OnEmployeeDialogSubmitClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Background="#38A169"
+                            Foreground="White"
+                            FontWeight="SemiBold"
+                            FontSize="14"
+                            Padding="16,11"
+                            CornerRadius="8"
+                            Cursor="Hand"
+                            BorderThickness="0"/>
+                    <Button Content="Anuluj"
+                            Click="OnEmployeeDialogCancelClick"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             Background="#F7F8FA"
