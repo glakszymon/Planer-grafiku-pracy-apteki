@@ -60,5 +60,15 @@ public class HoursTable : DbConnectionOption
         return hours;
     }
 
-
+    public void DeleteHour(HoursRecord record)
+    {
+        var command = _connection.CreateCommand();
+        
+        command.CommandText = @"
+            DELETE FROM ShiftHours WHERE Id = @Id;";
+        command.Parameters.AddWithValue("@Id", record.Id);
+        
+        command.ExecuteNonQuery();
+    }
+    
 }
