@@ -67,7 +67,7 @@ public class ScheduleExportService
                 if (includeColors && string.IsNullOrWhiteSpace(shift?.PoleColor) &&
                     (days[d].DayOfWeek == DayOfWeek.Saturday || days[d].DayOfWeek == DayOfWeek.Sunday))
                 {
-                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#F7FAFC");
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#E2E8F0");
                 }
             }
         }

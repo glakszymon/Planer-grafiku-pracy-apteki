@@ -25,7 +25,7 @@ public partial class ScheduleTableWindow : Window
 {
     private readonly ContextMenuOptions _contextMenu;
     private List<ScheduleRow> _scheduleRows = new();
-    private static readonly IBrush WeekendBackground = new SolidColorBrush(Color.Parse("#F0F0F0"));
+    private static readonly IBrush WeekendBackground = new SolidColorBrush(Color.Parse("#E2E8F0"));
     private static readonly Thickness FocusBorderThickness = new Thickness(3);
     private static readonly IBrush SelectionBorderBrush = new SolidColorBrush(Color.Parse("#3182CE"));
 
