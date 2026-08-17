@@ -126,51 +126,6 @@ public class EmployeeTable : DbConnectionOption
     
         return employees;
     }
-
-    public List<EmployeeRecord> GetEmployeesWithOutdatedVacations(int currentYear)
-    {
-        var employees = new List<EmployeeRecord>();
-    
-        using var command = _connection.CreateCommand();
-        command.CommandText = @"
-        SELECT Id, FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays, UsedVacationDays, UnusedVacationDaysFromLastYear, YearOfVacationData
-        FROM Employee
-        WHERE YearOfVacationData IS NOT @yearOfVacationData ";
-        
-        command.Parameters.AddWithValue("@yearOfVacationData", currentYear);
-
-        using var reader = command.ExecuteReader();
-
-        int idOrdinal = reader.GetOrdinal("Id");
-        int firstNameOrdinal = reader.GetOrdinal("FirstName");
-        int lastNameOrdinal = reader.GetOrdinal("LastName");
-        int specOrdinal = reader.GetOrdinal("Specialization");
-        int emailOrdinal = reader.GetOrdinal("Email");
-        int phoneOrdinal = reader.GetOrdinal("PhoneNumber");
-        int vacationDaysOrdinal = reader.GetOrdinal("VacationDays");
-        int usedVacationDaysOrdinal = reader.GetOrdinal("UsedVacationDays");
-        int unusedVacationDaysOrdinal = reader.GetOrdinal("UnusedVacationDaysFromLastYear");
-        int yearOfVacationDataOrdinal = reader.GetOrdinal("YearOfVacationData");
-
-        while (reader.Read())
-        {
-            var emp = new EmployeeRecord
-            {
-                Id = reader.GetInt32(idOrdinal),
-                FirstName = reader.GetString(firstNameOrdinal),
-                LastName = reader.GetString(lastNameOrdinal),
-                Specialisation = reader.IsDBNull(specOrdinal) ? string.Empty : reader.GetString(specOrdinal),
-                Email = reader.IsDBNull(emailOrdinal) ? string.Empty : reader.GetString(emailOrdinal),
-                PhoneNumber = reader.IsDBNull(phoneOrdinal) ? string.Empty : reader.GetString(phoneOrdinal),
-                VacationDays = reader.IsDBNull(vacationDaysOrdinal) ? 0 : reader.GetInt32(vacationDaysOrdinal),
-                UsedVacationDays = reader.IsDBNull(usedVacationDaysOrdinal) ? 0 : reader.GetInt32(usedVacationDaysOrdinal),
-                UnusedVacationDaysFromLastYear = reader.IsDBNull(unusedVacationDaysOrdinal) ? 0 : reader.GetInt32(unusedVacationDaysOrdinal),
-                YearOfVacationData = reader.IsDBNull(yearOfVacationDataOrdinal) ? 0 : reader.GetInt32(yearOfVacationDataOrdinal)
-            };
-        
-            employees.Add(emp);
-        }
-    
-        return employees;
-    }
 }
+
+// TODO: Po usuwaniu pracownika mussze tez usuwać rekordy należące do tego pracownika co skutkuje że musze na nowo generować baze danych z rekordami za każdym razem gdy owteitram karte z gridem 

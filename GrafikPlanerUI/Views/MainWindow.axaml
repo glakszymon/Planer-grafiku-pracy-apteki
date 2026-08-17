@@ -425,6 +425,21 @@
                         <TextBox x:Name="EmpPhoneBox" PlaceholderText="np. 123 456 789" CornerRadius="6" Padding="10,8"/>
                     </StackPanel>
 
+                    <!-- Sekcja urlopowa -->
+                    <TextBlock Text="Urlop" FontSize="14" FontWeight="SemiBold" Foreground="#3D4F65" Margin="0,6,0,0"/>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Przysługujący urlop roczny (dni)" FontSize="12" Foreground="#5A6A7A" FontWeight="Medium"/>
+                        <TextBox x:Name="EmpVacationDaysBox" PlaceholderText="np. 26" CornerRadius="6" Padding="10,8"/>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Wykorzystane dni urlopu" FontSize="12" Foreground="#5A6A7A" FontWeight="Medium"/>
+                        <TextBox x:Name="EmpUsedVacationBox" PlaceholderText="np. 5" CornerRadius="6" Padding="10,8"/>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Niewykorzystane dni z ubiegłego roku" FontSize="12" Foreground="#5A6A7A" FontWeight="Medium"/>
+                        <TextBox x:Name="EmpUnusedVacationBox" PlaceholderText="np. 3" CornerRadius="6" Padding="10,8"/>
+                    </StackPanel>
+
                     <TextBlock x:Name="EmployeeDialogError"
                                Text=""
                                FontSize="13"

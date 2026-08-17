@@ -136,6 +136,9 @@ public partial class MainWindow : Window
             EmpSpecBox.Text = emp.Specialisation;
             EmpEmailBox.Text = emp.Email ?? "";
             EmpPhoneBox.Text = emp.PhoneNumber ?? "";
+            EmpVacationDaysBox.Text = emp.VacationDays?.ToString() ?? "";
+            EmpUsedVacationBox.Text = emp.UsedVacationDays?.ToString() ?? "";
+            EmpUnusedVacationBox.Text = emp.UnusedVacationDaysFromLastYear?.ToString() ?? "";
             EmployeeDialogError.Text = "";
             EmployeeDialogOverlay.IsVisible = true;
         }
@@ -172,7 +175,11 @@ public partial class MainWindow : Window
             LastName = lastName,
             Specialisation = spec,
             Email = string.IsNullOrWhiteSpace(EmpEmailBox.Text) ? null : EmpEmailBox.Text.Trim(),
-            PhoneNumber = string.IsNullOrWhiteSpace(EmpPhoneBox.Text) ? null : EmpPhoneBox.Text.Trim()
+            PhoneNumber = string.IsNullOrWhiteSpace(EmpPhoneBox.Text) ? null : EmpPhoneBox.Text.Trim(),
+            VacationDays = int.TryParse(EmpVacationDaysBox.Text, out var vd) ? vd : null,
+            UsedVacationDays = int.TryParse(EmpUsedVacationBox.Text, out var uvd) ? uvd : null,
+            UnusedVacationDaysFromLastYear = int.TryParse(EmpUnusedVacationBox.Text, out var unvd) ? unvd : null,
+            YearOfVacationData = DateTime.Now.Year
         };
 
         var empTable = new EmployeeTable();
@@ -208,6 +215,9 @@ public partial class MainWindow : Window
         EmpSpecBox.Text = "";
         EmpEmailBox.Text = "";
         EmpPhoneBox.Text = "";
+        EmpVacationDaysBox.Text = "";
+        EmpUsedVacationBox.Text = "";
+        EmpUnusedVacationBox.Text = "";
         EmployeeDialogError.Text = "";
     }
 }
