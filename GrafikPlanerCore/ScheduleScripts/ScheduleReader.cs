@@ -68,6 +68,9 @@ public class ScheduleReader
                 Specialisation = emp.Specialisation,
                 Email = emp.Email,
                 PhoneNumber = emp.PhoneNumber,
+                VacationDays = emp.VacationDays,
+                UsedVacationDays = emp.UsedVacationDays,
+                UnusedVacationDaysFromLastYear = emp.UnusedVacationDaysFromLastYear,
                 
                 HoursSummary = totalHours,
                 Records = employeeShifts

@@ -486,11 +486,28 @@ public partial class ScheduleTableWindow : Window
         hoursListBox.SelectionChanged += (s, e) =>
         {
             var selectedHour = hoursListBox.SelectedItem as HoursRecord;
+            var employeeTable = new EmployeeTable();
+            employeeTable.StartConnectionWithDatabase();
+
             foreach (var cell in _selectedCells.ToList())
             {
                 var previousHour = _contextMenu.Hours.FirstOrDefault(h => h?.Id == cell.Shift?.ShiftHourId);
                 cell.Row.HoursSummary -= CalculateShiftHours(previousHour);
                 cell.Row.HoursSummary += CalculateShiftHours(selectedHour);
+
+                // Update vacation days: decrement if old was vacation, increment if new is vacation
+                bool wasVacation = previousHour?.IsVacation == true;
+                bool isVacation = selectedHour?.IsVacation == true;
+                if (wasVacation && !isVacation)
+                {
+                    employeeTable.UpdateUsedVacationDays(cell.Row.Id, -1);
+                    cell.Row.UsedVacationDays = (cell.Row.UsedVacationDays ?? 0) - 1;
+                }
+                else if (!wasVacation && isVacation)
+                {
+                    employeeTable.UpdateUsedVacationDays(cell.Row.Id, 1);
+                    cell.Row.UsedVacationDays = (cell.Row.UsedVacationDays ?? 0) + 1;
+                }
 
                 ApplyHourToCell(cell, selectedHour);
             }

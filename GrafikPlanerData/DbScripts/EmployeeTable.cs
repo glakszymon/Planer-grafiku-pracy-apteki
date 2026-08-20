@@ -75,6 +75,18 @@ public class EmployeeTable : DbConnectionOption
         command.ExecuteNonQuery();
     }
 
+    public void UpdateUsedVacationDays(int employeeId, int delta)
+    {
+        var command = _connection.CreateCommand();
+        command.CommandText = @"
+            UPDATE Employee 
+            SET UsedVacationDays = COALESCE(UsedVacationDays, 0) + @delta
+            WHERE Id = @id;";
+        command.Parameters.AddWithValue("@id", employeeId);
+        command.Parameters.AddWithValue("@delta", delta);
+        command.ExecuteNonQuery();
+    }
+
     public void DeleteEmployee(int id)
     {
         var command = _connection.CreateCommand();

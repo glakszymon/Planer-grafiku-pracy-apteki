@@ -123,9 +123,10 @@
                     <DataGridTemplateColumn Header="Pracownik" Width="120">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="models:ScheduleRow">
-                                <StackPanel Margin="8,6" VerticalAlignment="Center">
+                                <StackPanel Margin="8,4" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
                                     <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
+                                    <TextBlock Text="{Binding VacationDisplay}" FontSize="10" Foreground="#7A7A7A" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
