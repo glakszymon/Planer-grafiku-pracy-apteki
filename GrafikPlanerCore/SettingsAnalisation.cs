@@ -14,20 +14,24 @@ public class SettingsAnalisation
         settingsTable.StartConnectionWithDatabase();
         var workingHours = settingsTable.GetSettings();
         
-        Dictionary<TimeOnly, bool> emptyHours = new Dictionary<TimeOnly, bool>();
+        var emptyHours = new Dictionary<TimeOnly, bool>();
         
-        for (var i = workingHours.OpeningTime; i <= workingHours.ClosingTime; i.AddHours(1))
+        for (var i = workingHours.OpeningTime; i < workingHours.ClosingTime; i = i.AddHours(1))
         {
-            emptyHours.Add(i, false);
+            emptyHours[i] = false;
         }
 
         foreach (var shiftRecord in shifts)
         {
-            for (var i = shiftRecord.StartTime; i <= shiftRecord.EndTime; i.AddHours(1))
+            for (var i = shiftRecord.StartTime; i < shiftRecord.EndTime; i = i.AddHours(1))
             {
-                emptyHours[i] = true;
+                if (emptyHours.ContainsKey(i))
+                {
+                    emptyHours[i] = true;
+                }
             }
         }
+
         var result = new List<TimeOnly>();
         
         foreach (var e in emptyHours)

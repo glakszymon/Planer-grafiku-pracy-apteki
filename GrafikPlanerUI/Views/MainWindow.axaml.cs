@@ -55,6 +55,7 @@ public partial class MainWindow : Window
     {
         LoadSettings();
         LoadHours();
+        CheckShiftCoverage();
         SetActiveTab("ustawienia");
     }
 
@@ -486,6 +487,8 @@ public partial class MainWindow : Window
 
         SettingsStatusText.Text = "Ustawienia zapisane.";
         SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
+
+        CheckShiftCoverage();
     }
 
     // ==================== SHIFT HOURS ====================
@@ -574,6 +577,7 @@ public partial class MainWindow : Window
 
         HourEditPanel.IsVisible = false;
         LoadHours();
+        CheckShiftCoverage();
     }
 
     private void OnHourCancelClick(object? sender, RoutedEventArgs e)
@@ -604,11 +608,31 @@ public partial class MainWindow : Window
         _hourToDelete = null;
         DeleteHourConfirmPanel.IsVisible = false;
         LoadHours();
+        CheckShiftCoverage();
     }
 
     private void OnCancelDeleteHourClick(object? sender, RoutedEventArgs e)
     {
         _hourToDelete = null;
         DeleteHourConfirmPanel.IsVisible = false;
+    }
+
+    // ==================== COVERAGE CHECK ====================
+
+    private void CheckShiftCoverage()
+    {
+        var analyser = new SettingsAnalisation();
+        var uncoveredHours = analyser.CheckWorkshiftsHours();
+
+        if (uncoveredHours.Count > 0)
+        {
+            var hoursText = string.Join(", ", uncoveredHours.Select(h => h.ToString("HH:mm")));
+            CoverageWarningPanel.IsVisible = true;
+            CoverageWarningDetails.Text = $"Następujące godziny nie są objęte żadną zmianą: {hoursText}. Uzupełnij definicje zmian, aby zapewnić pełne pokrycie godzin otwarcia apteki.";
+        }
+        else
+        {
+            CoverageWarningPanel.IsVisible = false;
+        }
     }
 }
