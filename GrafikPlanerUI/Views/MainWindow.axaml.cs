@@ -18,6 +18,8 @@ public partial class MainWindow : Window
     private EmployeeRecord? _editingEmployee = null;
     private EmployeeRecord? _selectedEmployee = null;
     private ScheduleInfo? _scheduleToDelete = null;
+    private HoursRecord? _editingHour = null;
+    private HoursRecord? _hourToDelete = null;
 
     public MainWindow()
     {
@@ -34,46 +36,41 @@ public partial class MainWindow : Window
         _coreProgram.UpdateVacationDataForAllEmployees();
 
         // Domyślnie aktywna zakładka Grafiki
-        SetActiveTab(isGrafiki: true);
+        SetActiveTab("grafiki");
     }
 
     // ==================== TABS ====================
 
     private void OnTabGrafikiClick(object? sender, PointerPressedEventArgs e)
     {
-        SetActiveTab(isGrafiki: true);
+        SetActiveTab("grafiki");
     }
 
     private void OnTabPracownicyClick(object? sender, PointerPressedEventArgs e)
     {
-        SetActiveTab(isGrafiki: false);
+        SetActiveTab("pracownicy");
     }
 
-    private void SetActiveTab(bool isGrafiki)
+    private void OnTabUstawieniaClick(object? sender, PointerPressedEventArgs e)
     {
-        if (isGrafiki)
-        {
-            TabGrafiki.Background = new SolidColorBrush(Color.Parse("#F8F7F5"));
-            TabGrafiki.BorderThickness = new Avalonia.Thickness(1, 1, 1, 0);
-            TabPracownicy.Background = new SolidColorBrush(Color.Parse("#EFECEA"));
-            TabPracownicy.BorderThickness = new Avalonia.Thickness(1, 1, 1, 1);
+        LoadSettings();
+        LoadHours();
+        SetActiveTab("ustawienia");
+    }
 
-            PageGrafiki.IsVisible = true;
-            PageGrafiki.Opacity = 1;
-            PagePracownicy.IsVisible = false;
-            PagePracownicy.Opacity = 0;
-        }
-        else
-        {
-            TabPracownicy.Background = new SolidColorBrush(Color.Parse("#F8F7F5"));
-            TabPracownicy.BorderThickness = new Avalonia.Thickness(1, 1, 1, 0);
-            TabGrafiki.Background = new SolidColorBrush(Color.Parse("#EFECEA"));
-            TabGrafiki.BorderThickness = new Avalonia.Thickness(1, 1, 1, 1);
+    private void SetActiveTab(string tab)
+    {
+        var tabs = new[] { TabGrafiki, TabPracownicy, TabUstawienia };
+        var pages = new[] { PageGrafiki, PagePracownicy, PageUstawienia };
+        var names = new[] { "grafiki", "pracownicy", "ustawienia" };
 
-            PagePracownicy.IsVisible = true;
-            PagePracownicy.Opacity = 1;
-            PageGrafiki.IsVisible = false;
-            PageGrafiki.Opacity = 0;
+        for (int i = 0; i < tabs.Length; i++)
+        {
+            bool active = names[i] == tab;
+            tabs[i].Background = new SolidColorBrush(Color.Parse(active ? "#F8F7F5" : "#EFECEA"));
+            tabs[i].BorderThickness = new Avalonia.Thickness(1, 1, 1, active ? 0 : 1);
+            pages[i].IsVisible = active;
+            pages[i].Opacity = active ? 1 : 0;
         }
     }
 
@@ -420,5 +417,198 @@ public partial class MainWindow : Window
             }
         }
         comboBox.SelectedIndex = -1;
+    }
+
+    // ==================== SETTINGS ====================
+
+    private void LoadSettings()
+    {
+        var settingsTable = new SettingsTable();
+        settingsTable.StartConnectionWithDatabase();
+        var settings = settingsTable.GetSettings();
+        if (settings == null) return;
+
+        SettingsOpeningTime.SelectedTime = settings.OpeningTime.ToTimeSpan();
+        SettingsClosingTime.SelectedTime = settings.ClosingTime.ToTimeSpan();
+
+        ChkMonday.IsChecked = settings.MondayOpen;
+        ChkTuesday.IsChecked = settings.TuesdayOpen;
+        ChkWednesday.IsChecked = settings.WednesdayOpen;
+        ChkThursday.IsChecked = settings.ThursdayOpen;
+        ChkFriday.IsChecked = settings.FridayOpen;
+        ChkSaturday.IsChecked = settings.SaturdayOpen;
+        ChkSunday.IsChecked = settings.SundayOpen;
+    }
+
+    private void OnSaveSettingsClick(object? sender, RoutedEventArgs e)
+    {
+        if (!SettingsOpeningTime.SelectedTime.HasValue || !SettingsClosingTime.SelectedTime.HasValue)
+        {
+            SettingsStatusText.Text = "Wybierz godziny otwarcia i zamknięcia.";
+            SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#B04040"));
+            return;
+        }
+
+        var openTime = TimeOnly.FromTimeSpan(SettingsOpeningTime.SelectedTime.Value);
+        var closeTime = TimeOnly.FromTimeSpan(SettingsClosingTime.SelectedTime.Value);
+
+        if (closeTime <= openTime)
+        {
+            SettingsStatusText.Text = "Godzina zamknięcia musi być późniejsza niż otwarcia.";
+            SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#B04040"));
+            return;
+        }
+
+        var days = new[] { ChkMonday, ChkTuesday, ChkWednesday, ChkThursday, ChkFriday, ChkSaturday, ChkSunday };
+        if (!days.Any(d => d.IsChecked == true))
+        {
+            SettingsStatusText.Text = "Co najmniej jeden dzień musi być otwarty.";
+            SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#B04040"));
+            return;
+        }
+
+        var record = new SettingsRecord
+        {
+            OpeningTime = openTime,
+            ClosingTime = closeTime,
+            MondayOpen = ChkMonday.IsChecked == true,
+            TuesdayOpen = ChkTuesday.IsChecked == true,
+            WednesdayOpen = ChkWednesday.IsChecked == true,
+            ThursdayOpen = ChkThursday.IsChecked == true,
+            FridayOpen = ChkFriday.IsChecked == true,
+            SaturdayOpen = ChkSaturday.IsChecked == true,
+            SundayOpen = ChkSunday.IsChecked == true
+        };
+
+        var settingsTable = new SettingsTable();
+        settingsTable.StartConnectionWithDatabase();
+        settingsTable.UpdateSettings(record);
+
+        SettingsStatusText.Text = "Ustawienia zapisane.";
+        SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
+    }
+
+    // ==================== SHIFT HOURS ====================
+
+    private void LoadHours()
+    {
+        var hoursTable = new HoursTable();
+        hoursTable.StartConnectionWithDatabase();
+        var hours = hoursTable.GetAllHours();
+        HoursList.ItemsSource = hours;
+        HoursEmptyState.IsVisible = hours == null || hours.Count == 0;
+    }
+
+    private void OnAddHourClick(object? sender, RoutedEventArgs e)
+    {
+        _editingHour = null;
+        HourEditTitle.Text = "Nowa zmiana";
+        HourSymbolBox.Text = "";
+        HourStartTime.SelectedTime = null;
+        HourEndTime.SelectedTime = null;
+        HourEditError.Text = "";
+        HourEditPanel.IsVisible = true;
+    }
+
+    private void OnEditHourClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is HoursRecord hour)
+        {
+            _editingHour = hour;
+            HourEditTitle.Text = "Edytuj zmianę";
+            HourSymbolBox.Text = hour.Symbol;
+            HourStartTime.SelectedTime = hour.StartTime.ToTimeSpan();
+            HourEndTime.SelectedTime = hour.EndTime.ToTimeSpan();
+            HourEditError.Text = "";
+            HourEditPanel.IsVisible = true;
+        }
+    }
+
+    private void OnHourSubmitClick(object? sender, RoutedEventArgs e)
+    {
+        var symbol = HourSymbolBox.Text?.Trim() ?? "";
+        if (string.IsNullOrEmpty(symbol))
+        {
+            HourEditError.Text = "Symbol nie może być pusty.";
+            return;
+        }
+
+        if (!HourStartTime.SelectedTime.HasValue || !HourEndTime.SelectedTime.HasValue)
+        {
+            HourEditError.Text = "Wybierz godzinę rozpoczęcia i zakończenia.";
+            return;
+        }
+
+        var startTime = TimeOnly.FromTimeSpan(HourStartTime.SelectedTime.Value);
+        var endTime = TimeOnly.FromTimeSpan(HourEndTime.SelectedTime.Value);
+
+        if (endTime <= startTime)
+        {
+            HourEditError.Text = "Godzina zakończenia musi być późniejsza niż rozpoczęcia.";
+            return;
+        }
+
+        var record = new HoursRecord
+        {
+            Symbol = symbol,
+            StartTime = startTime,
+            EndTime = endTime
+        };
+
+        var hoursTable = new HoursTable();
+        hoursTable.StartConnectionWithDatabase();
+
+        if (_editingHour != null)
+        {
+            record.Id = _editingHour.Id;
+            hoursTable.UpdateHour(record);
+            HourStatusText.Text = $"Zaktualizowano zmianę: {symbol}";
+            HourStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
+        }
+        else
+        {
+            hoursTable.AddHours(record);
+            HourStatusText.Text = $"Dodano zmianę: {symbol}";
+            HourStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
+        }
+
+        HourEditPanel.IsVisible = false;
+        LoadHours();
+    }
+
+    private void OnHourCancelClick(object? sender, RoutedEventArgs e)
+    {
+        HourEditPanel.IsVisible = false;
+    }
+
+    private void OnDeleteHourClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is HoursRecord hour)
+        {
+            _hourToDelete = hour;
+            DeleteHourConfirmPanel.IsVisible = true;
+        }
+    }
+
+    private void OnConfirmDeleteHourClick(object? sender, RoutedEventArgs e)
+    {
+        if (_hourToDelete == null) return;
+
+        var hoursTable = new HoursTable();
+        hoursTable.StartConnectionWithDatabase();
+        hoursTable.DeleteHour(_hourToDelete);
+
+        HourStatusText.Text = $"Usunięto zmianę: {_hourToDelete.Symbol}";
+        HourStatusText.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
+
+        _hourToDelete = null;
+        DeleteHourConfirmPanel.IsVisible = false;
+        LoadHours();
+    }
+
+    private void OnCancelDeleteHourClick(object? sender, RoutedEventArgs e)
+    {
+        _hourToDelete = null;
+        DeleteHourConfirmPanel.IsVisible = false;
     }
 }

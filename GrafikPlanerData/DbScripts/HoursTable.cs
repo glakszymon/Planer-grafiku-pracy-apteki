@@ -60,6 +60,25 @@ public class HoursTable : DbConnectionOption
         return hours;
     }
 
+    public void UpdateHour(HoursRecord record)
+    {
+        var command = _connection.CreateCommand();
+        
+        command.CommandText = @"
+            UPDATE ShiftHours SET 
+                StartTime = @startTime, 
+                EndTime = @endTime, 
+                Symbol = @symbol 
+            WHERE Id = @id;";
+
+        command.Parameters.AddWithValue("@startTime", record.StartTime.ToString());
+        command.Parameters.AddWithValue("@endTime", record.EndTime.ToString());
+        command.Parameters.AddWithValue("@symbol", record.Symbol);
+        command.Parameters.AddWithValue("@id", record.Id);
+
+        command.ExecuteNonQuery();
+    }
+
     public void DeleteHour(HoursRecord record)
     {
         var command = _connection.CreateCommand();
