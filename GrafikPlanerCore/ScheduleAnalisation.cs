@@ -33,6 +33,10 @@ public class ScheduleAnalisation
 
     public List<DateTime> CheckOneDay(List<ScheduleRow> scheduleRows, DateOnly targetDate)
     {
+        // Skip closed days
+        if (!IsDayOpen(targetDate.DayOfWeek))
+            return new List<DateTime>();
+
         var ans = new List<DateTime>();
     
         var shiftsForDay = scheduleRows
@@ -54,5 +58,20 @@ public class ScheduleAnalisation
         }
 
         return ans;
+    }
+
+    private bool IsDayOpen(DayOfWeek dayOfWeek)
+    {
+        return dayOfWeek switch
+        {
+            DayOfWeek.Monday => _settings.MondayOpen,
+            DayOfWeek.Tuesday => _settings.TuesdayOpen,
+            DayOfWeek.Wednesday => _settings.WednesdayOpen,
+            DayOfWeek.Thursday => _settings.ThursdayOpen,
+            DayOfWeek.Friday => _settings.FridayOpen,
+            DayOfWeek.Saturday => _settings.SaturdayOpen,
+            DayOfWeek.Sunday => _settings.SundayOpen,
+            _ => true
+        };
     }
 }

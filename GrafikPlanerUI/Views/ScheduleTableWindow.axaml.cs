@@ -26,6 +26,8 @@ public partial class ScheduleTableWindow : Window
     private readonly ContextMenuOptions _contextMenu;
     private List<ScheduleRow> _scheduleRows = new();
     private static readonly IBrush WeekendBackground = new SolidColorBrush(Color.Parse("#E2E8F0"));
+    private static readonly IBrush ClosedDayBackground = new SolidColorBrush(Color.Parse("#E8EAED"));
+    private static readonly IBrush ClosedDayForeground = new SolidColorBrush(Color.Parse("#A0A4AA"));
     private static readonly Thickness FocusBorderThickness = new Thickness(3);
     private static readonly IBrush SelectionBorderBrush = new SolidColorBrush(Color.Parse("#3182CE"));
     private static readonly IBrush GapRowBackground = new SolidColorBrush(Color.Parse("#FEE2E2"));
@@ -37,6 +39,7 @@ public partial class ScheduleTableWindow : Window
     private ScheduleRow? _gapRow;
     private readonly Dictionary<DateOnly, TextBlock> _headerTextBlocks = new();
     private readonly Dictionary<DateOnly, TextBlock> _gapCellTextBlocks = new();
+    private HashSet<DayOfWeek> _closedDays = new();
 
     // Multi-select state
     private bool _isDragging;
@@ -160,6 +163,9 @@ public partial class ScheduleTableWindow : Window
         if (scheduleRows == null || !scheduleRows.Any()) return;
         _scheduleRows = scheduleRows;
 
+        // Load closed days from settings
+        _closedDays = LoadClosedDays();
+
         if (scheduleRows[0].Records?.Count > 0)
         {
             var firstRec = scheduleRows[0].Records[0];
@@ -193,6 +199,29 @@ public partial class ScheduleTableWindow : Window
                     if (row.Id == -1)
                     {
                         return CreateGapCell(day);
+                    }
+
+                    bool isClosedDay = _closedDays.Contains(day.DayOfWeek);
+
+                    // Closed day - dark, non-interactive cell
+                    if (isClosedDay)
+                    {
+                        return new Border
+                        {
+                            Background = ClosedDayBackground,
+                            HorizontalAlignment = HorizontalAlignment.Stretch,
+                            VerticalAlignment = VerticalAlignment.Stretch,
+                            BorderThickness = new Thickness(1, 0, 0, 0),
+                            BorderBrush = new SolidColorBrush(Color.Parse("#CCCCCC")),
+                            Child = new TextBlock
+                            {
+                                Text = "—",
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                                Foreground = ClosedDayForeground,
+                                FontSize = 14
+                            }
+                        };
                     }
 
                     var shift = row.Records?.FirstOrDefault(r => r.ShiftDate == day);
@@ -691,12 +720,15 @@ public partial class ScheduleTableWindow : Window
 
     private TextBlock CreateHeaderTextBlock(DateOnly day)
     {
+        bool isClosed = _closedDays.Contains(day.DayOfWeek);
         var tb = new TextBlock
         {
             Text = day.ToString("dd.MM\nddd"),
             TextAlignment = TextAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
+            Foreground = isClosed ? ClosedDayForeground : Brushes.Black,
+            FontStyle = isClosed ? FontStyle.Italic : FontStyle.Normal,
         };
         _headerTextBlocks[day] = tb;
         return tb;
@@ -801,6 +833,24 @@ public partial class ScheduleTableWindow : Window
         {
             border.Background = hasGap ? GapRowBackground : Brushes.Transparent;
         }
+    }
+
+    private HashSet<DayOfWeek> LoadClosedDays()
+    {
+        var settingsTable = new SettingsTable();
+        settingsTable.StartConnectionWithDatabase();
+        var settings = settingsTable.GetSettings();
+        if (settings == null) return new HashSet<DayOfWeek>();
+
+        var closed = new HashSet<DayOfWeek>();
+        if (!settings.MondayOpen) closed.Add(DayOfWeek.Monday);
+        if (!settings.TuesdayOpen) closed.Add(DayOfWeek.Tuesday);
+        if (!settings.WednesdayOpen) closed.Add(DayOfWeek.Wednesday);
+        if (!settings.ThursdayOpen) closed.Add(DayOfWeek.Thursday);
+        if (!settings.FridayOpen) closed.Add(DayOfWeek.Friday);
+        if (!settings.SaturdayOpen) closed.Add(DayOfWeek.Saturday);
+        if (!settings.SundayOpen) closed.Add(DayOfWeek.Sunday);
+        return closed;
     }
 }
 
