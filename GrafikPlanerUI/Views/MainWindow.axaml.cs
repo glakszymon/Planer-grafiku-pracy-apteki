@@ -509,6 +509,8 @@ public partial class MainWindow : Window
         HourSymbolBox.Text = "";
         HourStartTime.SelectedTime = null;
         HourEndTime.SelectedTime = null;
+        HourIsVacation.IsChecked = false;
+        HourVacationHint.IsVisible = false;
         HourEditError.Text = "";
         HourEditPanel.IsVisible = true;
     }
@@ -522,6 +524,8 @@ public partial class MainWindow : Window
             HourSymbolBox.Text = hour.Symbol;
             HourStartTime.SelectedTime = hour.StartTime.ToTimeSpan();
             HourEndTime.SelectedTime = hour.EndTime.ToTimeSpan();
+            HourIsVacation.IsChecked = hour.IsVacation;
+            HourVacationHint.IsVisible = hour.IsVacation;
             HourEditError.Text = "";
             HourEditPanel.IsVisible = true;
         }
@@ -555,7 +559,8 @@ public partial class MainWindow : Window
         {
             Symbol = symbol,
             StartTime = startTime,
-            EndTime = endTime
+            EndTime = endTime,
+            IsVacation = HourIsVacation.IsChecked == true
         };
 
         var hoursTable = new HoursTable();
@@ -583,6 +588,11 @@ public partial class MainWindow : Window
     private void OnHourCancelClick(object? sender, RoutedEventArgs e)
     {
         HourEditPanel.IsVisible = false;
+    }
+
+    private void OnHourIsVacationChanged(object? sender, RoutedEventArgs e)
+    {
+        HourVacationHint.IsVisible = HourIsVacation.IsChecked == true;
     }
 
     private void OnDeleteHourClick(object? sender, RoutedEventArgs e)

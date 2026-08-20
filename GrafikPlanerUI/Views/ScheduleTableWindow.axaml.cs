@@ -83,7 +83,9 @@ public partial class ScheduleTableWindow : Window
         var legendData = hours.Select(h => new LegendItem
         {
             Symbol = h.Symbol,
-            Description = $"{h.StartTime:HH:mm} – {h.EndTime:HH:mm}"
+            Description = h.IsVacation 
+                ? $"urlop {(int)(h.EndTime - h.StartTime).TotalHours} godzinny" 
+                : $"{h.StartTime:HH:mm} – {h.EndTime:HH:mm}"
         }).ToList();
 
         LegendItems.ItemsSource = legendData;

@@ -7,10 +7,12 @@ namespace GrafikPlanerCore;
 public class ScheduleAnalisation
 {
     public SettingsRecord _settings { get; set; } = new();
+    private HashSet<int> _vacationHourIds = new();
     
     public List<DateTime> CheckEmptyHoursInSchedule(List<ScheduleRow> scheduleRows, int month, int year)
     {
         GetSettings();
+        LoadVacationHourIds();
         
         List<DateTime> emptyHours = new List<DateTime>();
         var numberOfDaysInMonth = DateTime.DaysInMonth(year, month);
@@ -31,6 +33,16 @@ public class ScheduleAnalisation
         _settings = settingsTable.GetSettings();
     }
 
+    private void LoadVacationHourIds()
+    {
+        var hoursTable = new HoursTable();
+        hoursTable.StartConnectionWithDatabase();
+        _vacationHourIds = hoursTable.GetAllHours()
+            .Where(h => h.IsVacation)
+            .Select(h => h.Id)
+            .ToHashSet();
+    }
+
     public List<DateTime> CheckOneDay(List<ScheduleRow> scheduleRows, DateOnly targetDate)
     {
         // Skip closed days
@@ -43,7 +55,8 @@ public class ScheduleAnalisation
             .SelectMany(row => row.Records ?? new List<ScheduleColumn>())
             .Where(record => record.ShiftDate == targetDate 
                              && record.StartTime.HasValue 
-                             && record.EndTime.HasValue)
+                             && record.EndTime.HasValue
+                             && (!record.ShiftHourId.HasValue || !_vacationHourIds.Contains(record.ShiftHourId.Value)))
             .ToList();
 
         for (var i = _settings.OpeningTime; i < _settings.ClosingTime; i = i.AddHours(1))

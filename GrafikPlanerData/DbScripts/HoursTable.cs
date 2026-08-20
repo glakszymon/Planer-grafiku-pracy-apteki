@@ -16,7 +16,8 @@ public class HoursTable : DbConnectionOption
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 StartTime TEXT NOT NULL,
                 EndTime TEXT NOT NULL,
-                Symbol TEXT NOT NULL
+                Symbol TEXT NOT NULL,
+                IsVacation INTEGER NOT NULL DEFAULT 0
             );";
         
         createHoursTableCommand.ExecuteNonQuery();
@@ -27,12 +28,13 @@ public class HoursTable : DbConnectionOption
         var command = _connection.CreateCommand();
         
         command.CommandText = @"
-            INSERT INTO ShiftHours (StartTime, EndTime, Symbol) 
-            VALUES (@startTime, @endTime, @symbol);";
+            INSERT INTO ShiftHours (StartTime, EndTime, Symbol, IsVacation) 
+            VALUES (@startTime, @endTime, @symbol, @isVacation);";
 
         command.Parameters.AddWithValue("@startTime", record.StartTime.ToString());
         command.Parameters.AddWithValue("@endTime", record.EndTime.ToString());
         command.Parameters.AddWithValue("@symbol", record.Symbol);
+        command.Parameters.AddWithValue("@isVacation", record.IsVacation ? 1 : 0);
 
         command.ExecuteNonQuery();
     }
@@ -43,7 +45,7 @@ public class HoursTable : DbConnectionOption
         
         var command = _connection.CreateCommand();
         command.CommandText = @"
-            SELECT Id, StartTime, EndTime, Symbol FROM ShiftHours";
+            SELECT Id, StartTime, EndTime, Symbol, IsVacation FROM ShiftHours";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -53,6 +55,7 @@ public class HoursTable : DbConnectionOption
             hour.Symbol = reader.GetString(reader.GetOrdinal("Symbol"));
             hour.StartTime = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("StartTime")));
             hour.EndTime = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("EndTime")));
+            hour.IsVacation = reader.GetInt32(reader.GetOrdinal("IsVacation")) == 1;
             
             hours.Add(hour);
         }
@@ -68,12 +71,14 @@ public class HoursTable : DbConnectionOption
             UPDATE ShiftHours SET 
                 StartTime = @startTime, 
                 EndTime = @endTime, 
-                Symbol = @symbol 
+                Symbol = @symbol,
+                IsVacation = @isVacation 
             WHERE Id = @id;";
 
         command.Parameters.AddWithValue("@startTime", record.StartTime.ToString());
         command.Parameters.AddWithValue("@endTime", record.EndTime.ToString());
         command.Parameters.AddWithValue("@symbol", record.Symbol);
+        command.Parameters.AddWithValue("@isVacation", record.IsVacation ? 1 : 0);
         command.Parameters.AddWithValue("@id", record.Id);
 
         command.ExecuteNonQuery();
