@@ -278,6 +278,7 @@ public partial class ScheduleTableWindow : Window
                     var mainText = new TextBlock
                     {
                         Text = shift?.Symbol ?? "",
+                        FontSize = 15,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         TextAlignment = TextAlignment.Center

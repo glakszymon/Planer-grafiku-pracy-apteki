@@ -166,15 +166,17 @@
                       CornerRadius="8"
                       Background="White"
                       RowBackground="White"
-                      RowHeight="75">
+                      RowHeight="55">
                 <DataGrid.Columns>
                 
                     <DataGridTemplateColumn Header="Pracownik" Width="130">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="models:ScheduleRow">
                                 <StackPanel Margin="8,4" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
-                                    <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
+                                        <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
+                                    </StackPanel>
                                     <TextBlock Text="{Binding Specialisation}" FontSize="10" Foreground="#2563EB"/>
                                     <TextBlock Text="{Binding VacationLine1}" FontSize="11" Foreground="{Binding VacationLine1Color}" Margin="0,2,0,0"/>
                                 </StackPanel>
@@ -203,9 +205,9 @@
 
         <!-- Legenda oznaczeń godzinowych — lewy dolny róg -->
         <Border x:Name="LegendPanel"
-                HorizontalAlignment="Left"
+                HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                Margin="16,0,0,16"
+                Margin="0,0,16,16"
                 Background="#FFFFFFEE"
                 BorderBrush="#E2E8F0"
                 BorderThickness="1"
