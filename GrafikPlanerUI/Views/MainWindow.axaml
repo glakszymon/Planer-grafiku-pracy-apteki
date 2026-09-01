@@ -611,9 +611,9 @@
                                         <TextBlock Text="Godziny otwarcia" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
                                         <Grid ColumnDefinitions="150,*" RowDefinitions="Auto,Auto">
                                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Otwarcie" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center"/>
-                                            <TimePicker Grid.Row="0" Grid.Column="1" x:Name="SettingsOpeningTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left"/>
+                                            <TimePicker Grid.Row="0" Grid.Column="1" x:Name="SettingsOpeningTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left" SelectedTimeChanged="OnSettingTimeChanged"/>
                                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Zamknięcie" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,8,0,0"/>
-                                            <TimePicker Grid.Row="1" Grid.Column="1" x:Name="SettingsClosingTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                                            <TimePicker Grid.Row="1" Grid.Column="1" x:Name="SettingsClosingTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left" Margin="0,8,0,0" SelectedTimeChanged="OnSettingTimeChanged"/>
                                         </Grid>
                                     </StackPanel>
 
@@ -623,28 +623,13 @@
                                     <!-- Dni otwarcia -->
                                     <StackPanel Spacing="10">
                                         <TextBlock Text="Dni otwarcia" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
-                                        <CheckBox x:Name="ChkMonday" Content="Poniedziałek" FontSize="13"/>
-                                        <CheckBox x:Name="ChkTuesday" Content="Wtorek" FontSize="13"/>
-                                        <CheckBox x:Name="ChkWednesday" Content="Środa" FontSize="13"/>
-                                        <CheckBox x:Name="ChkThursday" Content="Czwartek" FontSize="13"/>
-                                        <CheckBox x:Name="ChkFriday" Content="Piątek" FontSize="13"/>
-                                        <CheckBox x:Name="ChkSaturday" Content="Sobota" FontSize="13"/>
-                                        <CheckBox x:Name="ChkSunday" Content="Niedziela" FontSize="13"/>
-                                    </StackPanel>
-
-                                    <!-- Zapisz -->
-                                    <StackPanel Spacing="6">
-                                        <TextBlock x:Name="SettingsStatusText" Text="" FontSize="12" FontWeight="SemiBold"/>
-                                        <Button Content="Zapisz ustawienia"
-                                                Click="OnSaveSettingsClick"
-                                                Background="#5D8A6B"
-                                                Foreground="White"
-                                                FontWeight="SemiBold"
-                                                FontSize="13"
-                                                Padding="18,9"
-                                                CornerRadius="6"
-                                                Cursor="Hand"
-                                                BorderThickness="0"/>
+                                        <CheckBox x:Name="ChkMonday" Content="Poniedziałek" FontSize="13" IsCheckedChanged="OnSettingChanged"/>
+                                        <CheckBox x:Name="ChkTuesday" Content="Wtorek" FontSize="13" IsCheckedChanged="OnSettingChanged"/>
+                                        <CheckBox x:Name="ChkWednesday" Content="Środa" FontSize="13" IsCheckedChanged="OnSettingChanged"/>
+                                        <CheckBox x:Name="ChkThursday" Content="Czwartek" FontSize="13" IsCheckedChanged="OnSettingChanged"/>
+                                        <CheckBox x:Name="ChkFriday" Content="Piątek" FontSize="13" IsCheckedChanged="OnSettingChanged"/>
+                                        <CheckBox x:Name="ChkSaturday" Content="Sobota" FontSize="13" IsCheckedChanged="OnSettingChanged"/>
+                                        <CheckBox x:Name="ChkSunday" Content="Niedziela" FontSize="13" IsCheckedChanged="OnSettingChanged"/>
                                     </StackPanel>
                                 </StackPanel>
                             </ScrollViewer>

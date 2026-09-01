@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     private ScheduleInfo? _scheduleToDelete = null;
     private HoursRecord? _editingHour = null;
     private HoursRecord? _hourToDelete = null;
+    private bool _isLoadingSettings = false;
 
     public MainWindow()
     {
@@ -460,10 +461,11 @@ public partial class MainWindow : Window
 
     private void LoadSettings()
     {
+        _isLoadingSettings = true;
         var settingsTable = new SettingsTable();
         settingsTable.StartConnectionWithDatabase();
         var settings = settingsTable.GetSettings();
-        if (settings == null) return;
+        if (settings == null) { _isLoadingSettings = false; return; }
 
         SettingsOpeningTime.SelectedTime = settings.OpeningTime.ToTimeSpan();
         SettingsClosingTime.SelectedTime = settings.ClosingTime.ToTimeSpan();
@@ -475,34 +477,31 @@ public partial class MainWindow : Window
         ChkFriday.IsChecked = settings.FridayOpen;
         ChkSaturday.IsChecked = settings.SaturdayOpen;
         ChkSunday.IsChecked = settings.SundayOpen;
+        _isLoadingSettings = false;
     }
 
-    private void OnSaveSettingsClick(object? sender, RoutedEventArgs e)
+    private void OnSettingChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_isLoadingSettings) return;
+        AutoSaveSettings();
+    }
+
+    private void OnSettingTimeChanged(object? sender, TimePickerSelectedValueChangedEventArgs e)
+    {
+        if (_isLoadingSettings) return;
+        AutoSaveSettings();
+    }
+
+    private void AutoSaveSettings()
     {
         if (!SettingsOpeningTime.SelectedTime.HasValue || !SettingsClosingTime.SelectedTime.HasValue)
-        {
-            SettingsStatusText.Text = "Wybierz godziny otwarcia i zamknięcia.";
-            SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#B04040"));
             return;
-        }
 
         var openTime = TimeOnly.FromTimeSpan(SettingsOpeningTime.SelectedTime.Value);
         var closeTime = TimeOnly.FromTimeSpan(SettingsClosingTime.SelectedTime.Value);
 
         if (closeTime <= openTime)
-        {
-            SettingsStatusText.Text = "Godzina zamknięcia musi być późniejsza niż otwarcia.";
-            SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#B04040"));
             return;
-        }
-
-        var days = new[] { ChkMonday, ChkTuesday, ChkWednesday, ChkThursday, ChkFriday, ChkSaturday, ChkSunday };
-        if (!days.Any(d => d.IsChecked == true))
-        {
-            SettingsStatusText.Text = "Co najmniej jeden dzień musi być otwarty.";
-            SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#B04040"));
-            return;
-        }
 
         var record = new SettingsRecord
         {
@@ -520,9 +519,6 @@ public partial class MainWindow : Window
         var settingsTable = new SettingsTable();
         settingsTable.StartConnectionWithDatabase();
         settingsTable.UpdateSettings(record);
-
-        SettingsStatusText.Text = "Ustawienia zapisane.";
-        SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
 
         CheckShiftCoverage();
     }
