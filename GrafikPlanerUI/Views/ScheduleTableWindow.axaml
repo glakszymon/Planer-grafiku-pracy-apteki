@@ -203,12 +203,40 @@
             </DataGrid>
         </DockPanel>
 
-        <!-- Legenda oznaczeń godzinowych + panel naruszeń 11h — prawy dolny róg -->
-        <StackPanel Orientation="Vertical" Spacing="8"
+        <!-- Panel naruszeń 11h + Legenda oznaczeń godzinowych — prawy dolny róg -->
+        <StackPanel Orientation="Horizontal" Spacing="8"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
                     Margin="0,0,16,16">
 
+            <Border x:Name="ViolationsPanel"
+                    VerticalAlignment="Bottom"
+                    Background="#FFFFFBF0"
+                    BorderBrush="#E2E8F0"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="14,10"
+                    BoxShadow="0 2 8 0 #18000000"
+                    Cursor="Hand"
+                    PointerPressed="ViolationsPanel_PointerPressed"
+                    IsVisible="False">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Naruszenia 11h" FontSize="12" FontWeight="SemiBold" Foreground="#B45309"/>
+                    <StackPanel x:Name="ViolationsContent" Spacing="4">
+                        <ItemsControl x:Name="ViolationsItems">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="views:ViolationItem">
+                                    <Border BorderBrush="#E7C8A0" BorderThickness="1" CornerRadius="4" Padding="6,4" Background="#FFFFFF">
+                                        <TextBlock Text="{Binding Display}" FontSize="11" Foreground="#92400E" TextWrapping="Wrap"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <Border x:Name="LegendPanel"
+                    VerticalAlignment="Bottom"
                     Background="#FFFFFFEE"
                     BorderBrush="#E2E8F0"
                     BorderThickness="1"
@@ -233,32 +261,6 @@
                                         <TextBlock Text="{Binding Description}" 
                                                    FontSize="12" Foreground="#4A5568" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <Border x:Name="ViolationsPanel"
-                    Background="#FFFFFBF0"
-                    BorderBrush="#E2E8F0"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="14,10"
-                    BoxShadow="0 2 8 0 #18000000"
-                    Cursor="Hand"
-                    PointerPressed="ViolationsPanel_PointerPressed"
-                    IsVisible="False">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="Naruszenia 11h" FontSize="12" FontWeight="SemiBold" Foreground="#B45309"/>
-                    <StackPanel x:Name="ViolationsContent" Spacing="4">
-                        <ItemsControl x:Name="ViolationsItems">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="views:ViolationItem">
-                                    <Border BorderBrush="#E7C8A0" BorderThickness="1" CornerRadius="4" Padding="6,4" Background="#FFFFFF">
-                                        <TextBlock Text="{Binding Display}" FontSize="11" Foreground="#92400E" TextWrapping="Wrap"/>
-                                    </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

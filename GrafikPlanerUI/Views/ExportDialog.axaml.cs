@@ -13,6 +13,8 @@ public partial class ExportDialog : Window
     public bool IsExcel => RadioExcel.IsChecked == true;
     public bool IsPdf => RadioPdf.IsChecked == true;
     public bool ExportColors => ChkColors.IsChecked == true;
+    public bool ExportSpecialization => ChkSpecialization.IsChecked == true;
+    public bool ExportHoursSummary => ChkHoursSummary.IsChecked == true;
     public bool ExportLegend => ChkLegend.IsChecked == true;
     public List<ScheduleRow> SelectedEmployees => _employees
         .Where(e => e.IsSelected)

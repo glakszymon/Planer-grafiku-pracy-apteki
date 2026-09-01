@@ -152,7 +152,7 @@ public partial class ScheduleTableWindow : Window
 
             if (saveDialog != null)
             {
-                exportService.ExportToExcel(saveDialog.Path.LocalPath, selectedRows, dialog.ExportColors, dialog.ExportLegend);
+                exportService.ExportToExcel(saveDialog.Path.LocalPath, selectedRows, dialog.ExportColors, dialog.ExportSpecialization, dialog.ExportHoursSummary, dialog.ExportLegend);
             }
         }
         else
@@ -170,7 +170,7 @@ public partial class ScheduleTableWindow : Window
 
             if (saveDialog != null)
             {
-                exportService.ExportToPdf(saveDialog.Path.LocalPath, selectedRows, dialog.ExportColors, dialog.ExportLegend);
+                exportService.ExportToPdf(saveDialog.Path.LocalPath, selectedRows, dialog.ExportColors, dialog.ExportSpecialization, dialog.ExportHoursSummary, dialog.ExportLegend);
             }
         }
     }

@@ -20,19 +20,35 @@ public class ScheduleExportService
         _hours = hours;
     }
 
-    public void ExportToExcel(string filePath, List<ScheduleRow> rows, bool includeColors, bool includeLegend)
+    private static string GetLegendDescription(HoursRecord h)
+    {
+        return h.IsVacation
+            ? $"urlop {(int)(h.EndTime - h.StartTime).TotalHours} godzinny"
+            : $"{h.StartTime:HH:mm} – {h.EndTime:HH:mm}";
+    }
+
+    public void ExportToExcel(string filePath, List<ScheduleRow> rows, bool includeColors, bool includeSpecialization, bool includeHoursSummary, bool includeLegend)
     {
         using var workbook = new XLWorkbook();
         var ws = workbook.Worksheets.Add("Grafik");
 
         var days = rows.SelectMany(r => r.Records).Select(c => c.ShiftDate).Distinct().OrderBy(d => d).ToList();
 
-        // Header row
-        ws.Cell(1, 1).Value = "Pracownik";
-        ws.Cell(1, 1).Style.Font.Bold = true;
+        int firstDayCol = 1;
+        var headerCell = ws.Cell(1, 1);
+        headerCell.Value = "Pracownik";
+        headerCell.Style.Font.Bold = true;
+
+        if (includeHoursSummary)
+        {
+            ws.Cell(1, ++firstDayCol).Value = "Suma godzin";
+            ws.Cell(1, firstDayCol).Style.Font.Bold = true;
+        }
+        firstDayCol++;
+
         for (int i = 0; i < days.Count; i++)
         {
-            var cell = ws.Cell(1, i + 2);
+            var cell = ws.Cell(1, firstDayCol + i);
             cell.Value = days[i].ToString("dd.MM");
             cell.Style.Font.Bold = true;
             cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
@@ -42,12 +58,24 @@ public class ScheduleExportService
         for (int r = 0; r < rows.Count; r++)
         {
             var row = rows[r];
-            ws.Cell(r + 2, 1).Value = $"{row.FirstName} {row.LastName}";
+
+            var nameCell = ws.Cell(r + 2, 1);
+            nameCell.Value = includeSpecialization && !string.IsNullOrWhiteSpace(row.Specialisation)
+                ? $"{row.FirstName} {row.LastName} ({row.Specialisation})"
+                : $"{row.FirstName} {row.LastName}";
+
+            int c = 2;
+            if (includeHoursSummary)
+            {
+                var hoursCell = ws.Cell(r + 2, c++);
+                hoursCell.Value = row.HoursSummary;
+                hoursCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            }
 
             for (int d = 0; d < days.Count; d++)
             {
                 var shift = row.Records?.FirstOrDefault(rec => rec.ShiftDate == days[d]);
-                var cell = ws.Cell(r + 2, d + 2);
+                var cell = ws.Cell(r + 2, firstDayCol + d);
 
                 cell.Value = shift?.Symbol ?? "";
                 cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
@@ -72,28 +100,32 @@ public class ScheduleExportService
             }
         }
 
-        // Legend sheet
+        // Legend in the same sheet, below the data
         if (includeLegend && _hours.Count > 0)
         {
-            var legendWs = workbook.Worksheets.Add("Legenda");
-            legendWs.Cell(1, 1).Value = "Symbol";
-            legendWs.Cell(1, 2).Value = "Godziny";
-            legendWs.Cell(1, 1).Style.Font.Bold = true;
-            legendWs.Cell(1, 2).Style.Font.Bold = true;
+            int legendRow = rows.Count + 4;
+
+            var legendTitle = ws.Cell(legendRow, 1);
+            legendTitle.Value = "Legenda";
+            legendTitle.Style.Font.Bold = true;
+
+            ws.Cell(legendRow + 1, 1).Value = "Symbol";
+            ws.Cell(legendRow + 1, 2).Value = "Godziny";
+            ws.Cell(legendRow + 1, 1).Style.Font.Bold = true;
+            ws.Cell(legendRow + 1, 2).Style.Font.Bold = true;
 
             for (int i = 0; i < _hours.Count; i++)
             {
-                legendWs.Cell(i + 2, 1).Value = _hours[i].Symbol;
-                legendWs.Cell(i + 2, 2).Value = $"{_hours[i].StartTime:HH:mm} – {_hours[i].EndTime:HH:mm}";
+                ws.Cell(legendRow + 2 + i, 1).Value = _hours[i].Symbol;
+                ws.Cell(legendRow + 2 + i, 2).Value = GetLegendDescription(_hours[i]);
             }
-            legendWs.Columns().AdjustToContents();
         }
 
         ws.Columns().AdjustToContents();
         workbook.SaveAs(filePath);
     }
 
-    public void ExportToPdf(string filePath, List<ScheduleRow> rows, bool includeColors, bool includeLegend)
+    public void ExportToPdf(string filePath, List<ScheduleRow> rows, bool includeColors, bool includeSpecialization, bool includeHoursSummary, bool includeLegend)
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
@@ -114,7 +146,9 @@ public class ScheduleExportService
                     // Define columns
                     table.ColumnsDefinition(columns =>
                     {
-                        columns.RelativeColumn(3); // Employee name
+                        columns.RelativeColumn(3); // Employee name (+ specialization)
+                        if (includeHoursSummary)
+                            columns.RelativeColumn(1.5f);
                         foreach (var _ in days)
                             columns.RelativeColumn(1);
                     });
@@ -124,6 +158,12 @@ public class ScheduleExportService
                     {
                         header.Cell().Border(0.5f).Background(Colors.Grey.Lighten3).Padding(3)
                             .Text("Pracownik").Bold().FontSize(7);
+
+                        if (includeHoursSummary)
+                        {
+                            header.Cell().Border(0.5f).Background(Colors.Grey.Lighten3).Padding(3)
+                                .AlignCenter().Text("Suma").Bold().FontSize(7);
+                        }
 
                         foreach (var day in days)
                         {
@@ -135,8 +175,18 @@ public class ScheduleExportService
                     // Data
                     foreach (var row in rows)
                     {
-                        table.Cell().Border(0.5f).PaddingHorizontal(4).PaddingVertical(10).AlignMiddle()
-                            .Text($"{row.FirstName} {row.LastName}").FontSize(7);
+                        var employeeLabel = includeSpecialization && !string.IsNullOrWhiteSpace(row.Specialisation)
+                            ? $"{row.FirstName} {row.LastName}\n{row.Specialisation}"
+                            : $"{row.FirstName} {row.LastName}";
+
+                        table.Cell().Border(0.5f).PaddingHorizontal(4).PaddingVertical(3).AlignMiddle()
+                            .Text(employeeLabel).FontSize(7);
+
+                        if (includeHoursSummary)
+                        {
+                            table.Cell().Border(0.5f).PaddingHorizontal(4).PaddingVertical(3).AlignMiddle().AlignCenter()
+                                .Text(row.HoursSummary.ToString()).FontSize(7);
+                        }
 
                         foreach (var day in days)
                         {
@@ -166,7 +216,7 @@ public class ScheduleExportService
 
                             var symbol = shift?.Symbol ?? "";
 
-                            cellDescriptor.PaddingHorizontal(4).PaddingVertical(10).AlignCenter().AlignMiddle()
+                            cellDescriptor.PaddingHorizontal(4).PaddingVertical(3).AlignCenter().AlignMiddle()
                                 .Text(symbol).FontSize(7);
                         }
                     }
@@ -178,7 +228,7 @@ public class ScheduleExportService
                     page.Footer().PaddingTop(10).Row(footerRow =>
                     {
                         footerRow.AutoItem().Text("Legenda: ").Bold().FontSize(7);
-                        var legendText = string.Join("  |  ", _hours.Select(h => $"{h.Symbol}: {h.StartTime:HH:mm}–{h.EndTime:HH:mm}"));
+                        var legendText = string.Join("  |  ", _hours.Select(h => $"{h.Symbol}: {GetLegendDescription(h)}"));
                         footerRow.RelativeItem().Text(legendText).FontSize(7);
                     });
                 }

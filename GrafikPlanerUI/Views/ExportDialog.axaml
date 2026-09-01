@@ -3,7 +3,7 @@
         xmlns:views="clr-namespace:GrafikPlanerUI.Views"
         x:Class="GrafikPlanerUI.Views.ExportDialog"
         Title="Eksport grafiku"
-        Width="450" Height="520"
+        Width="720" Height="560"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         Background="#F8F9FA">
@@ -15,30 +15,12 @@
         </Style>
     </Window.Styles>
 
-    <ScrollViewer>
-    <Border Margin="20" CornerRadius="8">
-        <StackPanel Spacing="16">
-            <!-- Format -->
-            <TextBlock Text="Format eksportu" FontWeight="SemiBold" FontSize="14" Foreground="#2D3748"/>
-            <StackPanel Spacing="6" Margin="8,0,0,0">
-                <RadioButton x:Name="RadioExcel" Content="Excel (.xlsx) — wartości + kolory" IsChecked="True" GroupName="Format"/>
-                <RadioButton x:Name="RadioPdf" Content="PDF — pełna tabela z ikonami" GroupName="Format"/>
-            </StackPanel>
+    <Grid Margin="20" ColumnDefinitions="1*,1*" ColumnSpacing="20">
 
-            <Separator Background="#E2E8F0" Height="1" Margin="0,4"/>
-
-            <!-- Opcje -->
-            <TextBlock Text="Opcje eksportu" FontWeight="SemiBold" FontSize="14" Foreground="#2D3748"/>
-            <StackPanel Spacing="2" Margin="8,0,0,0">
-                <CheckBox x:Name="ChkColors" Content="Eksportuj kolory komórek" IsChecked="True"/>
-                <CheckBox x:Name="ChkLegend" Content="Dołącz legendę oznaczeń" IsChecked="True"/>
-            </StackPanel>
-
-            <Separator Background="#E2E8F0" Height="1" Margin="0,4"/>
-
-            <!-- Pracownicy -->
-            <TextBlock Text="Pracownicy do eksportu" FontWeight="SemiBold" FontSize="14" Foreground="#2D3748"/>
-            <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" MaxHeight="150" Background="White">
+        <!-- Lewa kolumna: lista pracowników -->
+        <Grid RowDefinitions="Auto,*">
+            <TextBlock Text="Pracownicy do eksportu" FontWeight="SemiBold" FontSize="14" Foreground="#2D3748" Margin="0,0,0,8"/>
+            <Border Grid.Row="1" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Background="White">
                 <ScrollViewer>
                     <ItemsControl x:Name="EmployeeList">
                         <ItemsControl.ItemTemplate>
@@ -49,15 +31,32 @@
                     </ItemsControl>
                 </ScrollViewer>
             </Border>
+        </Grid>
 
-            <!-- Przyciski -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,12,0,0">
+        <!-- Prawa kolumna: format, opcje (funkcje) i przyciski -->
+        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12">
+            <StackPanel Spacing="6">
+                <TextBlock Text="Format eksportu" FontWeight="SemiBold" FontSize="14" Foreground="#2D3748"/>
+                <RadioButton x:Name="RadioExcel" Content="Excel" IsChecked="True" GroupName="Format"/>
+                <RadioButton x:Name="RadioPdf" Content="PDF" GroupName="Format"/>
+            </StackPanel>
+
+            <Separator Grid.Row="1" Background="#E2E8F0" Height="1"/>
+
+            <StackPanel Grid.Row="2" Spacing="2">
+                <TextBlock Text="Funkcje eksportu" FontWeight="SemiBold" FontSize="14" Foreground="#2D3748"/>
+                <CheckBox x:Name="ChkColors" Content="Kolory tła"/>
+                <CheckBox x:Name="ChkSpecialization" Content="Specjalizacja"/>
+                <CheckBox x:Name="ChkHoursSummary" Content="Suma godzin"/>
+                <CheckBox x:Name="ChkLegend" Content="Dołącz legendę oznaczeń"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
                 <Button Content="Anuluj" Click="Cancel_Click"
                         Padding="16,8" Background="Transparent" BorderBrush="#CBD5E0" BorderThickness="1" CornerRadius="6"/>
                 <Button Content="Eksportuj" Click="Export_Click"
                         Padding="16,8" Background="#3182CE" Foreground="White" CornerRadius="6" FontWeight="SemiBold"/>
             </StackPanel>
-        </StackPanel>
-    </Border>
-    </ScrollViewer>
+        </Grid>
+    </Grid>
 </Window>
