@@ -118,29 +118,37 @@
                     BorderBrush="#E2E8F0"
                     BorderThickness="0,0,0,1"
                     Padding="16,12">
-                <StackPanel Orientation="Horizontal" Spacing="12">
-                    <Button Content="&#x2190; Powrot"
-                            Click="BackButton_Click"
-                            HorizontalAlignment="Left"
-                            Background="Transparent"
-                            BorderBrush="#CBD5E0"
-                            BorderThickness="1"
-                            CornerRadius="6"
-                            Padding="12,6"
-                            FontSize="13"
-                            Foreground="#4A5568"
-                            Cursor="Hand"/>
-                    <Button Content="&#x2913; Eksportuj"
-                            Click="ExportButton_Click"
-                            Background="#3182CE"
-                            Foreground="White"
-                            BorderThickness="0"
-                            CornerRadius="6"
-                            Padding="12,6"
-                            FontSize="13"
-                            FontWeight="SemiBold"
-                            Cursor="Hand"/>
-                </StackPanel>
+                <Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Left">
+                        <Button Content="&#x2190; Powrot"
+                                Click="BackButton_Click"
+                                HorizontalAlignment="Left"
+                                Background="Transparent"
+                                BorderBrush="#CBD5E0"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="12,6"
+                                FontSize="13"
+                                Foreground="#4A5568"
+                                Cursor="Hand"/>
+                        <Button Content="&#x2913; Eksportuj"
+                                Click="ExportButton_Click"
+                                Background="#3182CE"
+                                Foreground="White"
+                                BorderThickness="0"
+                                CornerRadius="6"
+                                Padding="12,6"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"/>
+                    </StackPanel>
+                    <TextBlock x:Name="ScheduleTitleText"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="#2D3748"/>
+                </Grid>
             </Border>
 
             <!-- Grid zajmujacy cala reszta -->

@@ -182,6 +182,17 @@ public partial class ScheduleTableWindow : Window
         if (scheduleRows == null || !scheduleRows.Any()) return;
         _scheduleRows = scheduleRows;
 
+        var firstDate = scheduleRows
+            .SelectMany(r => r.Records)
+            .Select(c => c.ShiftDate)
+            .Where(d => d != default)
+            .OrderBy(d => d)
+            .FirstOrDefault();
+        if (firstDate != default)
+        {
+            ScheduleTitleText.Text = $"{firstDate:MMMM yyyy}";
+        }
+
         // Load closed days from settings
         _closedDays = LoadClosedDays();
         _holidayDates = LoadHolidayDates(scheduleRows);
