@@ -49,8 +49,7 @@ public class ScheduleAnalisation
     {
         var holidaysTable = new HolidaysTable();
         holidaysTable.StartConnectionWithDatabase();
-        var holidays = holidaysTable.GetActiveHolidaysForMonth(year, month);
-        _holidayDates = holidays.Select(h => h.Date).ToHashSet();
+        _holidayDates = PolishHolidays.GetActiveHolidayDatesForMonth(holidaysTable, year, month);
     }
 
     public List<DateTime> CheckOneDay(List<ScheduleRow> scheduleRows, DateOnly targetDate)

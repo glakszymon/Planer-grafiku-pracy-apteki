@@ -31,8 +31,6 @@ public partial class MainWindow : Window
 
         _coreProgram.RunInitializeDatabase();
 
-        HolidayYearSelector.Value = DateTime.Now.Year;
-
         LoadListOfSchedules();
         LoadEmployees();
         _coreProgram.UpdateVacationDataForAllEmployees();
@@ -498,20 +496,12 @@ public partial class MainWindow : Window
 
     private void LoadHolidays()
     {
-        var year = (int)(HolidayYearSelector.Value ?? DateTime.Now.Year);
-        
         var holidaysTable = new HolidaysTable();
         holidaysTable.StartConnectionWithDatabase();
-        PolishHolidays.SeedForYear(year, holidaysTable);
+        PolishHolidays.SeedBuiltIn(holidaysTable);
         
-        var holidays = holidaysTable.GetHolidaysForYear(year);
+        var holidays = holidaysTable.GetAllHolidays();
         HolidaysList.ItemsSource = holidays;
-    }
-
-    private void OnHolidayYearChanged(object? sender, NumericUpDownValueChangedEventArgs e)
-    {
-        if (HolidaysList == null) return;
-        LoadHolidays();
     }
 
     private void OnHolidayToggleClick(object? sender, RoutedEventArgs e)
@@ -539,9 +529,26 @@ public partial class MainWindow : Window
     {
         HolidayErrorText.Text = "";
 
-        if (!CustomHolidayDate.SelectedDate.HasValue)
+        var dayVal = CustomHolidayDay.Value;
+        var monthVal = CustomHolidayMonth.Value;
+        
+        if (!dayVal.HasValue || !monthVal.HasValue)
         {
-            HolidayErrorText.Text = "Wybierz datę święta.";
+            HolidayErrorText.Text = "Podaj dzień i miesiąc święta.";
+            return;
+        }
+
+        int day = (int)dayVal.Value;
+        int month = (int)monthVal.Value;
+
+        // Validate day for given month (use a non-leap year as baseline)
+        try
+        {
+            _ = new DateOnly(2024, month, day); // 2024 is leap year to allow Feb 29
+        }
+        catch
+        {
+            HolidayErrorText.Text = "Nieprawidłowa data.";
             return;
         }
 
@@ -552,23 +559,20 @@ public partial class MainWindow : Window
             return;
         }
 
-        var date = DateOnly.FromDateTime(CustomHolidayDate.SelectedDate.Value.DateTime);
-        
         var holidaysTable = new HolidaysTable();
         holidaysTable.StartConnectionWithDatabase();
         holidaysTable.InsertHoliday(new HolidayRecord
         {
-            Date = date,
+            Month = month,
+            Day = day,
             Name = name,
             IsBuiltIn = false,
             IsActive = true
         });
 
-        CustomHolidayDate.SelectedDate = null;
+        CustomHolidayDay.Value = null;
+        CustomHolidayMonth.Value = null;
         CustomHolidayName.Text = "";
-        
-        // Update year selector to match the added holiday's year and reload
-        HolidayYearSelector.Value = date.Year;
         LoadHolidays();
     }
 

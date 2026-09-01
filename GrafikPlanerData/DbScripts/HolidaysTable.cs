@@ -10,40 +10,27 @@ public class HolidaysTable : DbConnectionOption
         command.CommandText = @"
             CREATE TABLE IF NOT EXISTS Holidays (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Date TEXT NOT NULL,
                 Name TEXT NOT NULL,
                 IsBuiltIn INTEGER NOT NULL DEFAULT 0 CHECK (IsBuiltIn IN (0, 1)),
-                IsActive INTEGER NOT NULL DEFAULT 1 CHECK (IsActive IN (0, 1))
+                IsActive INTEGER NOT NULL DEFAULT 1 CHECK (IsActive IN (0, 1)),
+                Month INTEGER,
+                Day INTEGER,
+                EasterOffset INTEGER
             );";
         command.ExecuteNonQuery();
     }
 
-    public List<HolidayRecord> GetHolidaysForYear(int year)
+    public List<HolidayRecord> GetAllHolidays()
     {
         using var command = _connection.CreateCommand();
-        command.CommandText = @"
-            SELECT * FROM Holidays 
-            WHERE Date >= @startDate AND Date <= @endDate
-            ORDER BY Date;";
-        command.Parameters.AddWithValue("@startDate", new DateOnly(year, 1, 1).ToString("yyyy-MM-dd"));
-        command.Parameters.AddWithValue("@endDate", new DateOnly(year, 12, 31).ToString("yyyy-MM-dd"));
-
+        command.CommandText = "SELECT * FROM Holidays ORDER BY Month, Day, EasterOffset;";
         return ReadHolidays(command);
     }
 
-    public List<HolidayRecord> GetActiveHolidaysForMonth(int year, int month)
+    public List<HolidayRecord> GetAllActiveHolidays()
     {
-        var startDate = new DateOnly(year, month, 1);
-        var endDate = startDate.AddMonths(1).AddDays(-1);
-
         using var command = _connection.CreateCommand();
-        command.CommandText = @"
-            SELECT * FROM Holidays 
-            WHERE Date >= @startDate AND Date <= @endDate AND IsActive = 1
-            ORDER BY Date;";
-        command.Parameters.AddWithValue("@startDate", startDate.ToString("yyyy-MM-dd"));
-        command.Parameters.AddWithValue("@endDate", endDate.ToString("yyyy-MM-dd"));
-
+        command.CommandText = "SELECT * FROM Holidays WHERE IsActive = 1 ORDER BY Month, Day, EasterOffset;";
         return ReadHolidays(command);
     }
 
@@ -51,20 +38,35 @@ public class HolidaysTable : DbConnectionOption
     {
         using var command = _connection.CreateCommand();
         command.CommandText = @"
-            INSERT INTO Holidays (Date, Name, IsBuiltIn, IsActive)
-            VALUES (@date, @name, @isBuiltIn, @isActive);";
-        command.Parameters.AddWithValue("@date", holiday.Date.ToString("yyyy-MM-dd"));
+            INSERT INTO Holidays (Name, IsBuiltIn, IsActive, Month, Day, EasterOffset)
+            VALUES (@name, @isBuiltIn, @isActive, @month, @day, @easterOffset);";
         command.Parameters.AddWithValue("@name", holiday.Name);
         command.Parameters.AddWithValue("@isBuiltIn", holiday.IsBuiltIn ? 1 : 0);
         command.Parameters.AddWithValue("@isActive", holiday.IsActive ? 1 : 0);
+        command.Parameters.AddWithValue("@month", (object?)holiday.Month ?? DBNull.Value);
+        command.Parameters.AddWithValue("@day", (object?)holiday.Day ?? DBNull.Value);
+        command.Parameters.AddWithValue("@easterOffset", (object?)holiday.EasterOffset ?? DBNull.Value);
         command.ExecuteNonQuery();
     }
 
-    public bool ExistsBuiltInForDate(DateOnly date)
+    public bool ExistsBuiltIn(int? month, int? day, int? easterOffset)
     {
         using var command = _connection.CreateCommand();
-        command.CommandText = "SELECT COUNT(*) FROM Holidays WHERE Date = @date AND IsBuiltIn = 1;";
-        command.Parameters.AddWithValue("@date", date.ToString("yyyy-MM-dd"));
+        if (month.HasValue && day.HasValue)
+        {
+            command.CommandText = "SELECT COUNT(*) FROM Holidays WHERE IsBuiltIn = 1 AND Month = @month AND Day = @day;";
+            command.Parameters.AddWithValue("@month", month.Value);
+            command.Parameters.AddWithValue("@day", day.Value);
+        }
+        else if (easterOffset.HasValue)
+        {
+            command.CommandText = "SELECT COUNT(*) FROM Holidays WHERE IsBuiltIn = 1 AND EasterOffset = @easterOffset;";
+            command.Parameters.AddWithValue("@easterOffset", easterOffset.Value);
+        }
+        else
+        {
+            return false;
+        }
         return Convert.ToInt32(command.ExecuteScalar()) > 0;
     }
 
@@ -91,13 +93,19 @@ public class HolidaysTable : DbConnectionOption
         using var reader = command.ExecuteReader();
         while (reader.Read())
         {
+            var monthOrd = reader.GetOrdinal("Month");
+            var dayOrd = reader.GetOrdinal("Day");
+            var easterOrd = reader.GetOrdinal("EasterOffset");
+            
             holidays.Add(new HolidayRecord
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                Date = DateOnly.Parse(reader.GetString(reader.GetOrdinal("Date"))),
                 Name = reader.GetString(reader.GetOrdinal("Name")),
                 IsBuiltIn = reader.GetInt32(reader.GetOrdinal("IsBuiltIn")) == 1,
-                IsActive = reader.GetInt32(reader.GetOrdinal("IsActive")) == 1
+                IsActive = reader.GetInt32(reader.GetOrdinal("IsActive")) == 1,
+                Month = reader.IsDBNull(monthOrd) ? null : reader.GetInt32(monthOrd),
+                Day = reader.IsDBNull(dayOrd) ? null : reader.GetInt32(dayOrd),
+                EasterOffset = reader.IsDBNull(easterOrd) ? null : reader.GetInt32(easterOrd),
             });
         }
         return holidays;

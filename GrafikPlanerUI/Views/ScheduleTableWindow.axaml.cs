@@ -1016,10 +1016,9 @@ public partial class ScheduleTableWindow : Window
 
         var holidaysTable = new HolidaysTable();
         holidaysTable.StartConnectionWithDatabase();
-        PolishHolidays.SeedForYear(year, holidaysTable);
+        PolishHolidays.SeedBuiltIn(holidaysTable);
         
-        var holidays = holidaysTable.GetActiveHolidaysForMonth(year, month);
-        return holidays.Select(h => h.Date).ToHashSet();
+        return PolishHolidays.GetActiveHolidayDatesForMonth(holidaysTable, year, month);
     }
 }
 
