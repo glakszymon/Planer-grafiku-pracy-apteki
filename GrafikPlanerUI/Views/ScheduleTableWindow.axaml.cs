@@ -38,6 +38,8 @@ public partial class ScheduleTableWindow : Window
     private static readonly IBrush GapRowLabelBackground = new SolidColorBrush(Color.Parse("#F5F5F5"));
     private static readonly IBrush CheckMarkForeground = new SolidColorBrush(Color.Parse("#4CAF50"));
     private static readonly IBrush VacationCriticalBackground = new SolidColorBrush(Color.Parse("#FEE2E2"));
+    private static readonly IBrush HolidayBackground = new SolidColorBrush(Color.Parse("#FDE8E8"));
+    private static readonly IBrush HolidayForeground = new SolidColorBrush(Color.Parse("#B91C1C"));
 
     // Gap indicator state
     private Dictionary<DateOnly, string> _gapCache = new();
@@ -49,6 +51,7 @@ public partial class ScheduleTableWindow : Window
     private readonly Dictionary<DateOnly, TextBlock> _gapCellTextBlocks = new();
     private readonly Dictionary<DateOnly, TextBlock> _pharmacistGapCellTextBlocks = new();
     private HashSet<DayOfWeek> _closedDays = new();
+    private HashSet<DateOnly> _holidayDates = new();
     private DataGridRow? _gapDataGridRow;
     private DataGridRow? _pharmacistGapDataGridRow;
 
@@ -181,6 +184,7 @@ public partial class ScheduleTableWindow : Window
 
         // Load closed days from settings
         _closedDays = LoadClosedDays();
+        _holidayDates = LoadHolidayDates(scheduleRows);
 
         if (scheduleRows[0].Records?.Count > 0)
         {
@@ -216,13 +220,16 @@ public partial class ScheduleTableWindow : Window
                     }
 
                     bool isClosedDay = _closedDays.Contains(day.DayOfWeek);
+                    bool isHoliday = _holidayDates.Contains(day);
 
-                    // Closed day - dark, non-interactive cell
-                    if (isClosedDay)
+                    // Closed day or holiday - non-interactive cell
+                    if (isClosedDay || isHoliday)
                     {
+                        var bg = isHoliday ? HolidayBackground : ClosedDayBackground;
+                        var fg = isHoliday ? HolidayForeground : ClosedDayForeground;
                         return new Border
                         {
-                            Background = ClosedDayBackground,
+                            Background = bg,
                             HorizontalAlignment = HorizontalAlignment.Stretch,
                             VerticalAlignment = VerticalAlignment.Stretch,
                             BorderThickness = new Thickness(1, 0, 0, 0),
@@ -232,7 +239,7 @@ public partial class ScheduleTableWindow : Window
                                 Text = "—",
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center,
-                                Foreground = ClosedDayForeground,
+                                Foreground = fg,
                                 FontSize = 14
                             }
                         };
@@ -800,14 +807,21 @@ public partial class ScheduleTableWindow : Window
     private TextBlock CreateHeaderTextBlock(DateOnly day)
     {
         bool isClosed = _closedDays.Contains(day.DayOfWeek);
+        bool isHoliday = _holidayDates.Contains(day);
+        
+        IBrush foreground;
+        if (isHoliday) foreground = HolidayForeground;
+        else if (isClosed) foreground = ClosedDayForeground;
+        else foreground = Brushes.Black;
+        
         var tb = new TextBlock
         {
             Text = day.ToString("dd.MM\nddd"),
             TextAlignment = TextAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            Foreground = isClosed ? ClosedDayForeground : Brushes.Black,
-            FontStyle = isClosed ? FontStyle.Italic : FontStyle.Normal,
+            Foreground = foreground,
+            FontStyle = (isClosed || isHoliday) ? FontStyle.Italic : FontStyle.Normal,
         };
         _headerTextBlocks[day] = tb;
         return tb;
@@ -988,6 +1002,24 @@ public partial class ScheduleTableWindow : Window
         if (!settings.SaturdayOpen) closed.Add(DayOfWeek.Saturday);
         if (!settings.SundayOpen) closed.Add(DayOfWeek.Sunday);
         return closed;
+    }
+
+    private HashSet<DateOnly> LoadHolidayDates(List<ScheduleRow> scheduleRows)
+    {
+        if (scheduleRows == null || !scheduleRows.Any() || 
+            scheduleRows[0].Records == null || !scheduleRows[0].Records.Any())
+            return new HashSet<DateOnly>();
+
+        var firstDate = scheduleRows[0].Records[0].ShiftDate;
+        int year = firstDate.Year;
+        int month = firstDate.Month;
+
+        var holidaysTable = new HolidaysTable();
+        holidaysTable.StartConnectionWithDatabase();
+        PolishHolidays.SeedForYear(year, holidaysTable);
+        
+        var holidays = holidaysTable.GetActiveHolidaysForMonth(year, month);
+        return holidays.Select(h => h.Date).ToHashSet();
     }
 }
 

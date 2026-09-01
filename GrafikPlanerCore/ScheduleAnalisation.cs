@@ -8,11 +8,13 @@ public class ScheduleAnalisation
 {
     public SettingsRecord _settings { get; set; } = new();
     private HashSet<int> _vacationHourIds = new();
+    private HashSet<DateOnly> _holidayDates = new();
     
     public List<DateTime> CheckEmptyHoursInSchedule(List<ScheduleRow> scheduleRows, int month, int year)
     {
         GetSettings();
         LoadVacationHourIds();
+        LoadHolidays(year, month);
         
         List<DateTime> emptyHours = new List<DateTime>();
         var numberOfDaysInMonth = DateTime.DaysInMonth(year, month);
@@ -43,10 +45,18 @@ public class ScheduleAnalisation
             .ToHashSet();
     }
 
+    private void LoadHolidays(int year, int month)
+    {
+        var holidaysTable = new HolidaysTable();
+        holidaysTable.StartConnectionWithDatabase();
+        var holidays = holidaysTable.GetActiveHolidaysForMonth(year, month);
+        _holidayDates = holidays.Select(h => h.Date).ToHashSet();
+    }
+
     public List<DateTime> CheckOneDay(List<ScheduleRow> scheduleRows, DateOnly targetDate)
     {
-        // Skip closed days
-        if (!IsDayOpen(targetDate.DayOfWeek))
+        // Skip closed days and holidays
+        if (!IsDayOpen(targetDate.DayOfWeek) || _holidayDates.Contains(targetDate))
             return new List<DateTime>();
 
         var ans = new List<DateTime>();
@@ -77,6 +87,7 @@ public class ScheduleAnalisation
     {
         GetSettings();
         LoadVacationHourIds();
+        LoadHolidays(year, month);
         
         List<DateTime> emptyHours = new List<DateTime>();
         var numberOfDaysInMonth = DateTime.DaysInMonth(year, month);
@@ -92,7 +103,7 @@ public class ScheduleAnalisation
 
     public List<DateTime> CheckOneDayForPharmacist(List<ScheduleRow> scheduleRows, DateOnly targetDate)
     {
-        if (!IsDayOpen(targetDate.DayOfWeek))
+        if (!IsDayOpen(targetDate.DayOfWeek) || _holidayDates.Contains(targetDate))
             return new List<DateTime>();
 
         var ans = new List<DateTime>();

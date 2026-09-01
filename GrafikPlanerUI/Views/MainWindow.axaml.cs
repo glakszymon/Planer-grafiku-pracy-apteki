@@ -31,6 +31,8 @@ public partial class MainWindow : Window
 
         _coreProgram.RunInitializeDatabase();
 
+        HolidayYearSelector.Value = DateTime.Now.Year;
+
         LoadListOfSchedules();
         LoadEmployees();
         _coreProgram.UpdateVacationDataForAllEmployees();
@@ -55,6 +57,7 @@ public partial class MainWindow : Window
     {
         LoadSettings();
         LoadHours();
+        LoadHolidays();
         CheckShiftCoverage();
         SetActiveTab("ustawienia");
     }
@@ -489,6 +492,84 @@ public partial class MainWindow : Window
         SettingsStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
 
         CheckShiftCoverage();
+    }
+
+    // ==================== HOLIDAYS ====================
+
+    private void LoadHolidays()
+    {
+        var year = (int)(HolidayYearSelector.Value ?? DateTime.Now.Year);
+        
+        var holidaysTable = new HolidaysTable();
+        holidaysTable.StartConnectionWithDatabase();
+        PolishHolidays.SeedForYear(year, holidaysTable);
+        
+        var holidays = holidaysTable.GetHolidaysForYear(year);
+        HolidaysList.ItemsSource = holidays;
+    }
+
+    private void OnHolidayYearChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+    {
+        if (HolidaysList == null) return;
+        LoadHolidays();
+    }
+
+    private void OnHolidayToggleClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox checkBox && checkBox.DataContext is HolidayRecord holiday)
+        {
+            var holidaysTable = new HolidaysTable();
+            holidaysTable.StartConnectionWithDatabase();
+            holidaysTable.UpdateHolidayActive(holiday.Id, checkBox.IsChecked == true);
+        }
+    }
+
+    private void OnDeleteHolidayClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is HolidayRecord holiday)
+        {
+            var holidaysTable = new HolidaysTable();
+            holidaysTable.StartConnectionWithDatabase();
+            holidaysTable.DeleteHoliday(holiday.Id);
+            LoadHolidays();
+        }
+    }
+
+    private void OnAddCustomHolidayClick(object? sender, RoutedEventArgs e)
+    {
+        HolidayErrorText.Text = "";
+
+        if (!CustomHolidayDate.SelectedDate.HasValue)
+        {
+            HolidayErrorText.Text = "Wybierz datę święta.";
+            return;
+        }
+
+        var name = CustomHolidayName.Text?.Trim();
+        if (string.IsNullOrEmpty(name))
+        {
+            HolidayErrorText.Text = "Podaj nazwę święta.";
+            return;
+        }
+
+        var date = DateOnly.FromDateTime(CustomHolidayDate.SelectedDate.Value.DateTime);
+        
+        var holidaysTable = new HolidaysTable();
+        holidaysTable.StartConnectionWithDatabase();
+        holidaysTable.InsertHoliday(new HolidayRecord
+        {
+            Date = date,
+            Name = name,
+            IsBuiltIn = false,
+            IsActive = true
+        });
+
+        CustomHolidayDate.SelectedDate = null;
+        CustomHolidayName.Text = "";
+        
+        // Update year selector to match the added holiday's year and reload
+        HolidayYearSelector.Value = date.Year;
+        LoadHolidays();
     }
 
     // ==================== SHIFT HOURS ====================

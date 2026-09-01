@@ -24,6 +24,10 @@ public class DbInitialization
         settingsTable.CreateTable();
         settingsTable.InitializeSettings();
         
+        var holidaysTable = new HolidaysTable();
+        holidaysTable.StartConnectionWithDatabase();
+        holidaysTable.CreateTable();
+        
         RunMigrations();
     }
     
