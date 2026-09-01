@@ -347,8 +347,8 @@
                                 </StackPanel>
 
                                 <!-- Tryb podglądu — karta pracownika -->
-                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <Grid x:Name="DetailView" IsVisible="False" Margin="32,28"
+                                <ScrollViewer x:Name="DetailViewScroll" IsVisible="False" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                <Grid x:Name="DetailView" Margin="32,28"
                                       RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
 
                                     <!-- Wiersz 0: Avatar + Dane podstawowe + przyciski -->
@@ -473,8 +473,8 @@
                                 </ScrollViewer>
 
                                 <!-- Tryb edycji — odwzorowuje layout karty -->
-                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <Grid x:Name="DetailEdit" IsVisible="False" Margin="32,28"
+                                <ScrollViewer x:Name="DetailEditScroll" IsVisible="False" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                <Grid x:Name="DetailEdit" Margin="32,28"
                                       RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
 
                                     <!-- Wiersz 0: Avatar + pola imię/nazwisko/spec (jak w karcie) -->

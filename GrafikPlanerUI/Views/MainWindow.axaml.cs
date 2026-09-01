@@ -291,8 +291,8 @@ public partial class MainWindow : Window
     private void ShowDetailView(EmployeeRecord emp)
     {
         DetailEmpty.IsVisible = false;
-        DetailEdit.IsVisible = false;
-        DetailView.IsVisible = true;
+        DetailEditScroll.IsVisible = false;
+        DetailViewScroll.IsVisible = true;
         DeleteConfirmPanel.IsVisible = false;
 
         ViewAvatar.Text = emp.FirstName.Length > 0 ? emp.FirstName[0].ToString() : "?";
@@ -359,8 +359,8 @@ public partial class MainWindow : Window
         EditAvatar.Text = "?";
 
         DetailEmpty.IsVisible = false;
-        DetailView.IsVisible = false;
-        DetailEdit.IsVisible = true;
+        DetailViewScroll.IsVisible = false;
+        DetailEditScroll.IsVisible = true;
     }
 
     private void OnEditEmployeeClick(object? sender, RoutedEventArgs e)
@@ -390,8 +390,8 @@ public partial class MainWindow : Window
         EditAvatar.Text = _selectedEmployee.FirstName.Length > 0 ? _selectedEmployee.FirstName[0].ToString() : "?";
 
         DetailEmpty.IsVisible = false;
-        DetailView.IsVisible = false;
-        DetailEdit.IsVisible = true;
+        DetailViewScroll.IsVisible = false;
+        DetailEditScroll.IsVisible = true;
     }
 
     private void OnDeleteEmployeeClick(object? sender, RoutedEventArgs e)
@@ -411,7 +411,7 @@ public partial class MainWindow : Window
         EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
 
         _selectedEmployee = null;
-        DetailView.IsVisible = false;
+        DetailViewScroll.IsVisible = false;
         DetailEmpty.IsVisible = true;
         LoadEmployees();
     }
@@ -469,14 +469,14 @@ public partial class MainWindow : Window
             EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
 
             LoadEmployees();
-            DetailEdit.IsVisible = false;
+            DetailEditScroll.IsVisible = false;
             DetailEmpty.IsVisible = true;
         }
     }
 
     private void OnEmployeeDialogCancelClick(object? sender, RoutedEventArgs e)
     {
-        DetailEdit.IsVisible = false;
+        DetailEditScroll.IsVisible = false;
 
         if (_selectedEmployee != null)
         {
