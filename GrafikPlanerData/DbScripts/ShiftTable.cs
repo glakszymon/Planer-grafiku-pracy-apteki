@@ -143,4 +143,31 @@ public class ShiftTable : DbConnectionOption
         command.Parameters.AddWithValue("@monthPattern", monthPattern);
         command.ExecuteNonQuery();
     }
+
+    public ShiftRecord? GetLastShiftInMonth(int month, int year, int workerId)
+    {
+        var command = _connection.CreateCommand();
+        string monthPattern = $"{year:D4}-{month:D2}-%";
+        command.CommandText = @"
+            SELECT ShiftRecords.Id, ShiftRecords.EmployeeId, ShiftRecords.ShiftHourId, ShiftRecords.ShiftDate, ShiftRecords.PoleColor, ShiftRecords.PoleIcon
+            FROM ShiftRecords WHERE ( ShiftDate LIKE @monthPattern ) AND ( EmployeeId LIKE @workerId);";
+        
+        command.Parameters.AddWithValue("@monthPattern", monthPattern);
+        command.Parameters.AddWithValue("@workerId", workerId);
+        
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            var shiftRecord = new ShiftRecord();
+            shiftRecord.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+            shiftRecord.EmployeeId = reader.GetInt32(reader.GetOrdinal("EmployeeId"));
+            shiftRecord.ShiftHourId = reader.IsDBNull(reader.GetOrdinal("ShiftHourId")) ? 0 : reader.GetInt32(reader.GetOrdinal("ShiftHourId"));
+            shiftRecord.ShiftDate = DateOnly.Parse(reader.GetString(reader.GetOrdinal("ShiftDate")));
+            shiftRecord.PoleColor = reader.IsDBNull(reader.GetOrdinal("PoleColor")) ? null : reader.GetString(reader.GetOrdinal("PoleColor"));
+            shiftRecord.PoleIcon = reader.IsDBNull(reader.GetOrdinal("PoleIcon")) ? null : reader.GetString(reader.GetOrdinal("PoleIcon"));
+            
+            return shiftRecord;
+        }
+        return null;
+    }
 }
