@@ -261,23 +261,30 @@ public partial class MainWindow : Window
     {
         if (EmployeesList.ItemsSource == null) return;
 
-        var panel = EmployeesList.GetVisualChildren().FirstOrDefault();
-        if (panel == null) return;
-
-        foreach (var child in panel.GetVisualChildren())
+        foreach (var container in EmployeesList.GetRealizedContainers())
         {
-            if (child is Border border && border.Tag is EmployeeRecord rec)
+            var border = FindChildBorder(container);
+            if (border?.Tag is EmployeeRecord rec)
             {
-                if (rec.Id == _selectedEmployee?.Id)
-                {
-                    border.Background = new SolidColorBrush(Colors.White);
-                }
-                else
-                {
-                    border.Background = new SolidColorBrush(Colors.Transparent);
-                }
+                border.Background = rec.Id == _selectedEmployee?.Id
+                    ? new SolidColorBrush(Colors.White)
+                    : new SolidColorBrush(Colors.Transparent);
             }
         }
+    }
+
+    private Border? FindChildBorder(Avalonia.Controls.Control control)
+    {
+        if (control is Border b && b.Tag is EmployeeRecord) return b;
+        foreach (var child in control.GetVisualChildren())
+        {
+            if (child is Avalonia.Controls.Control c)
+            {
+                var result = FindChildBorder(c);
+                if (result != null) return result;
+            }
+        }
+        return null;
     }
 
     private void ShowDetailView(EmployeeRecord emp)
