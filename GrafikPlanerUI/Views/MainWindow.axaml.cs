@@ -594,7 +594,21 @@ public partial class MainWindow : Window
 
         CustomHolidayDate.SelectedDate = null;
         CustomHolidayName.Text = "";
+        AddHolidayOverlay.IsVisible = false;
         LoadHolidays();
+    }
+
+    private void OnShowAddHolidayClick(object? sender, RoutedEventArgs e)
+    {
+        HolidayErrorText.Text = "";
+        CustomHolidayDate.SelectedDate = null;
+        CustomHolidayName.Text = "";
+        AddHolidayOverlay.IsVisible = true;
+    }
+
+    private void OnCancelAddHolidayClick(object? sender, RoutedEventArgs e)
+    {
+        AddHolidayOverlay.IsVisible = false;
     }
 
     // ==================== SHIFT HOURS ====================
