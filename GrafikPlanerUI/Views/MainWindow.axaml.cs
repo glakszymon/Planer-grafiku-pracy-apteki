@@ -268,8 +268,14 @@ public partial class MainWindow : Window
         {
             if (child is Border border && border.Tag is EmployeeRecord rec)
             {
-                bool active = rec.Id == _selectedEmployee?.Id;
-                border.Background = new SolidColorBrush(Color.Parse(active ? "White" : "Transparent"));
+                if (rec.Id == _selectedEmployee?.Id)
+                {
+                    border.Background = new SolidColorBrush(Colors.White);
+                }
+                else
+                {
+                    border.Background = new SolidColorBrush(Colors.Transparent);
+                }
             }
         }
     }
