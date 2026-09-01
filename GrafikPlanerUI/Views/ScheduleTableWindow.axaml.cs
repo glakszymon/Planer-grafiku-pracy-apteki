@@ -38,8 +38,8 @@ public partial class ScheduleTableWindow : Window
     private static readonly IBrush GapRowLabelBackground = new SolidColorBrush(Color.Parse("#F5F5F5"));
     private static readonly IBrush CheckMarkForeground = new SolidColorBrush(Color.Parse("#4CAF50"));
     private static readonly IBrush VacationCriticalBackground = new SolidColorBrush(Color.Parse("#FEE2E2"));
-    private static readonly IBrush HolidayBackground = new SolidColorBrush(Color.Parse("#FDE8E8"));
-    private static readonly IBrush HolidayForeground = new SolidColorBrush(Color.Parse("#B91C1C"));
+    private static readonly IBrush HolidayBackground = new SolidColorBrush(Color.Parse("#F0F0EE"));
+    private static readonly IBrush HolidayForeground = new SolidColorBrush(Color.Parse("#B0ADA8"));
 
     // Gap indicator state
     private Dictionary<DateOnly, string> _gapCache = new();
@@ -236,11 +236,12 @@ public partial class ScheduleTableWindow : Window
                             BorderBrush = new SolidColorBrush(Color.Parse("#CCCCCC")),
                             Child = new TextBlock
                             {
-                                Text = "—",
+                                Text = isHoliday ? "Święto" : "—",
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center,
                                 Foreground = fg,
-                                FontSize = 14
+                                FontSize = isHoliday ? 10 : 14,
+                                FontStyle = isHoliday ? FontStyle.Italic : FontStyle.Normal
                             }
                         };
                     }
