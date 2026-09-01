@@ -571,35 +571,39 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Sub-tabs -->
-                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="0" Margin="0,0,0,16">
-                        <Border x:Name="SettingsSubTabGodziny" 
-                                Padding="16,8" CornerRadius="6,6,0,0"
-                                Background="White" BorderBrush="#E0DDD8" BorderThickness="1,1,1,0"
-                                Cursor="Hand"
-                                PointerPressed="OnSettingsSubTabGodzinyClick">
-                            <TextBlock Text="Godziny i dni pracy" FontSize="13" FontWeight="SemiBold" Foreground="#3A3A3A"/>
+                    <!-- Settings layout: vertical sidebar + content -->
+                    <Grid ColumnDefinitions="200,*">
+                        <!-- Left sidebar menu -->
+                        <Border Grid.Column="0" Background="#F0EFED" CornerRadius="8,0,0,8" Padding="0,8">
+                            <StackPanel Spacing="2">
+                                <Border x:Name="SettingsSubTabGodziny" 
+                                        Padding="16,12" 
+                                        Background="White"
+                                        Cursor="Hand"
+                                        PointerPressed="OnSettingsSubTabGodzinyClick">
+                                    <TextBlock Text="Godziny i dni pracy" FontSize="13" FontWeight="SemiBold" Foreground="#3A3A3A"/>
+                                </Border>
+                                <Border x:Name="SettingsSubTabSwieta" 
+                                        Padding="16,12"
+                                        Background="Transparent"
+                                        Cursor="Hand"
+                                        PointerPressed="OnSettingsSubTabSwietaClick">
+                                    <TextBlock Text="Święta" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A"/>
+                                </Border>
+                                <Border x:Name="SettingsSubTabZmiany" 
+                                        Padding="16,12"
+                                        Background="Transparent"
+                                        Cursor="Hand"
+                                        PointerPressed="OnSettingsSubTabZmianyClick">
+                                    <TextBlock Text="Zmiany pracowników" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A"/>
+                                </Border>
+                            </StackPanel>
                         </Border>
-                        <Border x:Name="SettingsSubTabSwieta" 
-                                Padding="16,8" CornerRadius="6,6,0,0"
-                                Background="#EFECEA" BorderBrush="#E8E5E0" BorderThickness="1,1,1,0"
-                                Cursor="Hand" Margin="3,0,0,0"
-                                PointerPressed="OnSettingsSubTabSwietaClick">
-                            <TextBlock Text="Święta" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A"/>
-                        </Border>
-                        <Border x:Name="SettingsSubTabZmiany" 
-                                Padding="16,8" CornerRadius="6,6,0,0"
-                                Background="#EFECEA" BorderBrush="#E8E5E0" BorderThickness="1,1,1,0"
-                                Cursor="Hand" Margin="3,0,0,0"
-                                PointerPressed="OnSettingsSubTabZmianyClick">
-                            <TextBlock Text="Zmiany pracowników" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A"/>
-                        </Border>
-                    </StackPanel>
 
-                    <!-- Sub-tab content container -->
-                    <Panel>
+                        <!-- Right content area -->
+                        <Panel Grid.Column="1">
                         <!-- ===== SUB-TAB: Godziny i dni pracy ===== -->
-                        <Border x:Name="SettingsPageGodziny" IsVisible="True" Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="0,8,8,8" Padding="24,20">
+                        <Border x:Name="SettingsPageGodziny" IsVisible="True" Background="White" BorderBrush="#E0DDD8" BorderThickness="0,1,1,1" CornerRadius="0,8,8,0" Padding="28,24">
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                 <StackPanel Spacing="20" MaxWidth="500">
                                     <!-- Godziny otwarcia -->
@@ -647,7 +651,7 @@
                         </Border>
 
                         <!-- ===== SUB-TAB: Święta ===== -->
-                        <Border x:Name="SettingsPageSwieta" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="0,8,8,8" Padding="24,20">
+                        <Border x:Name="SettingsPageSwieta" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="0,1,1,1" CornerRadius="0,8,8,0" Padding="28,24">
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                 <StackPanel Spacing="16" MaxWidth="600">
                                     <TextBlock Text="Dni ustawowo wolne od pracy" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
@@ -694,46 +698,51 @@
                                     <Border Height="1" Background="#E0DDD8"/>
 
                                     <!-- Dodaj własne święto -->
-                                    <StackPanel Spacing="8">
+                                    <StackPanel Spacing="12">
                                         <TextBlock Text="Dodaj własne święto (coroczne)" FontSize="13" FontWeight="SemiBold" Foreground="#3A3A3A"/>
-                                        <Grid ColumnDefinitions="Auto,Auto,8,*,8,Auto" RowDefinitions="Auto">
-                                            <NumericUpDown Grid.Column="0" x:Name="CustomHolidayDay" 
-                                                           Minimum="1" Maximum="31"
-                                                           FormatString="0"
-                                                           Width="70" FontSize="13"
-                                                           Watermark="Dzień"/>
-                                            <NumericUpDown Grid.Column="1" x:Name="CustomHolidayMonth" 
-                                                           Minimum="1" Maximum="12"
-                                                           FormatString="0"
-                                                           Width="70" FontSize="13"
-                                                           Watermark="Mies."
-                                                           Margin="6,0,0,0"/>
-                                            <TextBox Grid.Column="3"
-                                                     x:Name="CustomHolidayName" 
-                                                     Watermark="Nazwa święta"
-                                                     FontSize="13"
-                                                     CornerRadius="5"
-                                                     Padding="10,7"/>
-                                            <Button Grid.Column="5"
-                                                    Content="+ Dodaj"
-                                                    Click="OnAddCustomHolidayClick"
-                                                    Background="#5D8A6B"
-                                                    Foreground="White"
-                                                    FontWeight="SemiBold"
-                                                    FontSize="13"
-                                                    Padding="14,7"
-                                                    CornerRadius="6"
-                                                    Cursor="Hand"
-                                                    BorderThickness="0"/>
-                                        </Grid>
-                                        <TextBlock x:Name="HolidayErrorText" Text="" FontSize="11" Foreground="#B04040"/>
+                                        <Border Background="#FAFAF9" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="6" Padding="16,14">
+                                            <StackPanel Spacing="12">
+                                                <Grid ColumnDefinitions="120,Auto,12,120,Auto" RowDefinitions="Auto">
+                                                    <TextBlock Grid.Column="0" Text="Dzień" FontSize="12" Foreground="#5A5A5A" VerticalAlignment="Center"/>
+                                                    <NumericUpDown Grid.Column="1" x:Name="CustomHolidayDay" 
+                                                                   Minimum="1" Maximum="31"
+                                                                   FormatString="0"
+                                                                   Width="80" FontSize="13"/>
+                                                    <TextBlock Grid.Column="3" Text="Miesiąc" FontSize="12" Foreground="#5A5A5A" VerticalAlignment="Center"/>
+                                                    <NumericUpDown Grid.Column="4" x:Name="CustomHolidayMonth" 
+                                                                   Minimum="1" Maximum="12"
+                                                                   FormatString="0"
+                                                                   Width="80" FontSize="13"/>
+                                                </Grid>
+                                                <StackPanel Spacing="4">
+                                                    <TextBlock Text="Nazwa święta" FontSize="12" Foreground="#5A5A5A"/>
+                                                    <TextBox x:Name="CustomHolidayName" 
+                                                             Watermark="np. Wigilia, Dzień Farmaceuty..."
+                                                             FontSize="13"
+                                                             CornerRadius="5"
+                                                             Padding="10,7"/>
+                                                </StackPanel>
+                                                <TextBlock x:Name="HolidayErrorText" Text="" FontSize="11" Foreground="#B04040"/>
+                                                <Button Content="+ Dodaj święto"
+                                                        Click="OnAddCustomHolidayClick"
+                                                        Background="#5D8A6B"
+                                                        Foreground="White"
+                                                        FontWeight="SemiBold"
+                                                        FontSize="13"
+                                                        Padding="16,8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        BorderThickness="0"
+                                                        HorizontalAlignment="Left"/>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </StackPanel>
                             </ScrollViewer>
                         </Border>
 
                         <!-- ===== SUB-TAB: Zmiany pracowników ===== -->
-                        <Border x:Name="SettingsPageZmiany" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="0,8,8,8" Padding="24,20">
+                        <Border x:Name="SettingsPageZmiany" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="0,1,1,1" CornerRadius="0,8,8,0" Padding="28,24">
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                 <StackPanel Spacing="12" MaxWidth="600">
                                     <Grid ColumnDefinitions="*,Auto">
@@ -891,6 +900,7 @@
                             </ScrollViewer>
                         </Border>
                     </Panel>
+                    </Grid>
                 </DockPanel>
             </Border>
         </Panel>

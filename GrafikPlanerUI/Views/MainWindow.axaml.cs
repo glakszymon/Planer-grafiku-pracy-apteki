@@ -86,9 +86,11 @@ public partial class MainWindow : Window
         for (int i = 0; i < tabs.Length; i++)
         {
             bool active = names[i] == subTab;
-            tabs[i].Background = new SolidColorBrush(Color.Parse(active ? "White" : "#EFECEA"));
-            tabs[i].BorderBrush = new SolidColorBrush(Color.Parse(active ? "#E0DDD8" : "#E8E5E0"));
-            tabs[i].BorderThickness = new Avalonia.Thickness(1, 1, 1, active ? 0 : 1);
+            tabs[i].Background = new SolidColorBrush(Color.Parse(active ? "White" : "Transparent"));
+            if (tabs[i].Child is TextBlock tb)
+            {
+                tb.Foreground = new SolidColorBrush(Color.Parse(active ? "#3A3A3A" : "#6A6A6A"));
+            }
             pages[i].IsVisible = active;
         }
     }
