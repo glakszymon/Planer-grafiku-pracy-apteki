@@ -564,28 +564,15 @@ public partial class MainWindow : Window
     {
         HolidayErrorText.Text = "";
 
-        var dayVal = CustomHolidayDay.Value;
-        var monthVal = CustomHolidayMonth.Value;
-        
-        if (!dayVal.HasValue || !monthVal.HasValue)
+        if (!CustomHolidayDate.SelectedDate.HasValue)
         {
-            HolidayErrorText.Text = "Podaj dzień i miesiąc święta.";
+            HolidayErrorText.Text = "Wybierz datę święta.";
             return;
         }
 
-        int day = (int)dayVal.Value;
-        int month = (int)monthVal.Value;
-
-        // Validate day for given month (use a non-leap year as baseline)
-        try
-        {
-            _ = new DateOnly(2024, month, day); // 2024 is leap year to allow Feb 29
-        }
-        catch
-        {
-            HolidayErrorText.Text = "Nieprawidłowa data.";
-            return;
-        }
+        var selectedDate = CustomHolidayDate.SelectedDate.Value;
+        int day = selectedDate.Day;
+        int month = selectedDate.Month;
 
         var name = CustomHolidayName.Text?.Trim();
         if (string.IsNullOrEmpty(name))
@@ -605,8 +592,7 @@ public partial class MainWindow : Window
             IsActive = true
         });
 
-        CustomHolidayDay.Value = null;
-        CustomHolidayMonth.Value = null;
+        CustomHolidayDate.SelectedDate = null;
         CustomHolidayName.Text = "";
         LoadHolidays();
     }

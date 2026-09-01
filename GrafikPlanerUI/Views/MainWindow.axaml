@@ -702,18 +702,14 @@
                                         <TextBlock Text="Dodaj własne święto (coroczne)" FontSize="13" FontWeight="SemiBold" Foreground="#3A3A3A"/>
                                         <Border Background="#FAFAF9" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="6" Padding="16,14">
                                             <StackPanel Spacing="12">
-                                                <Grid ColumnDefinitions="120,Auto,12,120,Auto" RowDefinitions="Auto">
-                                                    <TextBlock Grid.Column="0" Text="Dzień" FontSize="12" Foreground="#5A5A5A" VerticalAlignment="Center"/>
-                                                    <NumericUpDown Grid.Column="1" x:Name="CustomHolidayDay" 
-                                                                   Minimum="1" Maximum="31"
-                                                                   FormatString="0"
-                                                                   Width="80" FontSize="13"/>
-                                                    <TextBlock Grid.Column="3" Text="Miesiąc" FontSize="12" Foreground="#5A5A5A" VerticalAlignment="Center"/>
-                                                    <NumericUpDown Grid.Column="4" x:Name="CustomHolidayMonth" 
-                                                                   Minimum="1" Maximum="12"
-                                                                   FormatString="0"
-                                                                   Width="80" FontSize="13"/>
-                                                </Grid>
+                                                <StackPanel Spacing="4">
+                                                    <TextBlock Text="Data (dzień i miesiąc)" FontSize="12" Foreground="#5A5A5A"/>
+                                                    <DatePicker x:Name="CustomHolidayDate"
+                                                                YearVisible="False"
+                                                                DayFormat="d"
+                                                                MonthFormat="MMMM"
+                                                                HorizontalAlignment="Stretch"/>
+                                                </StackPanel>
                                                 <StackPanel Spacing="4">
                                                     <TextBlock Text="Nazwa święta" FontSize="12" Foreground="#5A5A5A"/>
                                                     <TextBox x:Name="CustomHolidayName" 
