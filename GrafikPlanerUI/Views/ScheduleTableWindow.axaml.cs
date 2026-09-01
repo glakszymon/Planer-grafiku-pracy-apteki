@@ -109,6 +109,13 @@ public partial class ScheduleTableWindow : Window
         LegendPanel.IsVisible = legendData.Count > 0;
     }
 
+    private void LegendToggle_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var collapsed = LegendContent.IsVisible;
+        LegendContent.IsVisible = !collapsed;
+        LegendToggleButton.Content = collapsed ? "+" : "\u2212";
+    }
+
     private void BackButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var mainWindow = new MainWindow();
@@ -389,7 +396,7 @@ public partial class ScheduleTableWindow : Window
         _pharmacistGapRow = new ScheduleRow
         {
             Id = ScheduleRow.PharmacistGapRowId,
-            FirstName = "Brak farm.",
+            FirstName = "Brak farmaceuty/ki",
             LastName = "",
             HoursSummary = 0,
             Records = new List<ScheduleColumn>()
