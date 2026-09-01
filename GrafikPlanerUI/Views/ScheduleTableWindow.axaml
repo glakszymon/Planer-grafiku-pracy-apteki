@@ -177,7 +177,6 @@
                                     <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
                                     <TextBlock Text="{Binding Specialisation}" FontSize="10" Foreground="#2563EB"/>
                                     <TextBlock Text="{Binding VacationLine1}" FontSize="11" Foreground="{Binding VacationLine1Color}" Margin="0,2,0,0"/>
-                                    <TextBlock Text="{Binding VacationLine2}" FontSize="11" Foreground="{Binding VacationLine2Color}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
