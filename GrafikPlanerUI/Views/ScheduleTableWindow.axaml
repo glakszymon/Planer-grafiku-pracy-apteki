@@ -117,16 +117,17 @@
                       CornerRadius="8"
                       Background="White"
                       RowBackground="White"
-                      RowHeight="70">
+                      RowHeight="85">
                 <DataGrid.Columns>
                 
-                    <DataGridTemplateColumn Header="Pracownik" Width="120">
+                    <DataGridTemplateColumn Header="Pracownik" Width="130">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="models:ScheduleRow">
                                 <StackPanel Margin="8,4" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
-                                    <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="#1A202C"/>
-                                    <TextBlock Text="{Binding VacationDisplay}" FontSize="10" Foreground="#7A7A7A" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
+                                    <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
+                                    <TextBlock Text="{Binding VacationLine1}" FontSize="11" Foreground="{Binding VacationLine1Color}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding VacationLine2}" FontSize="11" Foreground="{Binding VacationLine2Color}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

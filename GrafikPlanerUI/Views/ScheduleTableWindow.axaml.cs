@@ -37,6 +37,7 @@ public partial class ScheduleTableWindow : Window
     private static readonly IBrush GapRowSeparator = new SolidColorBrush(Color.Parse("#9E9E9E"));
     private static readonly IBrush GapRowLabelBackground = new SolidColorBrush(Color.Parse("#F5F5F5"));
     private static readonly IBrush CheckMarkForeground = new SolidColorBrush(Color.Parse("#4CAF50"));
+    private static readonly IBrush VacationCriticalBackground = new SolidColorBrush(Color.Parse("#FEE2E2"));
 
     // Gap indicator state
     private Dictionary<DateOnly, string> _gapCache = new();
