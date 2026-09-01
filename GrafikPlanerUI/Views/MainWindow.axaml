@@ -605,7 +605,7 @@
                         <!-- ===== SUB-TAB: Godziny i dni pracy ===== -->
                         <Border x:Name="SettingsPageGodziny" IsVisible="True" Background="White" BorderBrush="#E0DDD8" BorderThickness="0,1,1,1" CornerRadius="0,8,8,0" Padding="28,24">
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <StackPanel Spacing="20" MaxWidth="500">
+                                <StackPanel Spacing="20">
                                     <!-- Godziny otwarcia -->
                                     <StackPanel Spacing="12">
                                         <TextBlock Text="Godziny otwarcia" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
@@ -653,7 +653,7 @@
                         <!-- ===== SUB-TAB: Święta ===== -->
                         <Border x:Name="SettingsPageSwieta" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="0,1,1,1" CornerRadius="0,8,8,0" Padding="28,24">
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <StackPanel Spacing="16" MaxWidth="600">
+                                <StackPanel Spacing="16">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <StackPanel Grid.Column="0" Spacing="4">
                                             <TextBlock Text="Dni ustawowo wolne od pracy" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
@@ -716,7 +716,7 @@
                         <!-- ===== SUB-TAB: Zmiany pracowników ===== -->
                         <Border x:Name="SettingsPageZmiany" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="0,1,1,1" CornerRadius="0,8,8,0" Padding="28,24">
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <StackPanel Spacing="12" MaxWidth="600">
+                                <StackPanel Spacing="12">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <TextBlock Grid.Column="0" Text="Godziny zmian pracowników" 
                                                    FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"
