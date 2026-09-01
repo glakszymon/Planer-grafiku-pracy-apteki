@@ -703,11 +703,11 @@
                                         <Border Background="#FAFAF9" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="6" Padding="16,14">
                                             <StackPanel Spacing="12">
                                                 <StackPanel Spacing="4">
-                                                    <TextBlock Text="Data (dzień i miesiąc)" FontSize="12" Foreground="#5A5A5A"/>
+                                                    <TextBlock Text="Dzień i miesiąc" FontSize="12" Foreground="#5A5A5A"/>
                                                     <DatePicker x:Name="CustomHolidayDate"
                                                                 YearVisible="False"
-                                                                DayFormat="d"
-                                                                MonthFormat="MMMM"
+                                                                MonthVisible="True"
+                                                                DayVisible="True"
                                                                 HorizontalAlignment="Stretch"/>
                                                 </StackPanel>
                                                 <StackPanel Spacing="4">
