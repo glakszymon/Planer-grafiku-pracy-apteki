@@ -9,11 +9,17 @@ public class ScheduleReader
     private List<EmployeeRecord> _employeeRecords = new List<EmployeeRecord>();
     private List<ShiftRecord> _shiftRecords = new List<ShiftRecord>();
     private List<HoursRecord> _hoursRecords = new List<HoursRecord>();
+    private List<HolidayRecord> _holidays = new List<HolidayRecord>();
+    private int _month;
+    private int _year;
 
     public List<ScheduleRow> FinalSchedule = new List<ScheduleRow>();
     
     public void GetDataFromDb(int month, int year)
     {
+        _month = month;
+        _year = year;
+        
         var employeeTable = new EmployeeTable();
         employeeTable.StartConnectionWithDatabase();
         _employeeRecords = employeeTable.GetAllEmployees();
@@ -25,6 +31,11 @@ public class ScheduleReader
         var shiftTable = new ShiftTable();
         shiftTable.StartConnectionWithDatabase();
         _shiftRecords = shiftTable.GetShiftRecordsOfMonth(month, year);
+        
+        var holidaysTable = new HolidaysTable();
+        holidaysTable.StartConnectionWithDatabase();
+        PolishHolidays.SeedBuiltIn(holidaysTable);
+        _holidays = holidaysTable.GetAllActiveHolidays();
     }
 
     public void TransformDataToTableStructure()
@@ -73,6 +84,7 @@ public class ScheduleReader
                 UnusedVacationDaysFromLastYear = emp.UnusedVacationDaysFromLastYear,
                 
                 HoursSummary = totalHours,
+                ExpectedHours = ExpectedHoursCalculator.Calculate(_year, _month, emp.WorkTimeRate, _holidays),
                 Records = employeeShifts
             };
         }).ToList();

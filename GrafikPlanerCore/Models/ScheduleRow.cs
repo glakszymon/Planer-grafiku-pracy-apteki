@@ -24,7 +24,20 @@ public class ScheduleRow : INotifyPropertyChanged
             {
                 _hoursSummary = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HoursSummary)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HoursSummaryDisplay)));
             }
+        }
+    }
+
+    public int ExpectedHours { get; set; }
+
+    public string HoursSummaryDisplay
+    {
+        get
+        {
+            if (ExpectedHours <= 0)
+                return HoursSummary == 0 ? "" : $"{HoursSummary}";
+            return $"{HoursSummary} / {ExpectedHours}";
         }
     }
 

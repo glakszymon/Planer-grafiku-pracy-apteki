@@ -175,13 +175,13 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Width="70">
+                    <DataGridTemplateColumn Width="100">
                         <DataGridTemplateColumn.Header>
                             <TextBlock Text="Suma&#x0a;godzin" TextAlignment="Center" TextWrapping="Wrap"/>
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="models:ScheduleRow">
-                                <TextBlock Text="{Binding HoursSummary, StringFormat='{}{0:#;;}'}" 
+                                <TextBlock Text="{Binding HoursSummaryDisplay}" 
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"
                                            FontWeight="SemiBold"/>
