@@ -36,9 +36,9 @@ public class EmployeeTable : DbConnectionOption
 
         command.CommandText = @"
             INSERT INTO Employee (FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays, UsedVacationDays, UnusedVacationDaysFromLastYear, YearOfVacationData,
-                EmploymentType, WorkTimeRate, WorkTimeSystem, ParentalProtection, ReducedNorm, AutoDailyRest) 
+                EmploymentType, WorkTimeRate, AutoDailyRest) 
             VALUES (@firstName, @lastName, @specialisation, @email, @phoneNumber, @vacationDays, @usedVacationDays, @unusedVacationDaysFromLastYear, @yearOfVacationData,
-                @employmentType, @workTimeRate, @workTimeSystem, @parentalProtection, @reducedNorm, @autoDailyRest);";
+                @employmentType, @workTimeRate, @autoDailyRest);";
 
         command.Parameters.AddWithValue("@firstName", record.FirstName);
         command.Parameters.AddWithValue("@lastName", record.LastName);
@@ -51,9 +51,6 @@ public class EmployeeTable : DbConnectionOption
         command.Parameters.AddWithValue("@yearOfVacationData", DateTime.Now.Year);
         command.Parameters.AddWithValue("@employmentType", (int)record.EmploymentType);
         command.Parameters.AddWithValue("@workTimeRate", (int)record.WorkTimeRate);
-        command.Parameters.AddWithValue("@workTimeSystem", (int)record.WorkTimeSystem);
-        command.Parameters.AddWithValue("@parentalProtection", record.ParentalProtection ? 1 : 0);
-        command.Parameters.AddWithValue("@reducedNorm", record.ReducedNorm ? 1 : 0);
         command.Parameters.AddWithValue("@autoDailyRest", record.AutoDailyRest ? 1 : 0);
 
         command.ExecuteNonQuery();
@@ -68,8 +65,7 @@ public class EmployeeTable : DbConnectionOption
                 Email = @email, PhoneNumber = @phoneNumber, VacationDays = @vacationDays, 
                 UsedVacationDays = @usedVacationDays, UnusedVacationDaysFromLastYear = @unusedVacationDaysFromLastYear,
                 YearOfVacationData = @yearOfVacationData,
-                EmploymentType = @employmentType, WorkTimeRate = @workTimeRate, WorkTimeSystem = @workTimeSystem,
-                ParentalProtection = @parentalProtection, ReducedNorm = @reducedNorm, AutoDailyRest = @autoDailyRest
+                EmploymentType = @employmentType, WorkTimeRate = @workTimeRate, AutoDailyRest = @autoDailyRest
             WHERE Id = @id;";
 
         command.Parameters.AddWithValue("@id", record.Id);
@@ -84,9 +80,6 @@ public class EmployeeTable : DbConnectionOption
         command.Parameters.AddWithValue("@yearOfVacationData", (object)record.YearOfVacationData ?? DBNull.Value);
         command.Parameters.AddWithValue("@employmentType", (int)record.EmploymentType);
         command.Parameters.AddWithValue("@workTimeRate", (int)record.WorkTimeRate);
-        command.Parameters.AddWithValue("@workTimeSystem", (int)record.WorkTimeSystem);
-        command.Parameters.AddWithValue("@parentalProtection", record.ParentalProtection ? 1 : 0);
-        command.Parameters.AddWithValue("@reducedNorm", record.ReducedNorm ? 1 : 0);
         command.Parameters.AddWithValue("@autoDailyRest", record.AutoDailyRest ? 1 : 0);
         
         command.ExecuteNonQuery();
@@ -119,7 +112,7 @@ public class EmployeeTable : DbConnectionOption
         using var command = _connection.CreateCommand();
         command.CommandText = @"
         SELECT Id, FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays, UsedVacationDays, UnusedVacationDaysFromLastYear, YearOfVacationData,
-               EmploymentType, WorkTimeRate, WorkTimeSystem, ParentalProtection, ReducedNorm, AutoDailyRest
+               EmploymentType, WorkTimeRate, AutoDailyRest
         FROM Employee";
 
         using var reader = command.ExecuteReader();
@@ -136,9 +129,6 @@ public class EmployeeTable : DbConnectionOption
         int yearOfVacationDataOrdinal = reader.GetOrdinal("YearOfVacationData");
         int employmentTypeOrdinal = reader.GetOrdinal("EmploymentType");
         int workTimeRateOrdinal = reader.GetOrdinal("WorkTimeRate");
-        int workTimeSystemOrdinal = reader.GetOrdinal("WorkTimeSystem");
-        int parentalProtectionOrdinal = reader.GetOrdinal("ParentalProtection");
-        int reducedNormOrdinal = reader.GetOrdinal("ReducedNorm");
         int autoDailyRestOrdinal = reader.GetOrdinal("AutoDailyRest");
 
         while (reader.Read())
@@ -157,9 +147,6 @@ public class EmployeeTable : DbConnectionOption
                 YearOfVacationData = reader.IsDBNull(yearOfVacationDataOrdinal) ? 0 : reader.GetInt32(yearOfVacationDataOrdinal),
                 EmploymentType = reader.IsDBNull(employmentTypeOrdinal) ? EmploymentType.UmowaPrace : (EmploymentType)reader.GetInt32(employmentTypeOrdinal),
                 WorkTimeRate = reader.IsDBNull(workTimeRateOrdinal) ? WorkTimeRate.Full : (WorkTimeRate)reader.GetInt32(workTimeRateOrdinal),
-                WorkTimeSystem = reader.IsDBNull(workTimeSystemOrdinal) ? WorkTimeSystem.Podstawowy : (WorkTimeSystem)reader.GetInt32(workTimeSystemOrdinal),
-                ParentalProtection = !reader.IsDBNull(parentalProtectionOrdinal) && reader.GetInt32(parentalProtectionOrdinal) == 1,
-                ReducedNorm = !reader.IsDBNull(reducedNormOrdinal) && reader.GetInt32(reducedNormOrdinal) == 1,
                 AutoDailyRest = reader.IsDBNull(autoDailyRestOrdinal) || reader.GetInt32(autoDailyRestOrdinal) == 1
             };
         

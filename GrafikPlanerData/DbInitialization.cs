@@ -96,9 +96,6 @@ public class DbInitialization
         {
             "EmploymentType INTEGER NOT NULL DEFAULT 0",
             "WorkTimeRate INTEGER NOT NULL DEFAULT 0",
-            "WorkTimeSystem INTEGER NOT NULL DEFAULT 0",
-            "ParentalProtection INTEGER NOT NULL DEFAULT 0",
-            "ReducedNorm INTEGER NOT NULL DEFAULT 0",
             "AutoDailyRest INTEGER NOT NULL DEFAULT 1"
         };
         foreach (var colDef in employeeColumns)

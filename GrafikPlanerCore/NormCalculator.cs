@@ -20,7 +20,7 @@ public static class NormCalculator
     public static decimal Calculate(int year, int month, EmployeeRecord employee, List<HolidayRecord> holidays)
     {
         int workingDays = CountWorkingDays(year, month, holidays);
-        decimal dailyNorm = employee.ReducedNorm ? 7m : 8m;
+        decimal dailyNorm = 8m;
         decimal rate = employee.WorkTimeRate switch
         {
             WorkTimeRate.Full => 1.0m,

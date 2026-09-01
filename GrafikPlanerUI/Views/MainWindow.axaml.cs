@@ -318,18 +318,6 @@ public partial class MainWindow : Window
             WorkTimeRate.Quarter => "1/4",
             _ => "—"
         };
-        ViewWorkTimeSystem.Text = emp.WorkTimeSystem switch
-        {
-            WorkTimeSystem.Podstawowy => "Podstawowy (max 8h/dobę)",
-            WorkTimeSystem.Rownowazny => "Równoważny (do 12h/dobę)",
-            _ => "—"
-        };
-        
-        // Ograniczenia prawne — tagi
-        ViewTagParental.IsVisible = emp.ParentalProtection;
-        ViewTagReduced.IsVisible = emp.ReducedNorm;
-        ViewTagDailyRest.IsVisible = emp.AutoDailyRest;
-        ViewNoConstraints.IsVisible = !emp.ParentalProtection && !emp.ReducedNorm && !emp.AutoDailyRest;
         
         // Urlopy — ukryj dla Zlecenie/B2B
         bool isEmployeeContract = emp.EmploymentType == EmploymentType.UmowaPrace;
@@ -394,10 +382,6 @@ public partial class MainWindow : Window
         // Nowe pola
         EmpEmploymentTypeBox.SelectedIndex = (int)_selectedEmployee.EmploymentType;
         EmpWorkTimeRateBox.SelectedIndex = (int)_selectedEmployee.WorkTimeRate;
-        EmpWorkTimeSystemBox.SelectedIndex = (int)_selectedEmployee.WorkTimeSystem;
-        EmpParentalProtection.IsChecked = _selectedEmployee.ParentalProtection;
-        EmpReducedNorm.IsChecked = _selectedEmployee.ReducedNorm;
-        EmpAutoDailyRest.IsChecked = _selectedEmployee.AutoDailyRest;
         
         UpdateEditFormVisibility();
         UpdateEditVacationSummary();
@@ -461,11 +445,7 @@ public partial class MainWindow : Window
             UnusedVacationDaysFromLastYear = int.TryParse(EmpUnusedVacationBox.Text, out var unvd) ? unvd : null,
             YearOfVacationData = DateTime.Now.Year,
             EmploymentType = (EmploymentType)Math.Max(0, EmpEmploymentTypeBox.SelectedIndex),
-            WorkTimeRate = (WorkTimeRate)Math.Max(0, EmpWorkTimeRateBox.SelectedIndex),
-            WorkTimeSystem = (WorkTimeSystem)Math.Max(0, EmpWorkTimeSystemBox.SelectedIndex),
-            ParentalProtection = EmpParentalProtection.IsChecked == true,
-            ReducedNorm = EmpReducedNorm.IsChecked == true,
-            AutoDailyRest = EmpAutoDailyRest.IsChecked == true
+            WorkTimeRate = (WorkTimeRate)Math.Max(0, EmpWorkTimeRateBox.SelectedIndex)
         };
 
         var empTable = new EmployeeTable();
@@ -520,10 +500,6 @@ public partial class MainWindow : Window
         EmpUnusedVacationBox.Text = "";
         EmpEmploymentTypeBox.SelectedIndex = 0;
         EmpWorkTimeRateBox.SelectedIndex = 0;
-        EmpWorkTimeSystemBox.SelectedIndex = 0;
-        EmpParentalProtection.IsChecked = false;
-        EmpReducedNorm.IsChecked = false;
-        EmpAutoDailyRest.IsChecked = true;
         EmployeeDialogError.Text = "";
         UpdateEditFormVisibility();
     }
@@ -556,14 +532,6 @@ public partial class MainWindow : Window
     {
         bool isUmowaPrace = EmpEmploymentTypeBox.SelectedIndex == 0;
         EditVacationSection.IsVisible = isUmowaPrace;
-        EmpParentalProtection.IsEnabled = isUmowaPrace;
-        EmpReducedNorm.IsEnabled = isUmowaPrace;
-        
-        if (!isUmowaPrace)
-        {
-            EmpParentalProtection.IsChecked = false;
-            EmpReducedNorm.IsChecked = false;
-        }
     }
 
     private void UpdateEditVacationSummary()

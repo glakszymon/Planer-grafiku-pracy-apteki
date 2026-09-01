@@ -349,7 +349,7 @@
                                 <!-- Tryb podglądu — karta pracownika -->
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                 <Grid x:Name="DetailView" IsVisible="False" Margin="32,28"
-                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
 
                                     <!-- Wiersz 0: Avatar + Dane podstawowe + przyciski -->
                                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,22">
@@ -416,36 +416,16 @@
                                     <StackPanel Grid.Row="3" Spacing="8" Margin="0,0,0,20">
                                         <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
                                         <TextBlock Text="Wymiar czasu pracy" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
+                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto">
                                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Forma zatrudnienia" FontSize="13" Foreground="#5A5A5A"/>
                                             <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ViewEmploymentType" FontSize="13" Foreground="#1A1A1A"/>
                                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Wymiar etatu" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0"/>
                                             <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ViewWorkTimeRate" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0"/>
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="System czasu pracy" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0"/>
-                                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ViewWorkTimeSystem" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0"/>
                                         </Grid>
                                     </StackPanel>
 
-                                    <!-- Wiersz 4: Ograniczenia prawne (NOWE) -->
-                                    <StackPanel Grid.Row="4" Spacing="8" Margin="0,0,0,20">
-                                        <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
-                                        <TextBlock Text="Ograniczenia prawne" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
-                                        <WrapPanel x:Name="ViewConstraintsTags" Orientation="Horizontal">
-                                            <Border x:Name="ViewTagParental" IsVisible="False" Background="#FEF3C7" CornerRadius="4" Padding="8,4" Margin="0,0,6,4">
-                                                <TextBlock Text="Ochrona rodzicielska" FontSize="11" Foreground="#92400E" FontWeight="SemiBold"/>
-                                            </Border>
-                                            <Border x:Name="ViewTagReduced" IsVisible="False" Background="#DBEAFE" CornerRadius="4" Padding="8,4" Margin="0,0,6,4">
-                                                <TextBlock Text="Norma skrócona (7h)" FontSize="11" Foreground="#1E40AF" FontWeight="SemiBold"/>
-                                            </Border>
-                                            <Border x:Name="ViewTagDailyRest" IsVisible="False" Background="#D1FAE5" CornerRadius="4" Padding="8,4" Margin="0,0,6,4">
-                                                <TextBlock Text="Odpoczynek dobowy (11h)" FontSize="11" Foreground="#065F46" FontWeight="SemiBold"/>
-                                            </Border>
-                                            <TextBlock x:Name="ViewNoConstraints" Text="Brak aktywnych ograniczeń" FontSize="12" Foreground="#9A9A9A" IsVisible="True"/>
-                                        </WrapPanel>
-                                    </StackPanel>
-
-                                    <!-- Wiersz 5: Separator + Urlop (rozbudowany) -->
-                                    <StackPanel x:Name="ViewVacationSection" Grid.Row="5" Spacing="8">
+                                    <!-- Wiersz 4: Separator + Urlop (rozbudowany) -->
+                                    <StackPanel x:Name="ViewVacationSection" Grid.Row="4" Spacing="8">
                                         <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
                                         <TextBlock Text="Urlop" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
                                         <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
@@ -473,7 +453,7 @@
                                     </StackPanel>
 
                                     <!-- Wiersz 6: Potwierdzenie usunięcia -->
-                                    <Border Grid.Row="7" x:Name="DeleteConfirmPanel" IsVisible="False"
+                                    <Border Grid.Row="5" x:Name="DeleteConfirmPanel" IsVisible="False"
                                             Background="#FDF5F5" CornerRadius="6" Padding="16,12" 
                                             Margin="0,20,0,0" VerticalAlignment="Bottom">
                                         <StackPanel Spacing="8">
@@ -493,8 +473,9 @@
                                 </ScrollViewer>
 
                                 <!-- Tryb edycji — odwzorowuje layout karty -->
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                                 <Grid x:Name="DetailEdit" IsVisible="False" Margin="32,28"
-                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
 
                                     <!-- Wiersz 0: Avatar + pola imię/nazwisko/spec (jak w karcie) -->
                                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,22">
@@ -536,11 +517,11 @@
                                         </Grid>
                                     </StackPanel>
 
-                                    <!-- Wiersz 3: Wymiar czasu pracy (NOWE) -->
+                                    <!-- Wiersz 3: Wymiar czasu pracy -->
                                     <StackPanel Grid.Row="3" Spacing="8" Margin="0,0,0,20">
                                         <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
                                         <TextBlock Text="Wymiar czasu pracy" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
+                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto">
                                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Forma zatrudnienia" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Row="0" Grid.Column="1" x:Name="EmpEmploymentTypeBox" CornerRadius="5" Padding="10,7" FontSize="13" HorizontalAlignment="Stretch"
                                                       SelectionChanged="OnEmploymentTypeChanged">
@@ -555,36 +536,11 @@
                                                 <ComboBoxItem Content="1/2"/>
                                                 <ComboBoxItem Content="1/4"/>
                                             </ComboBox>
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="System czasu pracy" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,6,0,0"/>
-                                            <ComboBox Grid.Row="2" Grid.Column="1" x:Name="EmpWorkTimeSystemBox" CornerRadius="5" Padding="10,7" FontSize="13" HorizontalAlignment="Stretch" Margin="0,6,0,0">
-                                                <ComboBoxItem Content="Podstawowy (max 8h/dobę)"/>
-                                                <ComboBoxItem Content="Równoważny (do 12h/dobę)"/>
-                                            </ComboBox>
                                         </Grid>
                                     </StackPanel>
 
-                                    <!-- Wiersz 4: Ograniczenia prawne (NOWE) -->
-                                    <StackPanel Grid.Row="4" Spacing="8" Margin="0,0,0,20">
-                                        <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
-                                        <TextBlock Text="Ograniczenia prawne" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
-                                        <StackPanel Spacing="6">
-                                            <CheckBox x:Name="EmpParentalProtection" FontSize="13" Foreground="#3A3A3A">
-                                                <TextBlock Text="Ochrona rodzicielska / ciąża" TextWrapping="Wrap"/>
-                                            </CheckBox>
-                                            <TextBlock Text="  System blokuje dyżury powyżej 8h oraz pracę w nocy" FontSize="11" Foreground="#7A7A7A" Margin="28,0,0,0"/>
-                                            <CheckBox x:Name="EmpReducedNorm" FontSize="13" Foreground="#3A3A3A">
-                                                <TextBlock Text="Norma skrócona (np. niepełnosprawność)" TextWrapping="Wrap"/>
-                                            </CheckBox>
-                                            <TextBlock Text="  System zmienia normę dobową na 7h" FontSize="11" Foreground="#7A7A7A" Margin="28,0,0,0"/>
-                                            <CheckBox x:Name="EmpAutoDailyRest" IsChecked="True" FontSize="13" Foreground="#3A3A3A">
-                                                <TextBlock Text="Automatyczny odpoczynek dobowy" TextWrapping="Wrap"/>
-                                            </CheckBox>
-                                            <TextBlock Text="  System ostrzega, jeśli przerwa między zmianami &lt; 11h" FontSize="11" Foreground="#7A7A7A" Margin="28,0,0,0"/>
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <!-- Wiersz 5: Urlop -->
-                                    <StackPanel x:Name="EditVacationSection" Grid.Row="5" Spacing="8">
+                                    <!-- Wiersz 4: Urlop -->
+                                    <StackPanel x:Name="EditVacationSection" Grid.Row="4" Spacing="8">
                                         <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
                                         <TextBlock Text="Urlop" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
                                         <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
@@ -614,8 +570,8 @@
                                         </Grid>
                                     </StackPanel>
 
-                                    <!-- Wiersz 6: Błąd + przyciski -->
-                                    <StackPanel Grid.Row="6" Margin="0,18,0,0" Spacing="8">
+                                    <!-- Wiersz 5: Błąd + przyciski -->
+                                    <StackPanel Grid.Row="5" Margin="0,18,0,0" Spacing="8">
                                         <TextBlock x:Name="EmployeeDialogError"
                                                    Text=""
                                                    FontSize="12"
@@ -645,6 +601,7 @@
                                         </StackPanel>
                                     </StackPanel>
                                 </Grid>
+                                </ScrollViewer>
                             </Grid>
                         </Border>
                     </Grid>

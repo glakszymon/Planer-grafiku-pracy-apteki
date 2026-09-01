@@ -18,10 +18,7 @@ public class EmployeeRecord
     // Wymiar czasu pracy i umowa
     public EmploymentType EmploymentType { get; set; } = EmploymentType.UmowaPrace;
     public WorkTimeRate WorkTimeRate { get; set; } = WorkTimeRate.Full;
-    public WorkTimeSystem WorkTimeSystem { get; set; } = WorkTimeSystem.Podstawowy;
     
-    // Twarde ograniczenia prawne
-    public bool ParentalProtection { get; set; } = false;
-    public bool ReducedNorm { get; set; } = false;
+    // Odpoczynek dobowy
     public bool AutoDailyRest { get; set; } = true;
 }
