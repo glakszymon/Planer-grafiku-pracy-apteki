@@ -731,7 +731,7 @@ public partial class ScheduleTableWindow : Window
     private int CalculateShiftHours(HoursRecord? hour)
     {
         if (hour?.StartTime == null || hour?.EndTime == null) return 0;
-        return (hour.EndTime - hour.StartTime).Hours;
+        return (int)(hour.EndTime - hour.StartTime).TotalHours;
     }
 
     private void UpdateCellVisuals(

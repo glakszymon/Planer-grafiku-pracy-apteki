@@ -69,7 +69,7 @@ public class ScheduleReader
             // Lub sumujemy bezpośrednio z Twojej logiki biznesowej
             int totalHours = employeeShifts
                 .Where(s => s.StartTime.HasValue && s.EndTime.HasValue)
-                .Sum(s => (s.EndTime!.Value - s.StartTime!.Value).Hours);
+                .Sum(s => (int)(s.EndTime!.Value - s.StartTime!.Value).TotalHours);
 
             return new ScheduleRow
             {
