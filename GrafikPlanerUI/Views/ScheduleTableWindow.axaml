@@ -166,7 +166,7 @@
                       CornerRadius="8"
                       Background="White"
                       RowBackground="White"
-                      RowHeight="95">
+                      RowHeight="75">
                 <DataGrid.Columns>
                 
                     <DataGridTemplateColumn Header="Pracownik" Width="130">
@@ -219,6 +219,7 @@
                             Content="&#x2212;"
                             Click="LegendToggle_Click"
                             HorizontalAlignment="Right"
+                            Margin="0,0,-12,0"
                             VerticalAlignment="Center"
                             FontSize="14"
                             FontWeight="Bold"
