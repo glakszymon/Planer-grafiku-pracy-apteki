@@ -117,7 +117,7 @@
                       CornerRadius="8"
                       Background="White"
                       RowBackground="White"
-                      RowHeight="85">
+                      RowHeight="95">
                 <DataGrid.Columns>
                 
                     <DataGridTemplateColumn Header="Pracownik" Width="130">
@@ -126,6 +126,7 @@
                                 <StackPanel Margin="8,4" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding FirstName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
                                     <TextBlock Text="{Binding LastName}" FontWeight="SemiBold" FontSize="13" Foreground="{Binding NameColor}"/>
+                                    <TextBlock Text="{Binding Specialisation}" FontSize="10" Foreground="#2563EB"/>
                                     <TextBlock Text="{Binding VacationLine1}" FontSize="11" Foreground="{Binding VacationLine1Color}" Margin="0,2,0,0"/>
                                     <TextBlock Text="{Binding VacationLine2}" FontSize="11" Foreground="{Binding VacationLine2Color}"/>
                                 </StackPanel>
