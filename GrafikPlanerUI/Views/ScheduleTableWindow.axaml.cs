@@ -199,7 +199,7 @@ public partial class ScheduleTableWindow : Window
             var dayColumn = new DataGridTemplateColumn
             {
                 Header = CreateHeaderTextBlock(day),
-                Width = new DataGridLength(1, DataGridLengthUnitType.Star),
+                Width = new DataGridLength(CalculateDayColumnWidth(days.Count), DataGridLengthUnitType.Pixel),
 
                 CellTemplate = new FuncDataTemplate<ScheduleRow>((row, namescope) =>
                 {
@@ -744,6 +744,14 @@ public partial class ScheduleTableWindow : Window
 
     // ===== Gap Indicator Methods =====
 
+    private double CalculateDayColumnWidth(int dayCount)
+    {
+        // Use screen width or fallback to 1920; subtract fixed columns (130+70) and some padding
+        var screenWidth = Screens.Primary?.Bounds.Width ?? 1920;
+        var available = screenWidth - 200 - 40; // 200 for fixed cols, 40 for scrollbar/padding
+        return Math.Max(35, available / dayCount);
+    }
+
     private void OnDataGridLoadingRow(object? sender, DataGridRowEventArgs e)
     {
         if (e.Row.DataContext is ScheduleRow row)
@@ -764,7 +772,11 @@ public partial class ScheduleTableWindow : Window
             }
             else
             {
-                e.Row.Height = 95;
+                // Normal rows use DataGrid.RowHeight (95) — no override needed.
+                // Reset in case this row was previously recycled from a gap row.
+                e.Row.Height = double.NaN;
+                e.Row.BorderThickness = new Thickness(0);
+                e.Row.Background = Brushes.White;
             }
         }
     }

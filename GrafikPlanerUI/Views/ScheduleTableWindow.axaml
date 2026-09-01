@@ -41,9 +41,13 @@
         <Style Selector="DataGridCell">
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
         </Style>
         <Style Selector="DataGridCell /template/ ContentPresenter">
             <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="DataGridCell /template/ Grid#FocusVisual">
+            <Setter Property="IsVisible" Value="False" />
         </Style>
 
         <!-- Wylaczenie podswietlenia wiersza -->
@@ -66,6 +70,43 @@
         </Style>
         <Style Selector="DataGridRow:pointerover DataGridCell">
             <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <!-- Prevent focus/selection from changing cell layout -->
+        <Style Selector="DataGridCell:focus /template/ ContentPresenter">
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="DataGridCell:current /template/ ContentPresenter">
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="DataGridRow:focus">
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="DataGridCell:focus">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <!-- Wylaczenie domyslnej czarnej ramki fokusa/zaznaczenia na komorkach -->
+        <Style Selector="DataGridCell:current /template/ Grid#FocusVisual">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="DataGridCell:focus /template/ Grid#FocusVisual">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="DataGridCell /template/ Rectangle#CurrencyVisual">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="DataGridCell:current">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="DataGridCell:focus">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="DataGridCell:current">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
     </Window.Styles>
     
@@ -117,7 +158,7 @@
                       CornerRadius="8"
                       Background="White"
                       RowBackground="White"
-                      RowHeight="NaN">
+                      RowHeight="95">
                 <DataGrid.Columns>
                 
                     <DataGridTemplateColumn Header="Pracownik" Width="130">
