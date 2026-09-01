@@ -150,7 +150,8 @@ public class ShiftTable : DbConnectionOption
         string monthPattern = $"{year:D4}-{month:D2}-%";
         command.CommandText = @"
             SELECT ShiftRecords.Id, ShiftRecords.EmployeeId, ShiftRecords.ShiftHourId, ShiftRecords.ShiftDate, ShiftRecords.PoleColor, ShiftRecords.PoleIcon
-            FROM ShiftRecords WHERE ( ShiftDate LIKE @monthPattern ) AND ( EmployeeId LIKE @workerId);";
+            FROM ShiftRecords WHERE ( ShiftDate LIKE @monthPattern ) AND ( EmployeeId LIKE @workerId)
+            ORDER BY ShiftDate DESC LIMIT 1;";
         
         command.Parameters.AddWithValue("@monthPattern", monthPattern);
         command.Parameters.AddWithValue("@workerId", workerId);

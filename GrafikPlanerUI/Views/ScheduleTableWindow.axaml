@@ -203,40 +203,68 @@
             </DataGrid>
         </DockPanel>
 
-        <!-- Legenda oznaczeń godzinowych — lewy dolny róg -->
-        <Border x:Name="LegendPanel"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Margin="0,0,16,16"
-                Background="#FFFFFFEE"
-                BorderBrush="#E2E8F0"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="14,10"
-                BoxShadow="0 2 8 0 #18000000"
-                Cursor="Hand"
-                PointerPressed="LegendPanel_PointerPressed">
-            <StackPanel Spacing="4">
-                <TextBlock Text="Legenda" FontSize="12" FontWeight="SemiBold" Foreground="#2D3748"/>
-                <StackPanel x:Name="LegendContent" Spacing="4">
-                    <ItemsControl x:Name="LegendItems">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="views:LegendItem">
-                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
-                                    <Border Width="28" Height="20" CornerRadius="3" Background="#EDF2F7" 
-                                            BorderBrush="#CBD5E0" BorderThickness="1">
-                                        <TextBlock Text="{Binding Symbol}" 
-                                                   FontSize="11" FontWeight="Bold" Foreground="#2D3748"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <TextBlock Text="{Binding Description}" 
-                                               FontSize="12" Foreground="#4A5568" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+        <!-- Legenda oznaczeń godzinowych + panel naruszeń 11h — prawy dolny róg -->
+        <StackPanel Orientation="Vertical" Spacing="8"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Margin="0,0,16,16">
+
+            <Border x:Name="LegendPanel"
+                    Background="#FFFFFFEE"
+                    BorderBrush="#E2E8F0"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="14,10"
+                    BoxShadow="0 2 8 0 #18000000"
+                    Cursor="Hand"
+                    PointerPressed="LegendPanel_PointerPressed">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Legenda" FontSize="12" FontWeight="SemiBold" Foreground="#2D3748"/>
+                    <StackPanel x:Name="LegendContent" Spacing="4">
+                        <ItemsControl x:Name="LegendItems">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="views:LegendItem">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
+                                        <Border Width="28" Height="20" CornerRadius="3" Background="#EDF2F7" 
+                                                BorderBrush="#CBD5E0" BorderThickness="1">
+                                            <TextBlock Text="{Binding Symbol}" 
+                                                       FontSize="11" FontWeight="Bold" Foreground="#2D3748"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Description}" 
+                                                   FontSize="12" Foreground="#4A5568" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </Border>
+            </Border>
+
+            <Border x:Name="ViolationsPanel"
+                    Background="#FFFFFBF0"
+                    BorderBrush="#E2E8F0"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="14,10"
+                    BoxShadow="0 2 8 0 #18000000"
+                    Cursor="Hand"
+                    PointerPressed="ViolationsPanel_PointerPressed"
+                    IsVisible="False">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Naruszenia 11h" FontSize="12" FontWeight="SemiBold" Foreground="#B45309"/>
+                    <StackPanel x:Name="ViolationsContent" Spacing="4">
+                        <ItemsControl x:Name="ViolationsItems">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="views:ViolationItem">
+                                    <Border BorderBrush="#E7C8A0" BorderThickness="1" CornerRadius="4" Padding="6,4" Background="#FFFFFF">
+                                        <TextBlock Text="{Binding Display}" FontSize="11" Foreground="#92400E" TextWrapping="Wrap"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
     </Grid>
 </Window>

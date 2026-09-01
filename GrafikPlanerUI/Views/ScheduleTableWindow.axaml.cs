@@ -54,6 +54,8 @@ public partial class ScheduleTableWindow : Window
     private HashSet<DateOnly> _holidayDates = new();
     private DataGridRow? _gapDataGridRow;
     private DataGridRow? _pharmacistGapDataGridRow;
+    private int _currentMonth;
+    private int _currentYear;
 
     // Multi-select state
     private bool _isDragging;
@@ -196,6 +198,8 @@ public partial class ScheduleTableWindow : Window
         if (firstDate != default)
         {
             ScheduleTitleText.Text = $"{firstDate:MMMM yyyy}";
+            _currentMonth = firstDate.Month;
+            _currentYear = firstDate.Year;
         }
 
         // Load closed days from settings
@@ -405,6 +409,9 @@ public partial class ScheduleTableWindow : Window
 
         // Initialize gap cache
         InitGapCache(days);
+
+        // Initialize daily-rest violations panel
+        RefreshViolations();
     }
 
     private void OnGlobalPointerMoved(object? sender, PointerEventArgs e)
@@ -609,6 +616,9 @@ public partial class ScheduleTableWindow : Window
 
             // Refresh gap indicators for edited days
             RefreshGapsForDays(editedDays);
+
+            // Refresh daily-rest violations (11h) for the whole month
+            RefreshViolations();
         };
 
         return flyout;
@@ -954,6 +964,39 @@ public partial class ScheduleTableWindow : Window
         }
     }
 
+    // ===== Daily Rest (11h) Violations =====
+
+    private void RefreshViolations()
+    {
+        try
+        {
+            if (_currentMonth == 0 || _currentYear == 0)
+            {
+                ViolationsPanel.IsVisible = false;
+                return;
+            }
+
+            var violations = _analiser.CheckDailyRestInSchedule(_scheduleRows, _currentMonth, _currentYear);
+
+            var items = violations.Select(v => new ViolationItem
+            {
+                Display = $"{v.EmployeeName} – {v.Day.ToString("dd.MM")} – łamie zasadę 11h odpoczynku ({v.Message})"
+            }).ToList();
+
+            ViolationsItems.ItemsSource = items;
+            ViolationsPanel.IsVisible = items.Count > 0;
+        }
+        catch
+        {
+            ViolationsPanel.IsVisible = false;
+        }
+    }
+
+    private void ViolationsPanel_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    {
+        ViolationsContent.IsVisible = !ViolationsContent.IsVisible;
+    }
+
     private void UpdateColumnHeader(DateOnly day)
     {
         if (!_headerTextBlocks.TryGetValue(day, out var tb))
@@ -1044,4 +1087,9 @@ public class LegendItem
 {
     public string Symbol { get; set; } = "";
     public string Description { get; set; } = "";
+}
+
+public class ViolationItem
+{
+    public string Display { get; set; } = "";
 }
