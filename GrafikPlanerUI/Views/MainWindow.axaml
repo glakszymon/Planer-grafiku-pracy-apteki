@@ -226,43 +226,41 @@
                     </Grid>
 
                     <!-- Master-Detail layout -->
-                    <Grid ColumnDefinitions="270,12,*">
-                        <!-- LEWA KOLUMNA: Lista pracowników -->
-                        <Border Grid.Column="0">
+                    <Grid ColumnDefinitions="250,*">
+                        <!-- LEWA KOLUMNA: Lista pracowników (sidebar) -->
+                        <Border Grid.Column="0" Background="#F0EFED" CornerRadius="8,0,0,8" Padding="0,8">
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                <StackPanel Spacing="0">
+                                <StackPanel Spacing="0" Margin="6,0">
                                     <TextBlock x:Name="EmployeeStatusText" 
                                                Text="" 
                                                FontSize="12"
                                                FontWeight="SemiBold" 
-                                               Margin="0,0,0,8"
+                                               Margin="8,0,0,8"
                                                HorizontalAlignment="Left" />
 
                                     <ItemsControl x:Name="EmployeesList" HorizontalAlignment="Stretch">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <StackPanel HorizontalAlignment="Stretch"/>
+                                                <StackPanel HorizontalAlignment="Stretch" Spacing="2"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="models:EmployeeRecord">
-                                                <Border Margin="0,2,0,2"
-                                                        Padding="12,11"
-                                                        Background="White"
-                                                        BorderBrush="#E0DDD8"
-                                                        BorderThickness="1"
-                                                        CornerRadius="6"
+                                                <Border Margin="0"
+                                                        Padding="12,10"
+                                                        Background="Transparent"
+                                                        CornerRadius="4"
                                                         Cursor="Hand"
                                                         PointerPressed="OnEmployeeItemClick"
                                                         Tag="{Binding}">
                                                     <Grid ColumnDefinitions="Auto,*">
                                                         <Border Grid.Column="0"
-                                                                Width="34" Height="34"
-                                                                CornerRadius="17"
-                                                                Background="#EDF3EF"
+                                                                Width="32" Height="32"
+                                                                CornerRadius="16"
+                                                                Background="#E0EBDF"
                                                                 VerticalAlignment="Center">
                                                             <TextBlock Text="{Binding FirstName[0]}"
-                                                                       FontSize="13"
+                                                                       FontSize="12"
                                                                        FontWeight="Bold"
                                                                        Foreground="#4A7A5A"
                                                                        HorizontalAlignment="Center"
@@ -281,8 +279,8 @@
                                                             </StackPanel>
                                                             <TextBlock Text="{Binding Specialisation}"
                                                                        FontSize="11"
-                                                                       Foreground="#5A5A5A"
-                                                                       Margin="0,2,0,0"/>
+                                                                       Foreground="#6A6A6A"
+                                                                       Margin="0,1,0,0"/>
                                                         </StackPanel>
                                                     </Grid>
                                                 </Border>
@@ -295,7 +293,7 @@
                                             IsVisible="False"
                                             Background="White"
                                             CornerRadius="6"
-                                            Padding="16,28"
+                                            Padding="16,24"
                                             Margin="0,6,0,0"
                                             HorizontalAlignment="Stretch"
                                             BorderBrush="#E0DDD8"
@@ -316,15 +314,13 @@
                             </ScrollViewer>
                         </Border>
 
-                        <!-- GAP kolumna 1 (12px) jest automatyczna -->
-
                         <!-- PRAWA KOLUMNA: Panel szczegółów -->
                         <Border x:Name="DetailPanel"
-                                Grid.Column="2"
+                                Grid.Column="1"
                                 Background="White"
                                 BorderBrush="#E0DDD8"
-                                BorderThickness="1"
-                                CornerRadius="8"
+                                BorderThickness="0,1,1,1"
+                                CornerRadius="0,8,8,0"
                                 Opacity="1">
                             <Border.Transitions>
                                 <Transitions>
