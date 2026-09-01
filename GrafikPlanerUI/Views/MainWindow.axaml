@@ -571,12 +571,38 @@
                         </StackPanel>
                     </Border>
 
-                    <Grid ColumnDefinitions="*,20,*">
-                        <!-- ===== LEWA KOLUMNA: Ustawienia apteki ===== -->
-                        <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <StackPanel Spacing="16">
-                                <!-- Godziny otwarcia -->
-                                <Border Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="8" Padding="20,16">
+                    <!-- Sub-tabs -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="0" Margin="0,0,0,16">
+                        <Border x:Name="SettingsSubTabGodziny" 
+                                Padding="16,8" CornerRadius="6,6,0,0"
+                                Background="White" BorderBrush="#E0DDD8" BorderThickness="1,1,1,0"
+                                Cursor="Hand"
+                                PointerPressed="OnSettingsSubTabGodzinyClick">
+                            <TextBlock Text="Godziny i dni pracy" FontSize="13" FontWeight="SemiBold" Foreground="#3A3A3A"/>
+                        </Border>
+                        <Border x:Name="SettingsSubTabSwieta" 
+                                Padding="16,8" CornerRadius="6,6,0,0"
+                                Background="#EFECEA" BorderBrush="#E8E5E0" BorderThickness="1,1,1,0"
+                                Cursor="Hand" Margin="3,0,0,0"
+                                PointerPressed="OnSettingsSubTabSwietaClick">
+                            <TextBlock Text="Święta" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A"/>
+                        </Border>
+                        <Border x:Name="SettingsSubTabZmiany" 
+                                Padding="16,8" CornerRadius="6,6,0,0"
+                                Background="#EFECEA" BorderBrush="#E8E5E0" BorderThickness="1,1,1,0"
+                                Cursor="Hand" Margin="3,0,0,0"
+                                PointerPressed="OnSettingsSubTabZmianyClick">
+                            <TextBlock Text="Zmiany pracowników" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Sub-tab content container -->
+                    <Panel>
+                        <!-- ===== SUB-TAB: Godziny i dni pracy ===== -->
+                        <Border x:Name="SettingsPageGodziny" IsVisible="True" Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="0,8,8,8" Padding="24,20">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="20" MaxWidth="500">
+                                    <!-- Godziny otwarcia -->
                                     <StackPanel Spacing="12">
                                         <TextBlock Text="Godziny otwarcia" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
                                         <Grid ColumnDefinitions="150,*" RowDefinitions="Auto,Auto">
@@ -586,10 +612,11 @@
                                             <TimePicker Grid.Row="1" Grid.Column="1" x:Name="SettingsClosingTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left" Margin="0,8,0,0"/>
                                         </Grid>
                                     </StackPanel>
-                                </Border>
 
-                                <!-- Dni otwarcia -->
-                                <Border Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="8" Padding="20,16">
+                                    <!-- Separator -->
+                                    <Border Height="1" Background="#E0DDD8"/>
+
+                                    <!-- Dni otwarcia -->
                                     <StackPanel Spacing="10">
                                         <TextBlock Text="Dni otwarcia" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
                                         <CheckBox x:Name="ChkMonday" Content="Poniedziałek" FontSize="13"/>
@@ -600,261 +627,270 @@
                                         <CheckBox x:Name="ChkSaturday" Content="Sobota" FontSize="13"/>
                                         <CheckBox x:Name="ChkSunday" Content="Niedziela" FontSize="13"/>
                                     </StackPanel>
-                                </Border>
 
-                                <!-- Święta -->
-                                <Border Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="8" Padding="20,16">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Święta (coroczne)" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
-                                        
-                                        <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
-                                            <ItemsControl x:Name="HolidaysList">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate DataType="models:HolidayRecord">
-                                                        <Border Padding="4,3" Margin="0,1">
-                                                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                                                <CheckBox Grid.Column="0" 
-                                                                          IsChecked="{Binding IsActive}" 
-                                                                          Margin="0,0,8,0"
-                                                                          Click="OnHolidayToggleClick"/>
-                                                                <TextBlock Grid.Column="1" 
-                                                                           Text="{Binding DisplayText}"
-                                                                           VerticalAlignment="Center" 
-                                                                           FontSize="12"
-                                                                           Foreground="#3A3A3A"/>
-                                                                <Button Grid.Column="2" 
-                                                                        Content="Usuń"
-                                                                        FontSize="11"
-                                                                        Padding="8,2"
-                                                                        Background="#E57373"
-                                                                        Foreground="White"
-                                                                        CornerRadius="4"
-                                                                        BorderThickness="0"
-                                                                        Cursor="Hand"
-                                                                        IsVisible="{Binding IsCustom}"
-                                                                        Click="OnDeleteHolidayClick"/>
-                                                            </Grid>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-                                        
-                                        <!-- Dodaj własne święto -->
-                                        <Border BorderBrush="#E0DDD8" BorderThickness="0,1,0,0" Padding="0,10,0,0" Margin="0,4,0,0">
-                                            <StackPanel Spacing="6">
-                                                <TextBlock Text="Dodaj własne święto (coroczne)" FontSize="12" FontWeight="SemiBold" Foreground="#5A5A5A"/>
-                                                <Grid ColumnDefinitions="Auto,Auto,*,Auto" RowDefinitions="Auto">
-                                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4" Margin="0,0,8,0">
-                                                        <NumericUpDown x:Name="CustomHolidayDay" 
-                                                                       Minimum="1" Maximum="31"
-                                                                       FormatString="0"
-                                                                       Width="65" FontSize="12"
-                                                                       Watermark="Dzień"/>
-                                                        <TextBlock Text="." VerticalAlignment="Center" FontSize="13"/>
-                                                        <NumericUpDown x:Name="CustomHolidayMonth" 
-                                                                       Minimum="1" Maximum="12"
-                                                                       FormatString="0"
-                                                                       Width="65" FontSize="12"
-                                                                       Watermark="Mies."/>
-                                                    </StackPanel>
-                                                    <TextBox Grid.Column="2"
-                                                             x:Name="CustomHolidayName" 
-                                                             Watermark="Nazwa święta"
-                                                             FontSize="12"
-                                                             Margin="0,0,8,0"/>
-                                                    <Button Grid.Column="3"
-                                                            Content="+ Dodaj"
-                                                            Click="OnAddCustomHolidayClick"
-                                                            Background="#5D8A6B"
-                                                            Foreground="White"
-                                                            FontWeight="SemiBold"
-                                                            FontSize="12"
-                                                            Padding="12,5"
-                                                            CornerRadius="4"
-                                                            Cursor="Hand"
-                                                            BorderThickness="0"/>
-                                                </Grid>
-                                                <TextBlock x:Name="HolidayErrorText" Text="" FontSize="11" Foreground="#B04040"/>
-                                            </StackPanel>
-                                        </Border>
+                                    <!-- Zapisz -->
+                                    <StackPanel Spacing="6">
+                                        <TextBlock x:Name="SettingsStatusText" Text="" FontSize="12" FontWeight="SemiBold"/>
+                                        <Button Content="Zapisz ustawienia"
+                                                Click="OnSaveSettingsClick"
+                                                Background="#5D8A6B"
+                                                Foreground="White"
+                                                FontWeight="SemiBold"
+                                                FontSize="13"
+                                                Padding="18,9"
+                                                CornerRadius="6"
+                                                Cursor="Hand"
+                                                BorderThickness="0"/>
                                     </StackPanel>
-                                </Border>
-
-                                <!-- Zapisz ustawienia -->
-                                <StackPanel Spacing="6">
-                                    <TextBlock x:Name="SettingsStatusText" Text="" FontSize="12" FontWeight="SemiBold"/>
-                                    <Button Content="Zapisz ustawienia"
-                                            Click="OnSaveSettingsClick"
-                                            Background="#5D8A6B"
-                                            Foreground="White"
-                                            FontWeight="SemiBold"
-                                            FontSize="13"
-                                            Padding="18,9"
-                                            CornerRadius="6"
-                                            Cursor="Hand"
-                                            BorderThickness="0"/>
                                 </StackPanel>
-                            </StackPanel>
-                        </ScrollViewer>
+                            </ScrollViewer>
+                        </Border>
 
-                        <!-- ===== PRAWA KOLUMNA: Godziny zmian ===== -->
-                        <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <StackPanel Spacing="12">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock Grid.Column="0" Text="Godziny zmian pracowników" 
-                                               FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"
-                                               VerticalAlignment="Center"/>
-                                    <Button Grid.Column="1"
-                                            Content="+ Dodaj zmianę"
-                                            Click="OnAddHourClick"
-                                            Background="#5D8A6B"
-                                            Foreground="White"
-                                            FontWeight="SemiBold"
-                                            FontSize="13"
-                                            Padding="14,7"
-                                            CornerRadius="6"
-                                            Cursor="Hand"
-                                            BorderThickness="0"/>
-                                </Grid>
+                        <!-- ===== SUB-TAB: Święta ===== -->
+                        <Border x:Name="SettingsPageSwieta" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="0,8,8,8" Padding="24,20">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="16" MaxWidth="600">
+                                    <TextBlock Text="Dni ustawowo wolne od pracy" FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"/>
+                                    <TextBlock Text="Odznacz święto, aby apteka pracowała w tym dniu. Ustawienia dotyczą każdego roku." 
+                                               FontSize="12" Foreground="#7A7A7A" TextWrapping="Wrap"/>
 
-                                <TextBlock x:Name="HourStatusText" Text="" FontSize="12" FontWeight="SemiBold"/>
+                                    <ItemsControl x:Name="HolidaysList">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="2"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="models:HolidayRecord">
+                                                <Border Padding="8,6" Background="#FAFAF9" CornerRadius="4">
+                                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                                        <CheckBox Grid.Column="0" 
+                                                                  IsChecked="{Binding IsActive}" 
+                                                                  Margin="0,0,10,0"
+                                                                  Click="OnHolidayToggleClick"/>
+                                                        <TextBlock Grid.Column="1" 
+                                                                   Text="{Binding DisplayText}"
+                                                                   VerticalAlignment="Center" 
+                                                                   FontSize="13"
+                                                                   Foreground="#3A3A3A"/>
+                                                        <Button Grid.Column="2" 
+                                                                Content="Usuń"
+                                                                FontSize="11"
+                                                                Padding="10,4"
+                                                                Background="#E57373"
+                                                                Foreground="White"
+                                                                CornerRadius="4"
+                                                                BorderThickness="0"
+                                                                Cursor="Hand"
+                                                                IsVisible="{Binding IsCustom}"
+                                                                Click="OnDeleteHolidayClick"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    
+                                    <!-- Separator -->
+                                    <Border Height="1" Background="#E0DDD8"/>
 
-                                <!-- Formularz dodawania/edycji zmiany -->
-                                <Border x:Name="HourEditPanel" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="8" Padding="20,16">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock x:Name="HourEditTitle" Text="Nowa zmiana" FontSize="13" FontWeight="SemiBold" Foreground="#3A3A3A"/>
-                                        <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto">
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Symbol" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center"/>
-                                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="HourSymbolBox" PlaceholderText="np. R, P, N" CornerRadius="5" Padding="10,7" FontSize="13"/>
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Od" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,8,0,0"/>
-                                            <TimePicker Grid.Row="1" Grid.Column="1" x:Name="HourStartTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left" Margin="0,8,0,0"/>
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Do" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,8,0,0"/>
-                                            <TimePicker Grid.Row="2" Grid.Column="1" x:Name="HourEndTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left" Margin="0,8,0,0"/>
-                                        </Grid>
-                                        <CheckBox x:Name="HourIsVacation" Content="Urlop" FontSize="13" Margin="0,4,0,0" IsCheckedChanged="OnHourIsVacationChanged"/>
-                                        <TextBlock x:Name="HourVacationHint" 
-                                                   Text="Ustaw godziny zmiany odpowiadające wymiarowi urlopu — zostaną doliczone do sumy godzin pracy pracownika. Zmiana nie będzie wliczana do niczego innego." 
-                                                   FontSize="11" 
-                                                   Foreground="#7A7A7A" 
-                                                   TextWrapping="Wrap" 
-                                                   IsVisible="False" 
-                                                   Margin="20,0,0,4"/>
-                                        <TextBlock x:Name="HourEditError" Text="" FontSize="12" Foreground="#B04040"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <Button Content="Zapisz"
-                                                    Click="OnHourSubmitClick"
+                                    <!-- Dodaj własne święto -->
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Dodaj własne święto (coroczne)" FontSize="13" FontWeight="SemiBold" Foreground="#3A3A3A"/>
+                                        <Grid ColumnDefinitions="Auto,Auto,8,*,8,Auto" RowDefinitions="Auto">
+                                            <NumericUpDown Grid.Column="0" x:Name="CustomHolidayDay" 
+                                                           Minimum="1" Maximum="31"
+                                                           FormatString="0"
+                                                           Width="70" FontSize="13"
+                                                           Watermark="Dzień"/>
+                                            <NumericUpDown Grid.Column="1" x:Name="CustomHolidayMonth" 
+                                                           Minimum="1" Maximum="12"
+                                                           FormatString="0"
+                                                           Width="70" FontSize="13"
+                                                           Watermark="Mies."
+                                                           Margin="6,0,0,0"/>
+                                            <TextBox Grid.Column="3"
+                                                     x:Name="CustomHolidayName" 
+                                                     Watermark="Nazwa święta"
+                                                     FontSize="13"
+                                                     CornerRadius="5"
+                                                     Padding="10,7"/>
+                                            <Button Grid.Column="5"
+                                                    Content="+ Dodaj"
+                                                    Click="OnAddCustomHolidayClick"
                                                     Background="#5D8A6B"
                                                     Foreground="White"
                                                     FontWeight="SemiBold"
                                                     FontSize="13"
-                                                    Padding="16,7"
+                                                    Padding="14,7"
                                                     CornerRadius="6"
                                                     Cursor="Hand"
                                                     BorderThickness="0"/>
-                                            <Button Content="Anuluj"
-                                                    Click="OnHourCancelClick"
-                                                    Background="#F0EFED"
-                                                    Foreground="#2A2A2A"
-                                                    FontSize="13"
-                                                    Padding="16,7"
-                                                    CornerRadius="6"
-                                                    Cursor="Hand"
-                                                    BorderBrush="#E0DDD8"
-                                                    BorderThickness="1"/>
+                                        </Grid>
+                                        <TextBlock x:Name="HolidayErrorText" Text="" FontSize="11" Foreground="#B04040"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- ===== SUB-TAB: Zmiany pracowników ===== -->
+                        <Border x:Name="SettingsPageZmiany" IsVisible="False" Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="0,8,8,8" Padding="24,20">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="12" MaxWidth="600">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Text="Godziny zmian pracowników" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#3A3A3A"
+                                                   VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Content="+ Dodaj zmianę"
+                                                Click="OnAddHourClick"
+                                                Background="#5D8A6B"
+                                                Foreground="White"
+                                                FontWeight="SemiBold"
+                                                FontSize="13"
+                                                Padding="14,7"
+                                                CornerRadius="6"
+                                                Cursor="Hand"
+                                                BorderThickness="0"/>
+                                    </Grid>
+
+                                    <TextBlock x:Name="HourStatusText" Text="" FontSize="12" FontWeight="SemiBold"/>
+
+                                    <!-- Formularz dodawania/edycji zmiany -->
+                                    <Border x:Name="HourEditPanel" IsVisible="False" Background="#FAFAF9" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="8" Padding="20,16">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock x:Name="HourEditTitle" Text="Nowa zmiana" FontSize="13" FontWeight="SemiBold" Foreground="#3A3A3A"/>
+                                            <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto">
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Symbol" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Row="0" Grid.Column="1" x:Name="HourSymbolBox" PlaceholderText="np. R, P, N" CornerRadius="5" Padding="10,7" FontSize="13"/>
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Od" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                                <TimePicker Grid.Row="1" Grid.Column="1" x:Name="HourStartTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Do" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                                <TimePicker Grid.Row="2" Grid.Column="1" x:Name="HourEndTime" ClockIdentifier="24HourClock" MinuteIncrement="15" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                                            </Grid>
+                                            <CheckBox x:Name="HourIsVacation" Content="Urlop" FontSize="13" Margin="0,4,0,0" IsCheckedChanged="OnHourIsVacationChanged"/>
+                                            <TextBlock x:Name="HourVacationHint" 
+                                                       Text="Ustaw godziny zmiany odpowiadające wymiarowi urlopu — zostaną doliczone do sumy godzin pracy pracownika. Zmiana nie będzie wliczana do niczego innego." 
+                                                       FontSize="11" 
+                                                       Foreground="#7A7A7A" 
+                                                       TextWrapping="Wrap" 
+                                                       IsVisible="False" 
+                                                       Margin="20,0,0,4"/>
+                                            <TextBlock x:Name="HourEditError" Text="" FontSize="12" Foreground="#B04040"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Button Content="Zapisz"
+                                                        Click="OnHourSubmitClick"
+                                                        Background="#5D8A6B"
+                                                        Foreground="White"
+                                                        FontWeight="SemiBold"
+                                                        FontSize="13"
+                                                        Padding="16,7"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        BorderThickness="0"/>
+                                                <Button Content="Anuluj"
+                                                        Click="OnHourCancelClick"
+                                                        Background="#F0EFED"
+                                                        Foreground="#2A2A2A"
+                                                        FontSize="13"
+                                                        Padding="16,7"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        BorderBrush="#E0DDD8"
+                                                        BorderThickness="1"/>
+                                            </StackPanel>
                                         </StackPanel>
-                                    </StackPanel>
-                                </Border>
+                                    </Border>
 
-                                <!-- Lista zmian -->
-                                <ItemsControl x:Name="HoursList">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Spacing="4"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="models:HoursRecord">
-                                            <Border Padding="14,10" Background="White" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="6">
-                                                <Grid ColumnDefinitions="60,*,Auto,Auto">
-                                                    <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontSize="14" FontWeight="Bold" Foreground="#4A7C59" VerticalAlignment="Center"/>
-                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="4">
-                                                        <TextBlock Text="{Binding StartTime}" FontSize="13" Foreground="#3A3A3A"/>
-                                                        <TextBlock Text="–" FontSize="13" Foreground="#9A9A9A"/>
-                                                        <TextBlock Text="{Binding EndTime}" FontSize="13" Foreground="#3A3A3A"/>
-                                                    </StackPanel>
-                                                    <Button Grid.Column="2"
-                                                            Content="Edytuj"
-                                                            Click="OnEditHourClick"
-                                                            Tag="{Binding}"
-                                                            Background="#F0EFED"
-                                                            Foreground="#2A2A2A"
-                                                            FontSize="12"
-                                                            Padding="10,5"
-                                                            CornerRadius="5"
-                                                            Cursor="Hand"
-                                                            BorderThickness="0"
-                                                            Margin="0,0,6,0"
-                                                            VerticalAlignment="Center"/>
-                                                    <Button Grid.Column="3"
-                                                            Content="Usuń"
-                                                            Click="OnDeleteHourClick"
-                                                            Tag="{Binding}"
-                                                            Background="#FDF5F5"
-                                                            Foreground="#B04040"
-                                                            FontSize="12"
-                                                            Padding="10,5"
-                                                            CornerRadius="5"
-                                                            Cursor="Hand"
-                                                            BorderThickness="0"
-                                                            VerticalAlignment="Center"/>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                    <!-- Lista zmian -->
+                                    <ItemsControl x:Name="HoursList">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="4"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="models:HoursRecord">
+                                                <Border Padding="14,10" Background="#FAFAF9" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="6">
+                                                    <Grid ColumnDefinitions="60,*,Auto,Auto">
+                                                        <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontSize="14" FontWeight="Bold" Foreground="#4A7C59" VerticalAlignment="Center"/>
+                                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="4">
+                                                            <TextBlock Text="{Binding StartTime}" FontSize="13" Foreground="#3A3A3A"/>
+                                                            <TextBlock Text="–" FontSize="13" Foreground="#9A9A9A"/>
+                                                            <TextBlock Text="{Binding EndTime}" FontSize="13" Foreground="#3A3A3A"/>
+                                                        </StackPanel>
+                                                        <Button Grid.Column="2"
+                                                                Content="Edytuj"
+                                                                Click="OnEditHourClick"
+                                                                Tag="{Binding}"
+                                                                Background="#F0EFED"
+                                                                Foreground="#2A2A2A"
+                                                                FontSize="12"
+                                                                Padding="10,5"
+                                                                CornerRadius="5"
+                                                                Cursor="Hand"
+                                                                BorderThickness="0"
+                                                                Margin="0,0,6,0"
+                                                                VerticalAlignment="Center"/>
+                                                        <Button Grid.Column="3"
+                                                                Content="Usuń"
+                                                                Click="OnDeleteHourClick"
+                                                                Tag="{Binding}"
+                                                                Background="#FDF5F5"
+                                                                Foreground="#B04040"
+                                                                FontSize="12"
+                                                                Padding="10,5"
+                                                                CornerRadius="5"
+                                                                Cursor="Hand"
+                                                                BorderThickness="0"
+                                                                VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
 
-                                <!-- Panel potwierdzenia usunięcia zmiany -->
-                                <Border x:Name="DeleteHourConfirmPanel" IsVisible="False"
-                                        Background="#FDF5F5" CornerRadius="6" Padding="16,12">
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="Czy na pewno chcesz usunąć tę zmianę?" 
-                                                   FontSize="13" Foreground="#B04040" FontWeight="Medium"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <Button Content="Tak, usuń" Click="OnConfirmDeleteHourClick"
-                                                    Background="#B04040" Foreground="White" FontSize="12"
-                                                    Padding="12,6" CornerRadius="5" BorderThickness="0" Cursor="Hand"/>
-                                            <Button Content="Anuluj" Click="OnCancelDeleteHourClick"
-                                                    Background="White" Foreground="#2A2A2A" FontSize="12"
-                                                    Padding="12,6" CornerRadius="5" BorderBrush="#E0DDD8" BorderThickness="1" Cursor="Hand"/>
+                                    <!-- Panel potwierdzenia usunięcia zmiany -->
+                                    <Border x:Name="DeleteHourConfirmPanel" IsVisible="False"
+                                            Background="#FDF5F5" CornerRadius="6" Padding="16,12">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Czy na pewno chcesz usunąć tę zmianę?" 
+                                                       FontSize="13" Foreground="#B04040" FontWeight="Medium"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Button Content="Tak, usuń" Click="OnConfirmDeleteHourClick"
+                                                        Background="#B04040" Foreground="White" FontSize="12"
+                                                        Padding="12,6" CornerRadius="5" BorderThickness="0" Cursor="Hand"/>
+                                                <Button Content="Anuluj" Click="OnCancelDeleteHourClick"
+                                                        Background="White" Foreground="#2A2A2A" FontSize="12"
+                                                        Padding="12,6" CornerRadius="5" BorderBrush="#E0DDD8" BorderThickness="1" Cursor="Hand"/>
+                                            </StackPanel>
                                         </StackPanel>
-                                    </StackPanel>
-                                </Border>
+                                    </Border>
 
-                                <!-- Empty state -->
-                                <Border x:Name="HoursEmptyState"
-                                        IsVisible="False"
-                                        Background="White"
-                                        CornerRadius="6"
-                                        Padding="16,28"
-                                        HorizontalAlignment="Stretch"
-                                        BorderBrush="#E0DDD8"
-                                        BorderThickness="1">
-                                    <StackPanel HorizontalAlignment="Center" Spacing="6">
-                                        <TextBlock Text="Brak zdefiniowanych zmian"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#2A2A2A"
-                                                   HorizontalAlignment="Center"/>
-                                        <TextBlock Text="Dodaj pierwszą zmianę."
-                                                   FontSize="12"
-                                                   Foreground="#7A7A7A"
-                                                   HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </ScrollViewer>
-                    </Grid>
+                                    <!-- Empty state -->
+                                    <Border x:Name="HoursEmptyState"
+                                            IsVisible="False"
+                                            Background="#FAFAF9"
+                                            CornerRadius="6"
+                                            Padding="16,28"
+                                            HorizontalAlignment="Stretch"
+                                            BorderBrush="#E0DDD8"
+                                            BorderThickness="1">
+                                        <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                            <TextBlock Text="Brak zdefiniowanych zmian"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#2A2A2A"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Dodaj pierwszą zmianę."
+                                                       FontSize="12"
+                                                       Foreground="#7A7A7A"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Panel>
                 </DockPanel>
             </Border>
         </Panel>

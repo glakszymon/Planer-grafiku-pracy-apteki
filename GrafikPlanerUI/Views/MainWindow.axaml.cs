@@ -60,6 +60,39 @@ public partial class MainWindow : Window
         SetActiveTab("ustawienia");
     }
 
+    // ==================== SETTINGS SUB-TABS ====================
+
+    private void OnSettingsSubTabGodzinyClick(object? sender, PointerPressedEventArgs e)
+    {
+        SetActiveSettingsSubTab("godziny");
+    }
+
+    private void OnSettingsSubTabSwietaClick(object? sender, PointerPressedEventArgs e)
+    {
+        SetActiveSettingsSubTab("swieta");
+    }
+
+    private void OnSettingsSubTabZmianyClick(object? sender, PointerPressedEventArgs e)
+    {
+        SetActiveSettingsSubTab("zmiany");
+    }
+
+    private void SetActiveSettingsSubTab(string subTab)
+    {
+        var tabs = new[] { SettingsSubTabGodziny, SettingsSubTabSwieta, SettingsSubTabZmiany };
+        var pages = new[] { SettingsPageGodziny, SettingsPageSwieta, SettingsPageZmiany };
+        var names = new[] { "godziny", "swieta", "zmiany" };
+
+        for (int i = 0; i < tabs.Length; i++)
+        {
+            bool active = names[i] == subTab;
+            tabs[i].Background = new SolidColorBrush(Color.Parse(active ? "White" : "#EFECEA"));
+            tabs[i].BorderBrush = new SolidColorBrush(Color.Parse(active ? "#E0DDD8" : "#E8E5E0"));
+            tabs[i].BorderThickness = new Avalonia.Thickness(1, 1, 1, active ? 0 : 1);
+            pages[i].IsVisible = active;
+        }
+    }
+
     private void SetActiveTab(string tab)
     {
         var tabs = new[] { TabGrafiki, TabPracownicy, TabUstawienia };
