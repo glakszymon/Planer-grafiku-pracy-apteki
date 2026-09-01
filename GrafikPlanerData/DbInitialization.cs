@@ -91,6 +91,30 @@ public class DbInitialization
             }
         }
         
+        // Migration: Add employee profile fields (employment type, work time, legal constraints)
+        var employeeColumns = new[]
+        {
+            "EmploymentType INTEGER NOT NULL DEFAULT 0",
+            "WorkTimeRate INTEGER NOT NULL DEFAULT 0",
+            "WorkTimeSystem INTEGER NOT NULL DEFAULT 0",
+            "ParentalProtection INTEGER NOT NULL DEFAULT 0",
+            "ReducedNorm INTEGER NOT NULL DEFAULT 0",
+            "AutoDailyRest INTEGER NOT NULL DEFAULT 1"
+        };
+        foreach (var colDef in employeeColumns)
+        {
+            try
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = $"ALTER TABLE Employee ADD COLUMN {colDef}";
+                cmd.ExecuteNonQuery();
+            }
+            catch (SqliteException)
+            {
+                // Column already exists — ignore
+            }
+        }
+        
         // Backfill: copy global times to per-day columns where null
         try
         {

@@ -8,6 +8,7 @@ using Avalonia.VisualTree;
 using GrafikPlanerCore;
 using GrafikPlanerData.DbScripts;
 using GrafikPlanerData.Models;
+using GrafikPlanerData.Models.Enums;
 using GrafikPlanerUI.ViewModels;
 
 namespace GrafikPlanerUI.Views;
@@ -300,9 +301,66 @@ public partial class MainWindow : Window
         ViewSpec.Text = emp.Specialisation;
         ViewEmail.Text = string.IsNullOrEmpty(emp.Email) ? "—" : emp.Email;
         ViewPhone.Text = string.IsNullOrEmpty(emp.PhoneNumber) ? "—" : emp.PhoneNumber;
-        ViewVacationDays.Text = emp.VacationDays?.ToString() ?? "—";
-        ViewUsedVacation.Text = emp.UsedVacationDays?.ToString() ?? "0";
-        ViewUnusedVacation.Text = emp.UnusedVacationDaysFromLastYear?.ToString() ?? "0";
+        
+        // Wymiar czasu pracy
+        ViewEmploymentType.Text = emp.EmploymentType switch
+        {
+            EmploymentType.UmowaPrace => "Umowa o pracę",
+            EmploymentType.Zlecenie => "Zlecenie",
+            EmploymentType.B2B => "B2B",
+            _ => "—"
+        };
+        ViewWorkTimeRate.Text = emp.WorkTimeRate switch
+        {
+            WorkTimeRate.Full => "1/1 (pełny etat)",
+            WorkTimeRate.ThreeQuarters => "3/4",
+            WorkTimeRate.Half => "1/2",
+            WorkTimeRate.Quarter => "1/4",
+            _ => "—"
+        };
+        ViewWorkTimeSystem.Text = emp.WorkTimeSystem switch
+        {
+            WorkTimeSystem.Podstawowy => "Podstawowy (max 8h/dobę)",
+            WorkTimeSystem.Rownowazny => "Równoważny (do 12h/dobę)",
+            _ => "—"
+        };
+        
+        // Ograniczenia prawne — tagi
+        ViewTagParental.IsVisible = emp.ParentalProtection;
+        ViewTagReduced.IsVisible = emp.ReducedNorm;
+        ViewTagDailyRest.IsVisible = emp.AutoDailyRest;
+        ViewNoConstraints.IsVisible = !emp.ParentalProtection && !emp.ReducedNorm && !emp.AutoDailyRest;
+        
+        // Urlopy — ukryj dla Zlecenie/B2B
+        bool isEmployeeContract = emp.EmploymentType == EmploymentType.UmowaPrace;
+        ViewVacationSection.IsVisible = isEmployeeContract;
+        
+        if (isEmployeeContract)
+        {
+            ViewVacationDays.Text = emp.VacationDays?.ToString() ?? "—";
+            ViewUnusedVacation.Text = emp.UnusedVacationDaysFromLastYear?.ToString() ?? "0";
+            
+            int used = emp.UsedVacationDays ?? 0;
+            int total = (emp.VacationDays ?? 0) + (emp.UnusedVacationDaysFromLastYear ?? 0);
+            int remaining = total - used;
+            
+            ViewUsedVacation.Text = $"{used} dni";
+            ViewRemainingVacation.Text = $"{remaining} dni";
+            ViewRemainingVacation.Foreground = new SolidColorBrush(Color.Parse(remaining <= 0 ? "#DC2626" : "#4A7C59"));
+            ViewRemainingVacation.FontWeight = remaining <= 0 ? FontWeight.Bold : FontWeight.SemiBold;
+            
+            // Carryover hint
+            int carryover = emp.UnusedVacationDaysFromLastYear ?? 0;
+            if (carryover > 0 && DateTime.Now.Month < 10)
+            {
+                ViewVacationCarryoverHint.Text = $"W tym {carryover} zaległych — wygasa 30.09";
+                ViewVacationCarryoverHint.IsVisible = true;
+            }
+            else
+            {
+                ViewVacationCarryoverHint.IsVisible = false;
+            }
+        }
     }
 
     private void OnAddEmployeeClick(object? sender, RoutedEventArgs e)
@@ -332,6 +390,18 @@ public partial class MainWindow : Window
         EmpVacationDaysBox.Text = _selectedEmployee.VacationDays?.ToString() ?? "";
         EmpUsedVacationBox.Text = _selectedEmployee.UsedVacationDays?.ToString() ?? "";
         EmpUnusedVacationBox.Text = _selectedEmployee.UnusedVacationDaysFromLastYear?.ToString() ?? "";
+        
+        // Nowe pola
+        EmpEmploymentTypeBox.SelectedIndex = (int)_selectedEmployee.EmploymentType;
+        EmpWorkTimeRateBox.SelectedIndex = (int)_selectedEmployee.WorkTimeRate;
+        EmpWorkTimeSystemBox.SelectedIndex = (int)_selectedEmployee.WorkTimeSystem;
+        EmpParentalProtection.IsChecked = _selectedEmployee.ParentalProtection;
+        EmpReducedNorm.IsChecked = _selectedEmployee.ReducedNorm;
+        EmpAutoDailyRest.IsChecked = _selectedEmployee.AutoDailyRest;
+        
+        UpdateEditFormVisibility();
+        UpdateEditVacationSummary();
+        
         EmployeeDialogError.Text = "";
         EditAvatar.Text = _selectedEmployee.FirstName.Length > 0 ? _selectedEmployee.FirstName[0].ToString() : "?";
 
@@ -389,7 +459,13 @@ public partial class MainWindow : Window
             VacationDays = int.TryParse(EmpVacationDaysBox.Text, out var vd) ? vd : null,
             UsedVacationDays = int.TryParse(EmpUsedVacationBox.Text, out var uvd) ? uvd : null,
             UnusedVacationDaysFromLastYear = int.TryParse(EmpUnusedVacationBox.Text, out var unvd) ? unvd : null,
-            YearOfVacationData = DateTime.Now.Year
+            YearOfVacationData = DateTime.Now.Year,
+            EmploymentType = (EmploymentType)Math.Max(0, EmpEmploymentTypeBox.SelectedIndex),
+            WorkTimeRate = (WorkTimeRate)Math.Max(0, EmpWorkTimeRateBox.SelectedIndex),
+            WorkTimeSystem = (WorkTimeSystem)Math.Max(0, EmpWorkTimeSystemBox.SelectedIndex),
+            ParentalProtection = EmpParentalProtection.IsChecked == true,
+            ReducedNorm = EmpReducedNorm.IsChecked == true,
+            AutoDailyRest = EmpAutoDailyRest.IsChecked == true
         };
 
         var empTable = new EmployeeTable();
@@ -442,7 +518,14 @@ public partial class MainWindow : Window
         EmpVacationDaysBox.Text = "";
         EmpUsedVacationBox.Text = "";
         EmpUnusedVacationBox.Text = "";
+        EmpEmploymentTypeBox.SelectedIndex = 0;
+        EmpWorkTimeRateBox.SelectedIndex = 0;
+        EmpWorkTimeSystemBox.SelectedIndex = 0;
+        EmpParentalProtection.IsChecked = false;
+        EmpReducedNorm.IsChecked = false;
+        EmpAutoDailyRest.IsChecked = true;
         EmployeeDialogError.Text = "";
+        UpdateEditFormVisibility();
     }
 
     private void SelectComboBoxItem(ComboBox comboBox, string? value)
@@ -462,6 +545,48 @@ public partial class MainWindow : Window
             }
         }
         comboBox.SelectedIndex = -1;
+    }
+
+    private void OnEmploymentTypeChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        UpdateEditFormVisibility();
+    }
+
+    private void UpdateEditFormVisibility()
+    {
+        bool isUmowaPrace = EmpEmploymentTypeBox.SelectedIndex == 0;
+        EditVacationSection.IsVisible = isUmowaPrace;
+        EmpParentalProtection.IsEnabled = isUmowaPrace;
+        EmpReducedNorm.IsEnabled = isUmowaPrace;
+        
+        if (!isUmowaPrace)
+        {
+            EmpParentalProtection.IsChecked = false;
+            EmpReducedNorm.IsChecked = false;
+        }
+    }
+
+    private void UpdateEditVacationSummary()
+    {
+        int used = int.TryParse(EmpUsedVacationBox.Text, out var u) ? u : 0;
+        int total = (int.TryParse(EmpVacationDaysBox.Text, out var vd) ? vd : 0) +
+                    (int.TryParse(EmpUnusedVacationBox.Text, out var uv) ? uv : 0);
+        int remaining = total - used;
+        
+        EditVacationUsedLabel.Text = $"{used} dni";
+        EditVacationRemainingLabel.Text = $"{remaining} dni";
+        EditVacationRemainingLabel.Foreground = new SolidColorBrush(Color.Parse(remaining <= 0 ? "#DC2626" : "#4A7C59"));
+        
+        int carryover = int.TryParse(EmpUnusedVacationBox.Text, out var co) ? co : 0;
+        if (carryover > 0 && DateTime.Now.Month < 10)
+        {
+            EditVacationCarryoverHint.Text = $"W tym {carryover} zaległych — wygasa 30.09";
+            EditVacationCarryoverHint.IsVisible = true;
+        }
+        else
+        {
+            EditVacationCarryoverHint.IsVisible = false;
+        }
     }
 
     // ==================== SETTINGS ====================
