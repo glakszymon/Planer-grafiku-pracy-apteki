@@ -25,6 +25,7 @@ public class ScheduleRow : INotifyPropertyChanged
                 _hoursSummary = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HoursSummary)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HoursSummaryDisplay)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HoursSummaryColor)));
             }
         }
     }
@@ -38,6 +39,16 @@ public class ScheduleRow : INotifyPropertyChanged
             if (ExpectedHours <= 0)
                 return HoursSummary == 0 ? "" : $"{HoursSummary}";
             return $"{HoursSummary} / {ExpectedHours}";
+        }
+    }
+
+    public string HoursSummaryColor
+    {
+        get
+        {
+            if (ExpectedHours > 0 && HoursSummary > ExpectedHours)
+                return "#DC2626"; // czerwony — przekroczenie
+            return "#1A202C"; // domyślny
         }
     }
 

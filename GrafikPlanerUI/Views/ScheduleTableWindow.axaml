@@ -182,6 +182,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="models:ScheduleRow">
                                 <TextBlock Text="{Binding HoursSummaryDisplay}" 
+                                           Foreground="{Binding HoursSummaryColor}"
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"
                                            FontWeight="SemiBold"/>
