@@ -109,24 +109,9 @@ public partial class ScheduleTableWindow : Window
         LegendPanel.IsVisible = legendData.Count > 0;
     }
 
-    private void LegendToggle_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void LegendPanel_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
     {
-        var collapsed = LegendContent.IsVisible;
-        LegendContent.IsVisible = !collapsed;
-        LegendToggleButton.Content = collapsed ? "+" : "\u2212";
-
-        if (collapsed)
-        {
-            LegendToggleButton.Margin = new Thickness(0, 0, -40, 0);
-            LegendToggleButton.FontSize = 18;
-            LegendToggleButton.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-        }
-        else
-        {
-            LegendToggleButton.Margin = new Thickness(0, 0, -12, 0);
-            LegendToggleButton.FontSize = 14;
-            LegendToggleButton.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-        }
+        LegendContent.IsVisible = !LegendContent.IsVisible;
     }
 
     private void BackButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
