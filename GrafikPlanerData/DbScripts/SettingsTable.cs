@@ -4,6 +4,8 @@ namespace GrafikPlanerData.DbScripts;
 
 public class SettingsTable : DbConnectionOption
 {
+    private static readonly string[] DayNames = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+
     public void CreateTable()
     {
         using var createHoursTableCommand = _connection.CreateCommand();
@@ -48,10 +50,16 @@ public class SettingsTable : DbConnectionOption
                     ThursdayOpen = @thursdayOpen,
                     FridayOpen = @fridayOpen,
                     SaturdayOpen = @saturdayOpen,
-                    SundayOpen = @sundayOpen
+                    SundayOpen = @sundayOpen,
+                    MondayOpeningTime = @monOpen, MondayClosingTime = @monClose,
+                    TuesdayOpeningTime = @tueOpen, TuesdayClosingTime = @tueClose,
+                    WednesdayOpeningTime = @wedOpen, WednesdayClosingTime = @wedClose,
+                    ThursdayOpeningTime = @thuOpen, ThursdayClosingTime = @thuClose,
+                    FridayOpeningTime = @friOpen, FridayClosingTime = @friClose,
+                    SaturdayOpeningTime = @satOpen, SaturdayClosingTime = @satClose,
+                    SundayOpeningTime = @sunOpen, SundayClosingTime = @sunClose
             WHERE Id = 1;";
 
-        // Użycie stałego formatu "HH:mm:ss" i rzutowanie bool na int (1 / 0)
         command.Parameters.AddWithValue("@openingTime", settings.OpeningTime.ToString("HH:mm:ss"));
         command.Parameters.AddWithValue("@closingTime", settings.ClosingTime.ToString("HH:mm:ss"));
         command.Parameters.AddWithValue("@mondayOpen", settings.MondayOpen ? 1 : 0);
@@ -61,6 +69,21 @@ public class SettingsTable : DbConnectionOption
         command.Parameters.AddWithValue("@fridayOpen", settings.FridayOpen ? 1 : 0);
         command.Parameters.AddWithValue("@saturdayOpen", settings.SaturdayOpen ? 1 : 0);
         command.Parameters.AddWithValue("@sundayOpen", settings.SundayOpen ? 1 : 0);
+
+        command.Parameters.AddWithValue("@monOpen", settings.MondayOpeningTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@monClose", settings.MondayClosingTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@tueOpen", settings.TuesdayOpeningTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@tueClose", settings.TuesdayClosingTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@wedOpen", settings.WednesdayOpeningTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@wedClose", settings.WednesdayClosingTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@thuOpen", settings.ThursdayOpeningTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@thuClose", settings.ThursdayClosingTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@friOpen", settings.FridayOpeningTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@friClose", settings.FridayClosingTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@satOpen", settings.SaturdayOpeningTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@satClose", settings.SaturdayClosingTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@sunOpen", settings.SundayOpeningTime.ToString("HH:mm:ss"));
+        command.Parameters.AddWithValue("@sunClose", settings.SundayClosingTime.ToString("HH:mm:ss"));
         
         command.ExecuteNonQuery();
     }
@@ -77,17 +100,48 @@ public class SettingsTable : DbConnectionOption
             return null;
         }
 
+        var openingTime = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("OpeningTime")));
+        var closingTime = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("ClosingTime")));
+
         return new SettingsRecord
         {
-            OpeningTime = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("OpeningTime"))),
-            ClosingTime = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("ClosingTime"))),
+            OpeningTime = openingTime,
+            ClosingTime = closingTime,
             MondayOpen = reader.GetInt32(reader.GetOrdinal("MondayOpen")) == 1,
             TuesdayOpen = reader.GetInt32(reader.GetOrdinal("TuesdayOpen")) == 1,
             WednesdayOpen = reader.GetInt32(reader.GetOrdinal("WednesdayOpen")) == 1,
             ThursdayOpen = reader.GetInt32(reader.GetOrdinal("ThursdayOpen")) == 1,
             FridayOpen = reader.GetInt32(reader.GetOrdinal("FridayOpen")) == 1,
             SaturdayOpen = reader.GetInt32(reader.GetOrdinal("SaturdayOpen")) == 1,
-            SundayOpen = reader.GetInt32(reader.GetOrdinal("SundayOpen")) == 1
+            SundayOpen = reader.GetInt32(reader.GetOrdinal("SundayOpen")) == 1,
+            MondayOpeningTime = ReadTimeOrDefault(reader, "MondayOpeningTime", openingTime),
+            MondayClosingTime = ReadTimeOrDefault(reader, "MondayClosingTime", closingTime),
+            TuesdayOpeningTime = ReadTimeOrDefault(reader, "TuesdayOpeningTime", openingTime),
+            TuesdayClosingTime = ReadTimeOrDefault(reader, "TuesdayClosingTime", closingTime),
+            WednesdayOpeningTime = ReadTimeOrDefault(reader, "WednesdayOpeningTime", openingTime),
+            WednesdayClosingTime = ReadTimeOrDefault(reader, "WednesdayClosingTime", closingTime),
+            ThursdayOpeningTime = ReadTimeOrDefault(reader, "ThursdayOpeningTime", openingTime),
+            ThursdayClosingTime = ReadTimeOrDefault(reader, "ThursdayClosingTime", closingTime),
+            FridayOpeningTime = ReadTimeOrDefault(reader, "FridayOpeningTime", openingTime),
+            FridayClosingTime = ReadTimeOrDefault(reader, "FridayClosingTime", closingTime),
+            SaturdayOpeningTime = ReadTimeOrDefault(reader, "SaturdayOpeningTime", openingTime),
+            SaturdayClosingTime = ReadTimeOrDefault(reader, "SaturdayClosingTime", closingTime),
+            SundayOpeningTime = ReadTimeOrDefault(reader, "SundayOpeningTime", openingTime),
+            SundayClosingTime = ReadTimeOrDefault(reader, "SundayClosingTime", closingTime),
         };
+    }
+
+    private static TimeOnly ReadTimeOrDefault(Microsoft.Data.Sqlite.SqliteDataReader reader, string column, TimeOnly defaultValue)
+    {
+        try
+        {
+            var ordinal = reader.GetOrdinal(column);
+            if (reader.IsDBNull(ordinal)) return defaultValue;
+            return TimeOnly.Parse(reader.GetString(ordinal));
+        }
+        catch
+        {
+            return defaultValue;
+        }
     }
 }

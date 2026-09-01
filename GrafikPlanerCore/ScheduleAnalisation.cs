@@ -55,7 +55,7 @@ public class ScheduleAnalisation
     public List<DateTime> CheckOneDay(List<ScheduleRow> scheduleRows, DateOnly targetDate)
     {
         // Skip closed days and holidays
-        if (!IsDayOpen(targetDate.DayOfWeek) || _holidayDates.Contains(targetDate))
+        if (!_settings.IsDayOpen(targetDate.DayOfWeek) || _holidayDates.Contains(targetDate))
             return new List<DateTime>();
 
         var ans = new List<DateTime>();
@@ -68,7 +68,9 @@ public class ScheduleAnalisation
                              && (!record.ShiftHourId.HasValue || !_vacationHourIds.Contains(record.ShiftHourId.Value)))
             .ToList();
 
-        for (var i = _settings.OpeningTime; i < _settings.ClosingTime; i = i.AddHours(1))
+        var (dayOpen, dayClose) = _settings.GetHoursForDay(targetDate.DayOfWeek);
+
+        for (var i = dayOpen; i < dayClose; i = i.AddHours(1))
         {
             bool ktosPracuje = shiftsForDay.Any(z => z.StartTime <= i && z.EndTime >= i.AddHours(1));
         
@@ -102,7 +104,7 @@ public class ScheduleAnalisation
 
     public List<DateTime> CheckOneDayForPharmacist(List<ScheduleRow> scheduleRows, DateOnly targetDate)
     {
-        if (!IsDayOpen(targetDate.DayOfWeek) || _holidayDates.Contains(targetDate))
+        if (!_settings.IsDayOpen(targetDate.DayOfWeek) || _holidayDates.Contains(targetDate))
             return new List<DateTime>();
 
         var ans = new List<DateTime>();
@@ -116,7 +118,9 @@ public class ScheduleAnalisation
                              && (!record.ShiftHourId.HasValue || !_vacationHourIds.Contains(record.ShiftHourId.Value)))
             .ToList();
 
-        for (var i = _settings.OpeningTime; i < _settings.ClosingTime; i = i.AddHours(1))
+        var (pharmOpen, pharmClose) = _settings.GetHoursForDay(targetDate.DayOfWeek);
+
+        for (var i = pharmOpen; i < pharmClose; i = i.AddHours(1))
         {
             bool pharmacistPresent = pharmacistShifts.Any(z => z.StartTime <= i && z.EndTime >= i.AddHours(1));
             if (!pharmacistPresent)
@@ -126,20 +130,5 @@ public class ScheduleAnalisation
         }
 
         return ans;
-    }
-
-    private bool IsDayOpen(DayOfWeek dayOfWeek)
-    {
-        return dayOfWeek switch
-        {
-            DayOfWeek.Monday => _settings.MondayOpen,
-            DayOfWeek.Tuesday => _settings.TuesdayOpen,
-            DayOfWeek.Wednesday => _settings.WednesdayOpen,
-            DayOfWeek.Thursday => _settings.ThursdayOpen,
-            DayOfWeek.Friday => _settings.FridayOpen,
-            DayOfWeek.Saturday => _settings.SaturdayOpen,
-            DayOfWeek.Sunday => _settings.SundayOpen,
-            _ => true
-        };
     }
 }

@@ -71,5 +71,42 @@ public class DbInitialization
         {
             // Table doesn't exist yet — ignore
         }
+        
+        // Migration: Add per-day opening/closing time columns to Settings
+        var dayNames = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+        foreach (var day in dayNames)
+        {
+            foreach (var suffix in new[] { "OpeningTime", "ClosingTime" })
+            {
+                try
+                {
+                    using var cmd = connection.CreateCommand();
+                    cmd.CommandText = $"ALTER TABLE Settings ADD COLUMN {day}{suffix} TEXT";
+                    cmd.ExecuteNonQuery();
+                }
+                catch (SqliteException)
+                {
+                    // Column already exists — ignore
+                }
+            }
+        }
+        
+        // Backfill: copy global times to per-day columns where null
+        try
+        {
+            using var cmd = connection.CreateCommand();
+            var setClauses = new List<string>();
+            foreach (var day in dayNames)
+            {
+                setClauses.Add($"{day}OpeningTime = COALESCE({day}OpeningTime, OpeningTime)");
+                setClauses.Add($"{day}ClosingTime = COALESCE({day}ClosingTime, ClosingTime)");
+            }
+            cmd.CommandText = $"UPDATE Settings SET {string.Join(", ", setClauses)} WHERE Id = 1;";
+            cmd.ExecuteNonQuery();
+        }
+        catch (SqliteException)
+        {
+            // ignore
+        }
     }
 }

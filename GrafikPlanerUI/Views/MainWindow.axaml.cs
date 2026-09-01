@@ -467,9 +467,6 @@ public partial class MainWindow : Window
         var settings = settingsTable.GetSettings();
         if (settings == null) { _isLoadingSettings = false; return; }
 
-        SettingsOpeningTime.SelectedTime = settings.OpeningTime.ToTimeSpan();
-        SettingsClosingTime.SelectedTime = settings.ClosingTime.ToTimeSpan();
-
         ChkMonday.IsChecked = settings.MondayOpen;
         ChkTuesday.IsChecked = settings.TuesdayOpen;
         ChkWednesday.IsChecked = settings.WednesdayOpen;
@@ -477,6 +474,25 @@ public partial class MainWindow : Window
         ChkFriday.IsChecked = settings.FridayOpen;
         ChkSaturday.IsChecked = settings.SaturdayOpen;
         ChkSunday.IsChecked = settings.SundayOpen;
+
+        MondayOpenTime.SelectedTime = settings.MondayOpeningTime.ToTimeSpan();
+        MondayCloseTime.SelectedTime = settings.MondayClosingTime.ToTimeSpan();
+        TuesdayOpenTime.SelectedTime = settings.TuesdayOpeningTime.ToTimeSpan();
+        TuesdayCloseTime.SelectedTime = settings.TuesdayClosingTime.ToTimeSpan();
+        WednesdayOpenTime.SelectedTime = settings.WednesdayOpeningTime.ToTimeSpan();
+        WednesdayCloseTime.SelectedTime = settings.WednesdayClosingTime.ToTimeSpan();
+        ThursdayOpenTime.SelectedTime = settings.ThursdayOpeningTime.ToTimeSpan();
+        ThursdayCloseTime.SelectedTime = settings.ThursdayClosingTime.ToTimeSpan();
+        FridayOpenTime.SelectedTime = settings.FridayOpeningTime.ToTimeSpan();
+        FridayCloseTime.SelectedTime = settings.FridayClosingTime.ToTimeSpan();
+        SaturdayOpenTime.SelectedTime = settings.SaturdayOpeningTime.ToTimeSpan();
+        SaturdayCloseTime.SelectedTime = settings.SaturdayClosingTime.ToTimeSpan();
+        SundayOpenTime.SelectedTime = settings.SundayOpeningTime.ToTimeSpan();
+        SundayCloseTime.SelectedTime = settings.SundayClosingTime.ToTimeSpan();
+
+        AllDaysOpeningTime.SelectedTime = settings.OpeningTime.ToTimeSpan();
+        AllDaysClosingTime.SelectedTime = settings.ClosingTime.ToTimeSpan();
+
         _isLoadingSettings = false;
     }
 
@@ -492,28 +508,71 @@ public partial class MainWindow : Window
         AutoSaveSettings();
     }
 
+    private void OnApplyAllDaysHoursClick(object? sender, RoutedEventArgs e)
+    {
+        if (!AllDaysOpeningTime.SelectedTime.HasValue || !AllDaysClosingTime.SelectedTime.HasValue)
+            return;
+
+        _isLoadingSettings = true;
+        var open = AllDaysOpeningTime.SelectedTime.Value;
+        var close = AllDaysClosingTime.SelectedTime.Value;
+
+        MondayOpenTime.SelectedTime = open;
+        MondayCloseTime.SelectedTime = close;
+        TuesdayOpenTime.SelectedTime = open;
+        TuesdayCloseTime.SelectedTime = close;
+        WednesdayOpenTime.SelectedTime = open;
+        WednesdayCloseTime.SelectedTime = close;
+        ThursdayOpenTime.SelectedTime = open;
+        ThursdayCloseTime.SelectedTime = close;
+        FridayOpenTime.SelectedTime = open;
+        FridayCloseTime.SelectedTime = close;
+        SaturdayOpenTime.SelectedTime = open;
+        SaturdayCloseTime.SelectedTime = close;
+        SundayOpenTime.SelectedTime = open;
+        SundayCloseTime.SelectedTime = close;
+        _isLoadingSettings = false;
+
+        AutoSaveSettings();
+    }
+
+    private TimeOnly GetTimeFromPicker(TimePicker picker, TimeOnly fallback)
+    {
+        return picker.SelectedTime.HasValue 
+            ? TimeOnly.FromTimeSpan(picker.SelectedTime.Value) 
+            : fallback;
+    }
+
     private void AutoSaveSettings()
     {
-        if (!SettingsOpeningTime.SelectedTime.HasValue || !SettingsClosingTime.SelectedTime.HasValue)
-            return;
-
-        var openTime = TimeOnly.FromTimeSpan(SettingsOpeningTime.SelectedTime.Value);
-        var closeTime = TimeOnly.FromTimeSpan(SettingsClosingTime.SelectedTime.Value);
-
-        if (closeTime <= openTime)
-            return;
+        var fallbackOpen = new TimeOnly(8, 0);
+        var fallbackClose = new TimeOnly(22, 0);
 
         var record = new SettingsRecord
         {
-            OpeningTime = openTime,
-            ClosingTime = closeTime,
+            OpeningTime = GetTimeFromPicker(AllDaysOpeningTime, fallbackOpen),
+            ClosingTime = GetTimeFromPicker(AllDaysClosingTime, fallbackClose),
             MondayOpen = ChkMonday.IsChecked == true,
             TuesdayOpen = ChkTuesday.IsChecked == true,
             WednesdayOpen = ChkWednesday.IsChecked == true,
             ThursdayOpen = ChkThursday.IsChecked == true,
             FridayOpen = ChkFriday.IsChecked == true,
             SaturdayOpen = ChkSaturday.IsChecked == true,
-            SundayOpen = ChkSunday.IsChecked == true
+            SundayOpen = ChkSunday.IsChecked == true,
+            MondayOpeningTime = GetTimeFromPicker(MondayOpenTime, fallbackOpen),
+            MondayClosingTime = GetTimeFromPicker(MondayCloseTime, fallbackClose),
+            TuesdayOpeningTime = GetTimeFromPicker(TuesdayOpenTime, fallbackOpen),
+            TuesdayClosingTime = GetTimeFromPicker(TuesdayCloseTime, fallbackClose),
+            WednesdayOpeningTime = GetTimeFromPicker(WednesdayOpenTime, fallbackOpen),
+            WednesdayClosingTime = GetTimeFromPicker(WednesdayCloseTime, fallbackClose),
+            ThursdayOpeningTime = GetTimeFromPicker(ThursdayOpenTime, fallbackOpen),
+            ThursdayClosingTime = GetTimeFromPicker(ThursdayCloseTime, fallbackClose),
+            FridayOpeningTime = GetTimeFromPicker(FridayOpenTime, fallbackOpen),
+            FridayClosingTime = GetTimeFromPicker(FridayCloseTime, fallbackClose),
+            SaturdayOpeningTime = GetTimeFromPicker(SaturdayOpenTime, fallbackOpen),
+            SaturdayClosingTime = GetTimeFromPicker(SaturdayCloseTime, fallbackClose),
+            SundayOpeningTime = GetTimeFromPicker(SundayOpenTime, fallbackOpen),
+            SundayClosingTime = GetTimeFromPicker(SundayCloseTime, fallbackClose),
         };
 
         var settingsTable = new SettingsTable();
