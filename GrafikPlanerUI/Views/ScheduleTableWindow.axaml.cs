@@ -114,6 +114,19 @@ public partial class ScheduleTableWindow : Window
         var collapsed = LegendContent.IsVisible;
         LegendContent.IsVisible = !collapsed;
         LegendToggleButton.Content = collapsed ? "+" : "\u2212";
+
+        if (collapsed)
+        {
+            LegendToggleButton.Margin = new Thickness(0, 0, -40, 0);
+            LegendToggleButton.FontSize = 18;
+            LegendToggleButton.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+        }
+        else
+        {
+            LegendToggleButton.Margin = new Thickness(0, 0, -12, 0);
+            LegendToggleButton.FontSize = 14;
+            LegendToggleButton.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+        }
     }
 
     private void BackButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
