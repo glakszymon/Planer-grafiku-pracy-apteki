@@ -73,6 +73,51 @@ public class ScheduleAnalisation
         return ans;
     }
 
+    public List<DateTime> CheckPharmacistGapsInSchedule(List<ScheduleRow> scheduleRows, int month, int year)
+    {
+        GetSettings();
+        LoadVacationHourIds();
+        
+        List<DateTime> emptyHours = new List<DateTime>();
+        var numberOfDaysInMonth = DateTime.DaysInMonth(year, month);
+
+        for (int i = 1; i <= numberOfDaysInMonth; i++)
+        {
+            var dates = CheckOneDayForPharmacist(scheduleRows, new DateOnly(year, month, i));
+            emptyHours.AddRange(dates);
+        }
+        
+        return emptyHours;
+    }
+
+    public List<DateTime> CheckOneDayForPharmacist(List<ScheduleRow> scheduleRows, DateOnly targetDate)
+    {
+        if (!IsDayOpen(targetDate.DayOfWeek))
+            return new List<DateTime>();
+
+        var ans = new List<DateTime>();
+
+        var pharmacistShifts = scheduleRows
+            .Where(row => row.Specialisation == "Farmaceuta/ka")
+            .SelectMany(row => row.Records ?? new List<ScheduleColumn>())
+            .Where(record => record.ShiftDate == targetDate
+                             && record.StartTime.HasValue
+                             && record.EndTime.HasValue
+                             && (!record.ShiftHourId.HasValue || !_vacationHourIds.Contains(record.ShiftHourId.Value)))
+            .ToList();
+
+        for (var i = _settings.OpeningTime; i < _settings.ClosingTime; i = i.AddHours(1))
+        {
+            bool pharmacistPresent = pharmacistShifts.Any(z => z.StartTime <= i && z.EndTime >= i.AddHours(1));
+            if (!pharmacistPresent)
+            {
+                ans.Add(targetDate.ToDateTime(i));
+            }
+        }
+
+        return ans;
+    }
+
     private bool IsDayOpen(DayOfWeek dayOfWeek)
     {
         return dayOfWeek switch

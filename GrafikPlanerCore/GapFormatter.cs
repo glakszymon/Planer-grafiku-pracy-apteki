@@ -2,6 +2,8 @@ namespace GrafikPlanerCore;
 
 public static class GapFormatter
 {
+    private static readonly char[] SuperscriptDigits = { '⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹' };
+
     public static Dictionary<DateOnly, string> FormatGaps(List<DateTime> emptyHours)
     {
         return emptyHours
@@ -10,6 +12,11 @@ public static class GapFormatter
                 g => g.Key,
                 g => FormatRanges(g.Select(dt => dt.Hour).OrderBy(h => h).ToList())
             );
+    }
+
+    private static string FormatHour(int hour)
+    {
+        return $"{hour}{SuperscriptDigits[0]}{SuperscriptDigits[0]}";
     }
 
     private static string FormatRanges(List<int> hours)
@@ -27,11 +34,11 @@ public static class GapFormatter
             }
             else
             {
-                ranges.Add($"{start}-{end + 1}");
+                ranges.Add($"{FormatHour(start)}-{FormatHour(end + 1)}");
                 start = end = hours[i];
             }
         }
-        ranges.Add($"{start}-{end + 1}");
+        ranges.Add($"{FormatHour(start)}-{FormatHour(end + 1)}");
 
         return string.Join("\n", ranges);
     }

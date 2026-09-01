@@ -32,13 +32,21 @@ public partial class ScheduleTableWindow : Window
     private static readonly IBrush SelectionBorderBrush = new SolidColorBrush(Color.Parse("#3182CE"));
     private static readonly IBrush GapRowBackground = new SolidColorBrush(Color.Parse("#FEE2E2"));
     private static readonly IBrush GapHeaderForeground = new SolidColorBrush(Color.Parse("#DC2626"));
+    private static readonly IBrush PharmacistGapRowBackground = new SolidColorBrush(Color.Parse("#FFF3E0"));
+    private static readonly IBrush PharmacistGapForeground = new SolidColorBrush(Color.Parse("#E65100"));
+    private static readonly IBrush GapRowSeparator = new SolidColorBrush(Color.Parse("#9E9E9E"));
+    private static readonly IBrush GapRowLabelBackground = new SolidColorBrush(Color.Parse("#F5F5F5"));
+    private static readonly IBrush CheckMarkForeground = new SolidColorBrush(Color.Parse("#4CAF50"));
 
     // Gap indicator state
     private Dictionary<DateOnly, string> _gapCache = new();
+    private Dictionary<DateOnly, string> _pharmacistGapCache = new();
     private readonly ScheduleAnalisation _analiser = new();
     private ScheduleRow? _gapRow;
+    private ScheduleRow? _pharmacistGapRow;
     private readonly Dictionary<DateOnly, TextBlock> _headerTextBlocks = new();
     private readonly Dictionary<DateOnly, TextBlock> _gapCellTextBlocks = new();
+    private readonly Dictionary<DateOnly, TextBlock> _pharmacistGapCellTextBlocks = new();
     private HashSet<DayOfWeek> _closedDays = new();
 
     // Multi-select state
@@ -66,6 +74,9 @@ public partial class ScheduleTableWindow : Window
 
         WindowState = WindowState.Maximized;
         Activated += OnFirstActivated;
+
+        // Style gap rows with separator and distinct background
+        ScheduleDataGrid.LoadingRow += OnDataGridLoadingRow;
 
         // Global pointer events for drag selection
         PointerMoved += OnGlobalPointerMoved;
@@ -180,27 +191,25 @@ public partial class ScheduleTableWindow : Window
             .OrderBy(d => d)
             .ToList();
 
-        var lastColumn = ScheduleDataGrid.Columns.LastOrDefault();
-        if (lastColumn != null)
-        {
-            ScheduleDataGrid.Columns.Remove(lastColumn);
-        }
-
         foreach (var day in days)
         {
             var dayColumn = new DataGridTemplateColumn
             {
                 Header = CreateHeaderTextBlock(day),
-                Width = new DataGridLength(CalculateDayColumnWidth(days.Count), DataGridLengthUnitType.Pixel),
+                Width = new DataGridLength(1, DataGridLengthUnitType.Star),
 
                 CellTemplate = new FuncDataTemplate<ScheduleRow>((row, namescope) =>
                 {
                     if (row == null) return new Border();
 
                     // Gap row - special rendering
-                    if (row.Id == -1)
+                    if (row.Id == ScheduleRow.GeneralGapRowId)
                     {
                         return CreateGapCell(day);
+                    }
+                    if (row.Id == ScheduleRow.PharmacistGapRowId)
+                    {
+                        return CreatePharmacistGapCell(day);
                     }
 
                     bool isClosedDay = _closedDays.Contains(day.DayOfWeek);
@@ -346,21 +355,24 @@ public partial class ScheduleTableWindow : Window
             ScheduleDataGrid.Columns.Add(dayColumn);
         }
 
-        if (lastColumn != null)
-        {
-            ScheduleDataGrid.Columns.Add(lastColumn);
-        }
-
-        // Add gap row at the bottom
+        // Add gap rows at the bottom
         _gapRow = new ScheduleRow
         {
-            Id = -1,
-            FirstName = "",
-            LastName = "",
+            Id = ScheduleRow.GeneralGapRowId,
+            FirstName = "Brak",
+            LastName = "obsady",
             HoursSummary = 0,
             Records = new List<ScheduleColumn>()
         };
-        var allRows = new List<ScheduleRow>(scheduleRows) { _gapRow };
+        _pharmacistGapRow = new ScheduleRow
+        {
+            Id = ScheduleRow.PharmacistGapRowId,
+            FirstName = "Brak",
+            LastName = "farmaceuty",
+            HoursSummary = 0,
+            Records = new List<ScheduleColumn>()
+        };
+        var allRows = new List<ScheduleRow>(scheduleRows) { _gapRow, _pharmacistGapRow };
         ScheduleDataGrid.ItemsSource = allRows;
 
         // Initialize gap cache
@@ -729,12 +741,22 @@ public partial class ScheduleTableWindow : Window
 
     // ===== Gap Indicator Methods =====
 
-    private double CalculateDayColumnWidth(int dayCount)
+    private void OnDataGridLoadingRow(object? sender, DataGridRowEventArgs e)
     {
-        // Use screen width or fallback to 1920; subtract fixed columns (120+70) and some padding
-        var screenWidth = Screens.Primary?.Bounds.Width ?? 1920;
-        var available = screenWidth - 190 - 40; // 190 for fixed cols, 40 for scrollbar/padding
-        return Math.Max(35, available / dayCount);
+        if (e.Row.DataContext is ScheduleRow row)
+        {
+            if (row.Id == ScheduleRow.GeneralGapRowId)
+            {
+                // Top separator + distinct background for first gap row
+                e.Row.Background = GapRowLabelBackground;
+                e.Row.BorderBrush = GapRowSeparator;
+                e.Row.BorderThickness = new Thickness(0, 3, 0, 0);
+            }
+            else if (row.Id == ScheduleRow.PharmacistGapRowId)
+            {
+                e.Row.Background = GapRowLabelBackground;
+            }
+        }
     }
 
     private TextBlock CreateHeaderTextBlock(DateOnly day)
@@ -759,18 +781,46 @@ public partial class ScheduleTableWindow : Window
         
         var textBlock = new TextBlock
         {
-            Text = hasGap ? text! : "",
+            Text = hasGap ? text! : "✓",
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             TextAlignment = TextAlignment.Center,
             FontSize = 10,
-            Foreground = GapHeaderForeground
+            LineHeight = 16,
+            Foreground = hasGap ? GapHeaderForeground : CheckMarkForeground
         };
         _gapCellTextBlocks[day] = textBlock;
 
         return new Border
         {
-            Background = hasGap ? GapRowBackground : Brushes.Transparent,
+            Background = hasGap ? GapRowBackground : GapRowLabelBackground,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            BorderThickness = new Thickness(1, 0, 0, 0),
+            BorderBrush = new SolidColorBrush(Color.Parse("#CCCCCC")),
+            Child = textBlock
+        };
+    }
+
+    private Border CreatePharmacistGapCell(DateOnly day)
+    {
+        var hasGap = _pharmacistGapCache.TryGetValue(day, out var text);
+        
+        var textBlock = new TextBlock
+        {
+            Text = hasGap ? text! : "✓",
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
+            FontSize = 10,
+            LineHeight = 16,
+            Foreground = hasGap ? PharmacistGapForeground : CheckMarkForeground
+        };
+        _pharmacistGapCellTextBlocks[day] = textBlock;
+
+        return new Border
+        {
+            Background = hasGap ? PharmacistGapRowBackground : GapRowLabelBackground,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
             BorderThickness = new Thickness(1, 0, 0, 0),
@@ -785,8 +835,10 @@ public partial class ScheduleTableWindow : Window
         if (firstDay == default) return;
 
         var allGaps = _analiser.CheckEmptyHoursInSchedule(_scheduleRows, firstDay.Month, firstDay.Year);
-
         _gapCache = GapFormatter.FormatGaps(allGaps);
+
+        var pharmacistGaps = _analiser.CheckPharmacistGapsInSchedule(_scheduleRows, firstDay.Month, firstDay.Year);
+        _pharmacistGapCache = GapFormatter.FormatGaps(pharmacistGaps);
 
         // Apply colors to headers
         foreach (var day in days)
@@ -794,28 +846,34 @@ public partial class ScheduleTableWindow : Window
             UpdateColumnHeader(day);
         }
         
-        // Update gap row cells (template already rendered with empty cache)
+        // Update gap row cells
         foreach (var day in days)
         {
             UpdateGapRowCell(day);
+            UpdatePharmacistGapRowCell(day);
         }
         
     }
 
     private void RefreshGapForDay(DateOnly editedDay)
     {
-        
         var dayGaps = _analiser.CheckOneDay(_scheduleRows, editedDay);
-        
 
         if (dayGaps.Count == 0)
             _gapCache.Remove(editedDay);
         else
             _gapCache[editedDay] = GapFormatter.FormatGaps(dayGaps)[editedDay];
 
+        var pharmacistGaps = _analiser.CheckOneDayForPharmacist(_scheduleRows, editedDay);
+
+        if (pharmacistGaps.Count == 0)
+            _pharmacistGapCache.Remove(editedDay);
+        else
+            _pharmacistGapCache[editedDay] = GapFormatter.FormatGaps(pharmacistGaps)[editedDay];
 
         UpdateColumnHeader(editedDay);
         UpdateGapRowCell(editedDay);
+        UpdatePharmacistGapRowCell(editedDay);
     }
 
     private void RefreshGapsForDays(IEnumerable<DateOnly> days)
@@ -846,11 +904,29 @@ public partial class ScheduleTableWindow : Window
         }
 
         var hasGap = _gapCache.TryGetValue(day, out var text);
-        tb.Text = hasGap ? text : "";
+        tb.Text = hasGap ? text : "✓";
+        tb.Foreground = hasGap ? GapHeaderForeground : CheckMarkForeground;
 
         if (tb.Parent is Border border)
         {
-            border.Background = hasGap ? GapRowBackground : Brushes.Transparent;
+            border.Background = hasGap ? GapRowBackground : GapRowLabelBackground;
+        }
+    }
+
+    private void UpdatePharmacistGapRowCell(DateOnly day)
+    {
+        if (!_pharmacistGapCellTextBlocks.TryGetValue(day, out var tb))
+        {
+            return;
+        }
+
+        var hasGap = _pharmacistGapCache.TryGetValue(day, out var text);
+        tb.Text = hasGap ? text : "✓";
+        tb.Foreground = hasGap ? PharmacistGapForeground : CheckMarkForeground;
+
+        if (tb.Parent is Border border)
+        {
+            border.Background = hasGap ? PharmacistGapRowBackground : GapRowLabelBackground;
         }
     }
 

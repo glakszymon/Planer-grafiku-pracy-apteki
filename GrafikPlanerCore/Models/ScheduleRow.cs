@@ -4,6 +4,9 @@ namespace GrafikPlanerCore.Models;
 
 public class ScheduleRow : INotifyPropertyChanged
 {
+    public const int GeneralGapRowId = -1;
+    public const int PharmacistGapRowId = -2;
+    
     public int Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
