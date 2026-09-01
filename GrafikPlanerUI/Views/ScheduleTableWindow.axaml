@@ -175,7 +175,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Width="80">
+                    <DataGridTemplateColumn Width="70">
                         <DataGridTemplateColumn.Header>
                             <TextBlock Text="Suma" TextAlignment="Center"/>
                         </DataGridTemplateColumn.Header>
