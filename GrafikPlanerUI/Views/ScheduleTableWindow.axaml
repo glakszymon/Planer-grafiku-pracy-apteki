@@ -219,7 +219,7 @@
                             Content="&#x2212;"
                             Click="LegendToggle_Click"
                             HorizontalAlignment="Right"
-                            Margin="0,0,-12,0"
+                            Margin="0,0,-20,0"
                             VerticalAlignment="Center"
                             FontSize="14"
                             FontWeight="Bold"
