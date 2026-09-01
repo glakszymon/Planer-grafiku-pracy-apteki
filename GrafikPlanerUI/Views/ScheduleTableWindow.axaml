@@ -117,7 +117,7 @@
                       CornerRadius="8"
                       Background="White"
                       RowBackground="White"
-                      RowHeight="95">
+                      RowHeight="NaN">
                 <DataGrid.Columns>
                 
                     <DataGridTemplateColumn Header="Pracownik" Width="130">

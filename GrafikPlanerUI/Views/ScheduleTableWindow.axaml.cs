@@ -49,6 +49,8 @@ public partial class ScheduleTableWindow : Window
     private readonly Dictionary<DateOnly, TextBlock> _gapCellTextBlocks = new();
     private readonly Dictionary<DateOnly, TextBlock> _pharmacistGapCellTextBlocks = new();
     private HashSet<DayOfWeek> _closedDays = new();
+    private DataGridRow? _gapDataGridRow;
+    private DataGridRow? _pharmacistGapDataGridRow;
 
     // Multi-select state
     private bool _isDragging;
@@ -360,16 +362,16 @@ public partial class ScheduleTableWindow : Window
         _gapRow = new ScheduleRow
         {
             Id = ScheduleRow.GeneralGapRowId,
-            FirstName = "Brak",
-            LastName = "obsady",
+            FirstName = "Brak obsady",
+            LastName = "",
             HoursSummary = 0,
             Records = new List<ScheduleColumn>()
         };
         _pharmacistGapRow = new ScheduleRow
         {
             Id = ScheduleRow.PharmacistGapRowId,
-            FirstName = "Brak",
-            LastName = "farmaceuty",
+            FirstName = "Brak farm.",
+            LastName = "",
             HoursSummary = 0,
             Records = new List<ScheduleColumn>()
         };
@@ -748,16 +750,39 @@ public partial class ScheduleTableWindow : Window
         {
             if (row.Id == ScheduleRow.GeneralGapRowId)
             {
-                // Top separator + distinct background for first gap row
                 e.Row.Background = GapRowLabelBackground;
                 e.Row.BorderBrush = GapRowSeparator;
                 e.Row.BorderThickness = new Thickness(0, 3, 0, 0);
+                _gapDataGridRow = e.Row;
+                RecalculateGapRowHeight(_gapDataGridRow, _gapCellTextBlocks);
             }
             else if (row.Id == ScheduleRow.PharmacistGapRowId)
             {
                 e.Row.Background = GapRowLabelBackground;
+                _pharmacistGapDataGridRow = e.Row;
+                RecalculateGapRowHeight(_pharmacistGapDataGridRow, _pharmacistGapCellTextBlocks);
+            }
+            else
+            {
+                e.Row.Height = 95;
             }
         }
+    }
+
+    private void RecalculateGapRowHeight(DataGridRow? dgRow, Dictionary<DateOnly, TextBlock> cellTextBlocks)
+    {
+        if (dgRow == null) return;
+
+        double maxHeight = 30; // minimum
+        foreach (var tb in cellTextBlocks.Values)
+        {
+            var lineCount = 1 + tb.Text?.Count(c => c == '\n') ?? 0;
+            var estimated = lineCount * tb.LineHeight + 10;
+            if (estimated > maxHeight) maxHeight = estimated;
+        }
+
+        dgRow.Height = maxHeight;
+        dgRow.MinHeight = 0;
     }
 
     private TextBlock CreateHeaderTextBlock(DateOnly day)
@@ -912,6 +937,8 @@ public partial class ScheduleTableWindow : Window
         {
             border.Background = hasGap ? GapRowBackground : GapRowLabelBackground;
         }
+
+        RecalculateGapRowHeight(_gapDataGridRow, _gapCellTextBlocks);
     }
 
     private void UpdatePharmacistGapRowCell(DateOnly day)
@@ -929,6 +956,8 @@ public partial class ScheduleTableWindow : Window
         {
             border.Background = hasGap ? PharmacistGapRowBackground : GapRowLabelBackground;
         }
+
+        RecalculateGapRowHeight(_pharmacistGapDataGridRow, _pharmacistGapCellTextBlocks);
     }
 
     private HashSet<DayOfWeek> LoadClosedDays()
