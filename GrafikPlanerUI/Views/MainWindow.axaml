@@ -642,80 +642,80 @@
                                     <!-- Per-day settings -->
                                     <StackPanel Spacing="6">
                                         <!-- Header row -->
-                                        <Grid ColumnDefinitions="140,Auto,120,120" Margin="0,0,0,4">
+                                        <Grid ColumnDefinitions="140,60,*,*" Margin="0,0,0,4">
                                             <TextBlock Grid.Column="0" Text="Dzień" FontSize="12" FontWeight="SemiBold" Foreground="#7A7A7A"/>
-                                            <TextBlock Grid.Column="1" Text="Otwarte" FontSize="12" FontWeight="SemiBold" Foreground="#7A7A7A" Margin="0,0,16,0"/>
-                                            <TextBlock Grid.Column="2" Text="Otwarcie" FontSize="12" FontWeight="SemiBold" Foreground="#7A7A7A"/>
-                                            <TextBlock Grid.Column="3" Text="Zamknięcie" FontSize="12" FontWeight="SemiBold" Foreground="#7A7A7A"/>
+                                            <TextBlock Grid.Column="1" Text="Otwarte" FontSize="12" FontWeight="SemiBold" Foreground="#7A7A7A"/>
+                                            <TextBlock Grid.Column="2" Text="Otwarcie" FontSize="12" FontWeight="SemiBold" Foreground="#7A7A7A" Margin="0,0,12,0"/>
+                                            <TextBlock Grid.Column="3" Text="Zamknięcie" FontSize="12" FontWeight="SemiBold" Foreground="#7A7A7A" Margin="12,0,0,0"/>
                                         </Grid>
 
                                         <!-- Poniedziałek -->
                                         <Border Padding="8,6" Background="#FAFAF9" CornerRadius="4">
-                                            <Grid ColumnDefinitions="140,Auto,120,120">
+                                            <Grid ColumnDefinitions="140,60,*,*">
                                                 <TextBlock Grid.Column="0" Text="Poniedziałek" FontSize="13" Foreground="#3A3A3A" VerticalAlignment="Center"/>
-                                                <CheckBox Grid.Column="1" x:Name="ChkMonday" IsCheckedChanged="OnSettingChanged" Margin="0,0,16,0"/>
-                                                <TimePicker Grid.Column="2" x:Name="MondayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
-                                                <TimePicker Grid.Column="3" x:Name="MondayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
+                                                <CheckBox Grid.Column="1" x:Name="ChkMonday" IsCheckedChanged="OnSettingChanged"/>
+                                                <TimePicker Grid.Column="2" x:Name="MondayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="0,0,12,0"/>
+                                                <TimePicker Grid.Column="3" x:Name="MondayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="12,0,0,0"/>
                                             </Grid>
                                         </Border>
 
                                         <!-- Wtorek -->
                                         <Border Padding="8,6" CornerRadius="4">
-                                            <Grid ColumnDefinitions="140,Auto,120,120">
+                                            <Grid ColumnDefinitions="140,60,*,*">
                                                 <TextBlock Grid.Column="0" Text="Wtorek" FontSize="13" Foreground="#3A3A3A" VerticalAlignment="Center"/>
-                                                <CheckBox Grid.Column="1" x:Name="ChkTuesday" IsCheckedChanged="OnSettingChanged" Margin="0,0,16,0"/>
-                                                <TimePicker Grid.Column="2" x:Name="TuesdayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
-                                                <TimePicker Grid.Column="3" x:Name="TuesdayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
+                                                <CheckBox Grid.Column="1" x:Name="ChkTuesday" IsCheckedChanged="OnSettingChanged"/>
+                                                <TimePicker Grid.Column="2" x:Name="TuesdayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="0,0,12,0"/>
+                                                <TimePicker Grid.Column="3" x:Name="TuesdayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="12,0,0,0"/>
                                             </Grid>
                                         </Border>
 
                                         <!-- Środa -->
                                         <Border Padding="8,6" Background="#FAFAF9" CornerRadius="4">
-                                            <Grid ColumnDefinitions="140,Auto,120,120">
+                                            <Grid ColumnDefinitions="140,60,*,*">
                                                 <TextBlock Grid.Column="0" Text="Środa" FontSize="13" Foreground="#3A3A3A" VerticalAlignment="Center"/>
-                                                <CheckBox Grid.Column="1" x:Name="ChkWednesday" IsCheckedChanged="OnSettingChanged" Margin="0,0,16,0"/>
-                                                <TimePicker Grid.Column="2" x:Name="WednesdayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
-                                                <TimePicker Grid.Column="3" x:Name="WednesdayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
+                                                <CheckBox Grid.Column="1" x:Name="ChkWednesday" IsCheckedChanged="OnSettingChanged"/>
+                                                <TimePicker Grid.Column="2" x:Name="WednesdayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="0,0,12,0"/>
+                                                <TimePicker Grid.Column="3" x:Name="WednesdayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="12,0,0,0"/>
                                             </Grid>
                                         </Border>
 
                                         <!-- Czwartek -->
                                         <Border Padding="8,6" CornerRadius="4">
-                                            <Grid ColumnDefinitions="140,Auto,120,120">
+                                            <Grid ColumnDefinitions="140,60,*,*">
                                                 <TextBlock Grid.Column="0" Text="Czwartek" FontSize="13" Foreground="#3A3A3A" VerticalAlignment="Center"/>
-                                                <CheckBox Grid.Column="1" x:Name="ChkThursday" IsCheckedChanged="OnSettingChanged" Margin="0,0,16,0"/>
-                                                <TimePicker Grid.Column="2" x:Name="ThursdayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
-                                                <TimePicker Grid.Column="3" x:Name="ThursdayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
+                                                <CheckBox Grid.Column="1" x:Name="ChkThursday" IsCheckedChanged="OnSettingChanged"/>
+                                                <TimePicker Grid.Column="2" x:Name="ThursdayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="0,0,12,0"/>
+                                                <TimePicker Grid.Column="3" x:Name="ThursdayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="12,0,0,0"/>
                                             </Grid>
                                         </Border>
 
                                         <!-- Piątek -->
                                         <Border Padding="8,6" Background="#FAFAF9" CornerRadius="4">
-                                            <Grid ColumnDefinitions="140,Auto,120,120">
+                                            <Grid ColumnDefinitions="140,60,*,*">
                                                 <TextBlock Grid.Column="0" Text="Piątek" FontSize="13" Foreground="#3A3A3A" VerticalAlignment="Center"/>
-                                                <CheckBox Grid.Column="1" x:Name="ChkFriday" IsCheckedChanged="OnSettingChanged" Margin="0,0,16,0"/>
-                                                <TimePicker Grid.Column="2" x:Name="FridayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
-                                                <TimePicker Grid.Column="3" x:Name="FridayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
+                                                <CheckBox Grid.Column="1" x:Name="ChkFriday" IsCheckedChanged="OnSettingChanged"/>
+                                                <TimePicker Grid.Column="2" x:Name="FridayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="0,0,12,0"/>
+                                                <TimePicker Grid.Column="3" x:Name="FridayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="12,0,0,0"/>
                                             </Grid>
                                         </Border>
 
                                         <!-- Sobota -->
                                         <Border Padding="8,6" CornerRadius="4">
-                                            <Grid ColumnDefinitions="140,Auto,120,120">
+                                            <Grid ColumnDefinitions="140,60,*,*">
                                                 <TextBlock Grid.Column="0" Text="Sobota" FontSize="13" Foreground="#3A3A3A" VerticalAlignment="Center"/>
-                                                <CheckBox Grid.Column="1" x:Name="ChkSaturday" IsCheckedChanged="OnSettingChanged" Margin="0,0,16,0"/>
-                                                <TimePicker Grid.Column="2" x:Name="SaturdayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
-                                                <TimePicker Grid.Column="3" x:Name="SaturdayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
+                                                <CheckBox Grid.Column="1" x:Name="ChkSaturday" IsCheckedChanged="OnSettingChanged"/>
+                                                <TimePicker Grid.Column="2" x:Name="SaturdayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="0,0,12,0"/>
+                                                <TimePicker Grid.Column="3" x:Name="SaturdayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="12,0,0,0"/>
                                             </Grid>
                                         </Border>
 
                                         <!-- Niedziela -->
                                         <Border Padding="8,6" Background="#FAFAF9" CornerRadius="4">
-                                            <Grid ColumnDefinitions="140,Auto,120,120">
+                                            <Grid ColumnDefinitions="140,60,*,*">
                                                 <TextBlock Grid.Column="0" Text="Niedziela" FontSize="13" Foreground="#3A3A3A" VerticalAlignment="Center"/>
-                                                <CheckBox Grid.Column="1" x:Name="ChkSunday" IsCheckedChanged="OnSettingChanged" Margin="0,0,16,0"/>
-                                                <TimePicker Grid.Column="2" x:Name="SundayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
-                                                <TimePicker Grid.Column="3" x:Name="SundayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged"/>
+                                                <CheckBox Grid.Column="1" x:Name="ChkSunday" IsCheckedChanged="OnSettingChanged"/>
+                                                <TimePicker Grid.Column="2" x:Name="SundayOpenTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="0,0,12,0"/>
+                                                <TimePicker Grid.Column="3" x:Name="SundayCloseTime" ClockIdentifier="24HourClock" MinuteIncrement="15" SelectedTimeChanged="OnSettingTimeChanged" Margin="12,0,0,0"/>
                                             </Grid>
                                         </Border>
                                     </StackPanel>
