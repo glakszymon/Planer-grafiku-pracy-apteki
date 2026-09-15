@@ -38,7 +38,7 @@ public class SettingsAnalisation
             emptyHours[i] = false;
         }
 
-        foreach (var shiftRecord in shifts.Where(s => !s.IsVacation))
+        foreach (var shiftRecord in shifts.Where(s => !s.IsVacation && !s.IsSickLeave))
         {
             for (var i = shiftRecord.StartTime; i < shiftRecord.EndTime; i = i.AddHours(1))
             {

@@ -8,7 +8,7 @@ namespace GrafikPlanerCore;
 public class ScheduleAnalisation
 {
     public SettingsRecord _settings { get; set; } = new();
-    private HashSet<int> _vacationHourIds = new();
+    private HashSet<int> _absenceHourIds = new();
     private HashSet<DateOnly> _holidayDates = new();
     private Dictionary<int, EmploymentType> _employeeEmploymentTypes = new();
     private Dictionary<int, HoursRecord> _hoursById = new();
@@ -18,7 +18,7 @@ public class ScheduleAnalisation
     public List<DateTime> CheckEmptyHoursInSchedule(List<ScheduleRow> scheduleRows, int month, int year)
     {
         GetSettings();
-        LoadVacationHourIds();
+        LoadAbsenceHourIds();
         LoadHolidays(year, month);
         
         List<DateTime> emptyHours = new List<DateTime>();
@@ -40,12 +40,12 @@ public class ScheduleAnalisation
         _settings = settingsTable.GetSettings();
     }
 
-    private void LoadVacationHourIds()
+    private void LoadAbsenceHourIds()
     {
         var hoursTable = new HoursTable();
         hoursTable.StartConnectionWithDatabase();
-        _vacationHourIds = hoursTable.GetAllHours()
-            .Where(h => h.IsVacation)
+        _absenceHourIds = hoursTable.GetAllHours()
+            .Where(h => h.IsVacation || h.IsSickLeave)
             .Select(h => h.Id)
             .ToHashSet();
     }
@@ -88,7 +88,7 @@ public class ScheduleAnalisation
             .Where(record => record.ShiftDate == targetDate 
                              && record.StartTime.HasValue 
                              && record.EndTime.HasValue
-                             && (!record.ShiftHourId.HasValue || !_vacationHourIds.Contains(record.ShiftHourId.Value)))
+                             && (!record.ShiftHourId.HasValue || !_absenceHourIds.Contains(record.ShiftHourId.Value)))
             .ToList();
 
         var (dayOpen, dayClose) = _settings.GetHoursForDay(targetDate.DayOfWeek);
@@ -110,7 +110,7 @@ public class ScheduleAnalisation
     public List<DateTime> CheckPharmacistGapsInSchedule(List<ScheduleRow> scheduleRows, int month, int year)
     {
         GetSettings();
-        LoadVacationHourIds();
+        LoadAbsenceHourIds();
         LoadHolidays(year, month);
         
         List<DateTime> emptyHours = new List<DateTime>();
@@ -138,7 +138,7 @@ public class ScheduleAnalisation
             .Where(record => record.ShiftDate == targetDate
                              && record.StartTime.HasValue
                              && record.EndTime.HasValue
-                             && (!record.ShiftHourId.HasValue || !_vacationHourIds.Contains(record.ShiftHourId.Value)))
+                             && (!record.ShiftHourId.HasValue || !_absenceHourIds.Contains(record.ShiftHourId.Value)))
             .ToList();
 
         var (pharmOpen, pharmClose) = _settings.GetHoursForDay(targetDate.DayOfWeek);
@@ -158,7 +158,7 @@ public class ScheduleAnalisation
     public List<DailyRestViolation> CheckDailyRestInSchedule(List<ScheduleRow> scheduleRows, int month, int year)
     {
         GetSettings();
-        LoadVacationHourIds();
+        LoadAbsenceHourIds();
         LoadHoursById();
         LoadEmployeeEmploymentTypes();
 
@@ -255,7 +255,7 @@ public class ScheduleAnalisation
     {
         if (!record.StartTime.HasValue || !record.EndTime.HasValue)
             return false;
-        if (record.ShiftHourId.HasValue && _vacationHourIds.Contains(record.ShiftHourId.Value))
+        if (record.ShiftHourId.HasValue && _absenceHourIds.Contains(record.ShiftHourId.Value))
             return false;
         return true;
     }
@@ -279,7 +279,7 @@ public class ScheduleAnalisation
         if (shift.ShiftHourId is 0 or null)
             return null;
 
-        if (_vacationHourIds.Contains(shift.ShiftHourId.Value))
+        if (_absenceHourIds.Contains(shift.ShiftHourId.Value))
             return null;
 
         if (!_hoursById.TryGetValue(shift.ShiftHourId.Value, out var hour))

@@ -7,5 +7,6 @@ public class HoursRecord
     public TimeOnly EndTime { get; set; }
     public string Symbol { get; set; } = string.Empty;
     public bool IsVacation { get; set; }
+    public bool IsSickLeave { get; set; }
 
 }

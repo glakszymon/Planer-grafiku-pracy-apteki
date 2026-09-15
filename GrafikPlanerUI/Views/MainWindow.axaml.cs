@@ -776,6 +776,8 @@ public partial class MainWindow : Window
         HourEndTime.SelectedTime = null;
         HourIsVacation.IsChecked = false;
         HourVacationHint.IsVisible = false;
+        HourSickLeave.IsChecked = false;
+        HourSickLeaveHint.IsVisible = false;
         HourEditError.Text = "";
         HourEditPanel.IsVisible = true;
     }
@@ -790,7 +792,13 @@ public partial class MainWindow : Window
             HourStartTime.SelectedTime = hour.StartTime.ToTimeSpan();
             HourEndTime.SelectedTime = hour.EndTime.ToTimeSpan();
             HourIsVacation.IsChecked = hour.IsVacation;
+            if (HourIsVacation.IsChecked == false)
+                HourIsVacation.IsEnabled = !hour.IsSickLeave;
             HourVacationHint.IsVisible = hour.IsVacation;
+            HourSickLeave.IsChecked = hour.IsSickLeave;
+            if (HourSickLeave.IsChecked == false)
+                HourSickLeave.IsEnabled = !hour.IsVacation;
+            HourSickLeaveHint.IsVisible = hour.IsSickLeave;
             HourEditError.Text = "";
             HourEditPanel.IsVisible = true;
         }
@@ -825,7 +833,8 @@ public partial class MainWindow : Window
             Symbol = symbol,
             StartTime = startTime,
             EndTime = endTime,
-            IsVacation = HourIsVacation.IsChecked == true
+            IsVacation = HourIsVacation.IsChecked == true,
+            IsSickLeave = HourSickLeave.IsChecked == true
         };
 
         var hoursTable = new HoursTable();
@@ -858,6 +867,35 @@ public partial class MainWindow : Window
     private void OnHourIsVacationChanged(object? sender, RoutedEventArgs e)
     {
         HourVacationHint.IsVisible = HourIsVacation.IsChecked == true;
+
+        // Urlop i L4 wzajemnie się wykluczają
+        if (HourIsVacation.IsChecked == true)
+        {
+            HourSickLeave.IsChecked = false;
+            HourSickLeave.IsEnabled = false;
+            HourSickLeaveHint.IsVisible = false;
+        }
+        else
+        {
+            HourSickLeave.IsEnabled = true;
+        }
+    }
+
+    private void OnHourSickLeaveChanged(object? sender, RoutedEventArgs e)
+    {
+        HourSickLeaveHint.IsVisible = HourSickLeave.IsChecked == true;
+
+        // Urlop i L4 wzajemnie się wykluczają
+        if (HourSickLeave.IsChecked == true)
+        {
+            HourIsVacation.IsChecked = false;
+            HourIsVacation.IsEnabled = false;
+            HourVacationHint.IsVisible = false;
+        }
+        else
+        {
+            HourIsVacation.IsEnabled = true;
+        }
     }
 
     private void OnDeleteHourClick(object? sender, RoutedEventArgs e)

@@ -49,6 +49,18 @@ public class DbInitialization
         {
             // Column already exists — ignore
         }
+
+        // Migration: Add IsSickLeave column to ShiftHours if missing
+        try
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = "ALTER TABLE ShiftHours ADD COLUMN IsSickLeave INTEGER NOT NULL DEFAULT 0";
+            cmd.ExecuteNonQuery();
+        }
+        catch (SqliteException)
+        {
+            // Column already exists — ignore
+        }
         
         // Migration: Recreate Holidays table with recurring schema (Month/Day/EasterOffset instead of Date)
         try

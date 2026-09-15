@@ -22,6 +22,8 @@ public class ScheduleExportService
 
     private static string GetLegendDescription(HoursRecord h)
     {
+        if (h.IsSickLeave)
+            return $"L4 {(int)(h.EndTime - h.StartTime).TotalHours} godzinne";
         return h.IsVacation
             ? $"urlop {(int)(h.EndTime - h.StartTime).TotalHours} godzinny"
             : $"{h.StartTime:HH:mm} – {h.EndTime:HH:mm}";

@@ -872,7 +872,15 @@
                                             </Grid>
                                             <CheckBox x:Name="HourIsVacation" Content="Urlop" FontSize="13" Margin="0,4,0,0" IsCheckedChanged="OnHourIsVacationChanged"/>
                                             <TextBlock x:Name="HourVacationHint" 
-                                                       Text="Ustaw godziny zmiany odpowiadające wymiarowi urlopu — zostaną doliczone do sumy godzin pracy pracownika. Zmiana nie będzie wliczana do niczego innego." 
+                                                       Text="Zmiana urlopowa. Godziny zostaną doliczone do sumy godzin pracy pracownika ORAZ do wykorzystanego urlopu. Nie wlicza się do innych analiz (przerwy, pokrycie godzin otwarcia)." 
+                                                       FontSize="11" 
+                                                       Foreground="#7A7A7A" 
+                                                       TextWrapping="Wrap" 
+                                                       IsVisible="False" 
+                                                       Margin="20,0,0,4"/>
+                                            <CheckBox x:Name="HourSickLeave" Content="Zwolnienie L4" FontSize="13" Margin="0,4,0,0" IsCheckedChanged="OnHourSickLeaveChanged"/>
+                                            <TextBlock x:Name="HourSickLeaveHint" 
+                                                       Text="Zwolnienie lekarskie (L4). Godziny zostaną doliczone do sumy godzin pracy pracownika, ale NIE do wykorzystanego urlopu. Nie wlicza się do innych analiz (przerwy, pokrycie godzin otwarcia)." 
                                                        FontSize="11" 
                                                        Foreground="#7A7A7A" 
                                                        TextWrapping="Wrap" 
@@ -920,6 +928,12 @@
                                                             <TextBlock Text="{Binding StartTime}" FontSize="13" Foreground="#3A3A3A"/>
                                                             <TextBlock Text="–" FontSize="13" Foreground="#9A9A9A"/>
                                                             <TextBlock Text="{Binding EndTime}" FontSize="13" Foreground="#3A3A3A"/>
+                                                            <Border Background="#FEF3C7" CornerRadius="4" Padding="6,2" IsVisible="{Binding IsVacation}">
+                                                                <TextBlock Text="Urlop" FontSize="11" FontWeight="SemiBold" Foreground="#8B6914"/>
+                                                            </Border>
+                                                            <Border Background="#FFE4E1" CornerRadius="4" Padding="6,2" IsVisible="{Binding IsSickLeave}">
+                                                                <TextBlock Text="L4" FontSize="11" FontWeight="SemiBold" Foreground="#B03030"/>
+                                                            </Border>
                                                         </StackPanel>
                                                         <Button Grid.Column="2"
                                                                 Content="Edytuj"

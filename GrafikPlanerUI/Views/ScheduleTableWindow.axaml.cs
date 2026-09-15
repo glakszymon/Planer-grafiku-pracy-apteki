@@ -121,9 +121,11 @@ public partial class ScheduleTableWindow : Window
         var legendData = hours.Select(h => new LegendItem
         {
             Symbol = h.Symbol,
-            Description = h.IsVacation 
-                ? $"urlop {(int)(h.EndTime - h.StartTime).TotalHours} godzinny" 
-                : $"{h.StartTime:HH:mm} – {h.EndTime:HH:mm}"
+            Description = h.IsSickLeave
+                ? $"L4 {(int)(h.EndTime - h.StartTime).TotalHours} godzinne"
+                : h.IsVacation
+                    ? $"urlop {(int)(h.EndTime - h.StartTime).TotalHours} godzinny"
+                    : $"{h.StartTime:HH:mm} – {h.EndTime:HH:mm}"
         }).ToList();
 
         LegendItems.ItemsSource = legendData;
@@ -558,7 +560,9 @@ public partial class ScheduleTableWindow : Window
         {
             ItemsSource = _contextMenu.Hours,
             ItemTemplate = new FuncDataTemplate<HoursRecord?>((data, _) =>
-                new TextBlock { Text = data != null ? $"{data.Symbol} ({data.StartTime} - {data.EndTime})" : "Brak" })
+                new TextBlock { Text = data != null
+                    ? $"{data.Symbol} ({data.StartTime} - {data.EndTime})" + (data.IsSickLeave ? " [L4]" : data.IsVacation ? " [urlop]" : "")
+                    : "Brak" })
         };
 
         var colorsListBox = new ListBox
