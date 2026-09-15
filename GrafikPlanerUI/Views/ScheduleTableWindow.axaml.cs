@@ -66,6 +66,9 @@ public partial class ScheduleTableWindow : Window
     private bool _isPointerDown;
     private Point _dragStartPoint;
 
+    // Suppresses DB-writing SelectionChanged handlers while refreshing flyout selection on open
+    private bool _suppressSelectionHandlers;
+
     // Adaptive scale state
     private double _currentScale = 1.0;
     private List<DateOnly> _dayDates = new();
@@ -619,6 +622,8 @@ public partial class ScheduleTableWindow : Window
         // Apply hours change to all selected cells
         hoursListBox.SelectionChanged += (s, e) =>
         {
+            if (_suppressSelectionHandlers) return;
+
             var selectedHour = hoursListBox.SelectedItem as HoursRecord;
             var employeeTable = new EmployeeTable();
             employeeTable.StartConnectionWithDatabase();
@@ -650,6 +655,8 @@ public partial class ScheduleTableWindow : Window
         // Apply color change to all selected cells
         colorsListBox.SelectionChanged += (s, e) =>
         {
+            if (_suppressSelectionHandlers) return;
+
             var selectedColor = colorsListBox.SelectedItem as string;
             foreach (var cell in _selectedCells.ToList())
             {
@@ -660,6 +667,8 @@ public partial class ScheduleTableWindow : Window
         // Apply icon change to all selected cells
         iconsListBox.SelectionChanged += (s, e) =>
         {
+            if (_suppressSelectionHandlers) return;
+
             var selectedIcon = iconsListBox.SelectedItem as string;
             foreach (var cell in _selectedCells.ToList())
             {
@@ -696,6 +705,7 @@ public partial class ScheduleTableWindow : Window
         flyout.Opened += (s, e) =>
         {
             flyoutHost.LayoutTransform = new ScaleTransform(_currentScale, _currentScale);
+            RefreshFlyoutSelection(hoursListBox, colorsListBox, iconsListBox);
         };
 
         // Save all selected cells on flyout close
@@ -719,6 +729,37 @@ public partial class ScheduleTableWindow : Window
         };
 
         return flyout;
+    }
+
+    private void RefreshFlyoutSelection(ListBox hoursListBox, ListBox colorsListBox, ListBox iconsListBox)
+    {
+        _suppressSelectionHandlers = true;
+        try
+        {
+            if (_selectedCells.Count == 0)
+            {
+                hoursListBox.SelectedIndex = -1;
+                colorsListBox.SelectedIndex = -1;
+                iconsListBox.SelectedIndex = -1;
+                return;
+            }
+
+            var refHourId = _selectedCells[0].Shift?.ShiftHourId;
+            var refColor = _selectedCells[0].Shift?.PoleColor;
+            var refIcon = _selectedCells[0].Shift?.PoleIcon;
+
+            bool hoursAgree = _selectedCells.All(c => c.Shift?.ShiftHourId == refHourId);
+            bool colorsAgree = _selectedCells.All(c => c.Shift?.PoleColor == refColor);
+            bool iconsAgree = _selectedCells.All(c => c.Shift?.PoleIcon == refIcon);
+
+            hoursListBox.SelectedIndex = hoursAgree ? _contextMenu.Hours.FindIndex(h => h?.Id == refHourId) : -1;
+            colorsListBox.SelectedIndex = colorsAgree ? _contextMenu.Colors.FindIndex(c => c == refColor) : -1;
+            iconsListBox.SelectedIndex = iconsAgree ? _contextMenu.Icons.FindIndex(i => i == refIcon) : -1;
+        }
+        finally
+        {
+            _suppressSelectionHandlers = false;
+        }
     }
 
     private void ApplyHourToCell(CellInfo cell, HoursRecord? selectedHour)
