@@ -37,6 +37,8 @@ public partial class ScheduleTableWindow : Window
     private static readonly IBrush GapRowSeparator = new SolidColorBrush(Color.Parse("#9E9E9E"));
     private static readonly IBrush GapRowLabelBackground = new SolidColorBrush(Color.Parse("#F5F5F5"));
     private static readonly IBrush CheckMarkForeground = new SolidColorBrush(Color.Parse("#4CAF50"));
+
+    private static readonly IBrush ViolationForeground = new SolidColorBrush(Color.Parse("#E57373"));
     private static readonly IBrush VacationCriticalBackground = new SolidColorBrush(Color.Parse("#FEE2E2"));
     private static readonly IBrush HolidayBackground = new SolidColorBrush(Color.Parse("#F0F0EE"));
     private static readonly IBrush HolidayForeground = new SolidColorBrush(Color.Parse("#B0ADA8"));
@@ -83,6 +85,8 @@ public partial class ScheduleTableWindow : Window
     private readonly Dictionary<(ScheduleRow, DateOnly), CellInfo> _cellsByKey = new();
     // Registry by Border for hit-testing during drag
     private readonly Dictionary<Border, CellInfo> _cellRegistry = new();
+    // Violated work cells (EmployeeId, Day) - applied to cells when they are created
+    private readonly HashSet<(int, DateOnly)> _violationCells = new();
 
     public ScheduleTableWindow(ContextMenuOptions contextMenu)
     {
@@ -401,6 +405,10 @@ public partial class ScheduleTableWindow : Window
                         _cellsByKey[key] = cellInfo;
                     }
                     _cellRegistry[border] = cellInfo;
+
+                    // Apply 11h-violation highlight to freshly created cells
+                    if (_violationCells.Contains((row.Id, day)))
+                        ApplyCellForeground(cellInfo, ViolationForeground);
 
                     // Re-apply selection styling if this cell is selected
                     if (_selectedCells.Contains(cellInfo))
@@ -1083,9 +1091,18 @@ public partial class ScheduleTableWindow : Window
 
             var violations = _analiser.CheckDailyRestInSchedule(_scheduleRows, _currentMonth, _currentYear);
 
+            _violationCells.Clear();
+            foreach (var v in violations)
+            {
+                _violationCells.Add((v.EmployeeId, v.PrevDay));
+                _violationCells.Add((v.EmployeeId, v.Day));
+            }
+
+            ApplyViolationCellHighlighting(violations);
+
             var items = violations.Select(v => new ViolationItem
             {
-                Display = $"{v.EmployeeName} – {v.Day.ToString("dd.MM")} – łamie zasadę 11h odpoczynku ({v.Message})"
+                Display = $"{v.EmployeeName} - {v.Message}"
             }).ToList();
 
             ViolationsItems.ItemsSource = items;
@@ -1095,6 +1112,32 @@ public partial class ScheduleTableWindow : Window
         {
             ViolationsPanel.IsVisible = false;
         }
+    }
+
+    private void ApplyViolationCellHighlighting(List<DailyRestViolation> violations)
+    {
+        foreach (var cell in _cellRegistry.Values)
+        {
+            ApplyCellForeground(cell, Brushes.Black);
+        }
+
+        foreach (var v in violations)
+        {
+            var row = _scheduleRows.FirstOrDefault(r => r.Id == v.EmployeeId);
+            if (row == null) continue;
+
+            if (_cellsByKey.TryGetValue((row, v.PrevDay), out var prevCell) && prevCell.Shift != null)
+                ApplyCellForeground(prevCell, ViolationForeground);
+            if (_cellsByKey.TryGetValue((row, v.Day), out var nextCell) && nextCell.Shift != null)
+                ApplyCellForeground(nextCell, ViolationForeground);
+        }
+    }
+
+    private void ApplyCellForeground(CellInfo cell, IBrush brush)
+    {
+        var mainText = cell.CellGrid.Children.OfType<TextBlock>().FirstOrDefault();
+        if (mainText != null)
+            mainText.Foreground = brush;
     }
 
     private void ViolationsPanel_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)

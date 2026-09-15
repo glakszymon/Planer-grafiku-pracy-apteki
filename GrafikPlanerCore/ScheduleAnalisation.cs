@@ -243,7 +243,8 @@ public class ScheduleAnalisation
                 EmployeeId = next.EmployeeId,
                 EmployeeName = $"{row.FirstName} {row.LastName}".Trim(),
                 Day = nextDay,
-                Message = $"przerwa {prevDay.ToString("dd.MM")} {prev.EndTime.Value:HH:mm} → {nextDay.ToString("dd.MM")} {next.StartTime.Value:HH:mm} ({gapHours:0.#}h, min. 11h)"
+                PrevDay = prevDay,
+                Message = $"{prevDay.ToString("dd.MM")} {prev.EndTime.Value:HH:mm} -> {nextDay.ToString("dd.MM")} {next.StartTime.Value:HH:mm} ({gapHours:0.#} h)"
             };
         }
 
