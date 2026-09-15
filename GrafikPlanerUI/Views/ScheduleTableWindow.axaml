@@ -110,6 +110,11 @@
         </Style>
     </Window.Styles>
     
+    <LayoutTransformControl x:Name="RootScaleHost">
+        <LayoutTransformControl.LayoutTransform>
+            <ScaleTransform />
+        </LayoutTransformControl.LayoutTransform>
+
     <Grid>
         <DockPanel>
             <!-- Naglowek z przyciskiem powrotu -->
@@ -166,7 +171,8 @@
                       CornerRadius="8"
                       Background="White"
                       RowBackground="White"
-                      RowHeight="55">
+                      RowHeight="55"
+                      HorizontalScrollBarVisibility="Hidden">
                 <DataGrid.Columns>
                 
                     <DataGridTemplateColumn Header="Pracownik" Width="130">
@@ -269,4 +275,5 @@
             </Border>
         </StackPanel>
     </Grid>
+    </LayoutTransformControl>
 </Window>

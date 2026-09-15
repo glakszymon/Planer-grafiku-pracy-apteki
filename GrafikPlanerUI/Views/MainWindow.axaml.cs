@@ -9,6 +9,7 @@ using GrafikPlanerCore;
 using GrafikPlanerData.DbScripts;
 using GrafikPlanerData.Models;
 using GrafikPlanerData.Models.Enums;
+using GrafikPlanerUI.Services;
 using GrafikPlanerUI.ViewModels;
 
 namespace GrafikPlanerUI.Views;
@@ -28,6 +29,8 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         Opened += (_, _) => WindowState = WindowState.Maximized;
+        Opened += (_, _) => ApplyScale();
+        SizeChanged += (_, _) => ApplyScale();
 
         DataContext = new MainViewModel();
 
@@ -39,6 +42,11 @@ public partial class MainWindow : Window
 
         // Domyślnie aktywna zakładka Grafiki
         SetActiveTab("grafiki");
+    }
+
+    private void ApplyScale()
+    {
+        ScaleService.Apply(this, RootScaleHost);
     }
 
     // ==================== TABS ====================

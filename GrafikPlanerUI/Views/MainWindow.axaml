@@ -16,6 +16,11 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
+    <LayoutTransformControl x:Name="RootScaleHost">
+        <LayoutTransformControl.LayoutTransform>
+            <ScaleTransform />
+        </LayoutTransformControl.LayoutTransform>
+
     <Grid RowDefinitions="Auto,*">
         <!-- ============ HEADER ============ -->
         <Border Grid.Row="0" Padding="28,14" Background="#FDFCFB" BorderBrush="#E8E5E0" BorderThickness="0,0,0,1">
@@ -1191,4 +1196,5 @@
             </Border>
         </Border>
     </Grid>
+    </LayoutTransformControl>
 </Window>

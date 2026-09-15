@@ -60,6 +60,15 @@ public partial class ScheduleTableWindow : Window
     // Multi-select state
     private bool _isDragging;
     private readonly List<CellInfo> _selectedCells = new();
+    private const double DragThreshold = 4;
+    private bool _isPointerDown;
+    private Point _dragStartPoint;
+
+    // Adaptive scale state
+    private double _currentScale = 1.0;
+    private List<DateOnly> _dayDates = new();
+    private const double HeaderAbbrevThreshold = 32;
+    private bool _headerAbbreviated;
 
     private class CellInfo
     {
@@ -89,6 +98,9 @@ public partial class ScheduleTableWindow : Window
         // Global pointer events for drag selection
         PointerMoved += OnGlobalPointerMoved;
         PointerReleased += OnGlobalPointerReleased;
+
+        SizeChanged += OnWindowSizeChanged;
+        Opened += (s, e) => ApplyScale();
 
         LoadLegend();
     }
@@ -128,6 +140,7 @@ public partial class ScheduleTableWindow : Window
         if (_scheduleRows.Count == 0) return;
 
         var dialog = new ExportDialog(_scheduleRows);
+        dialog.ApplyScale(ScaleService.Compute(this));
         await dialog.ShowDialog(this);
 
         if (!dialog.Confirmed) return;
@@ -181,8 +194,41 @@ public partial class ScheduleTableWindow : Window
         Dispatcher.UIThread.Post(() =>
         {
             WindowState = WindowState.Maximized;
+            ApplyScale();
         }, DispatcherPriority.Background);
     }
+
+    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        ApplyScale();
+    }
+
+    private void ApplyScale()
+    {
+        _currentScale = ScaleService.Apply(this, RootScaleHost);
+        RecalculateRowHeights();
+        RecalculateGapRowHeight(_gapDataGridRow, _gapCellTextBlocks);
+        RecalculateGapRowHeight(_pharmacistGapDataGridRow, _pharmacistGapCellTextBlocks);
+        RefreshDayHeaders();
+    }
+
+    private void RecalculateRowHeights()
+    {
+        if (_scheduleRows.Count == 0) return;
+        if (ScheduleDataGrid.Bounds.Height <= 0) return;
+
+        double s = _currentScale;
+        double rowArea = ScheduleDataGrid.Bounds.Height;
+        double headerH = ScheduleDataGrid.ColumnHeaderHeight;
+        if (double.IsNaN(headerH) || headerH <= 0) headerH = 48;
+        rowArea = Math.Max(0, rowArea - headerH);
+
+        double rowH = rowArea / _scheduleRows.Count;
+        double minDesign = ScaleService.MinRowHeight / s;
+        ScheduleDataGrid.RowHeight = Math.Clamp(rowH, minDesign, ScaleService.BaseRowHeight);
+    }
+
+    private Thickness SelectionThickness => new Thickness(Math.Max(2, FocusBorderThickness.Left * _currentScale));
 
     public void LoadSchedule(List<ScheduleRow> scheduleRows)
     {
@@ -217,13 +263,14 @@ public partial class ScheduleTableWindow : Window
             .Distinct()
             .OrderBy(d => d)
             .ToList();
+        _dayDates = days;
 
         foreach (var day in days)
         {
             var dayColumn = new DataGridTemplateColumn
             {
                 Header = CreateHeaderTextBlock(day),
-                Width = new DataGridLength(CalculateDayColumnWidth(days.Count), DataGridLengthUnitType.Pixel),
+                Width = new DataGridLength(1, DataGridLengthUnitType.Star),
 
                 CellTemplate = new FuncDataTemplate<ScheduleRow>((row, namescope) =>
                 {
@@ -345,7 +392,7 @@ public partial class ScheduleTableWindow : Window
                     if (_selectedCells.Contains(cellInfo))
                     {
                         border.BorderBrush = SelectionBorderBrush;
-                        border.BorderThickness = FocusBorderThickness;
+                        border.BorderThickness = SelectionThickness;
                     }
 
                     // Start drag on left press
@@ -354,7 +401,8 @@ public partial class ScheduleTableWindow : Window
                         if (e.GetCurrentPoint(border).Properties.IsLeftButtonPressed)
                         {
                             ClearSelection();
-                            _isDragging = true;
+                            _dragStartPoint = e.GetCurrentPoint(this).Position;
+                            _isPointerDown = true;
                             SelectCell(cellInfo);
                             ScheduleDataGrid.SelectedItem = null; // Prevent DataGrid row selection from painting over cells
                             e.Handled = true; // Prevent DataGrid from re-rendering the row
@@ -416,9 +464,25 @@ public partial class ScheduleTableWindow : Window
 
     private void OnGlobalPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (!_isDragging) return;
+        if (!_isPointerDown) return;
 
         var point = e.GetPosition(this);
+
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            _isDragging = false;
+            _isPointerDown = false;
+            return;
+        }
+
+        if (!_isDragging)
+        {
+            double dx = point.X - _dragStartPoint.X;
+            double dy = point.Y - _dragStartPoint.Y;
+            if ((dx * dx + dy * dy) < DragThreshold * DragThreshold) return;
+            _isDragging = true;
+        }
+
         var hit = this.InputHitTest(point);
         if (hit is Visual visual)
         {
@@ -440,6 +504,7 @@ public partial class ScheduleTableWindow : Window
     private void OnGlobalPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         _isDragging = false;
+        _isPointerDown = false;
     }
 
     private Border? FindParentBorder(Visual? visual)
@@ -457,7 +522,7 @@ public partial class ScheduleTableWindow : Window
     {
         _selectedCells.Add(cellInfo);
         cellInfo.Border.BorderBrush = SelectionBorderBrush;
-        cellInfo.Border.BorderThickness = FocusBorderThickness;
+        cellInfo.Border.BorderThickness = SelectionThickness;
     }
 
     private void ClearSelection()
@@ -599,7 +664,17 @@ public partial class ScheduleTableWindow : Window
         Grid.SetColumn(iconsListBox, 2); Grid.SetRow(iconsListBox, 1);
 
         grid.Children.AddRange(new Control[] { h1, h2, h3, hoursListBox, colorsListBox, iconsListBox });
-        flyout.Content = grid;
+        var flyoutHost = new LayoutTransformControl
+        {
+            LayoutTransform = new ScaleTransform(_currentScale, _currentScale),
+            Child = grid
+        };
+        flyout.Content = flyoutHost;
+
+        flyout.Opened += (s, e) =>
+        {
+            flyoutHost.LayoutTransform = new ScaleTransform(_currentScale, _currentScale);
+        };
 
         // Save all selected cells on flyout close
         flyout.Closed += (sender, args) =>
@@ -779,14 +854,6 @@ public partial class ScheduleTableWindow : Window
 
     // ===== Gap Indicator Methods =====
 
-    private double CalculateDayColumnWidth(int dayCount)
-    {
-        // Use screen width or fallback to 1920; subtract fixed columns (130+70) and some padding
-        var screenWidth = Screens.Primary?.Bounds.Width ?? 1920;
-        var available = screenWidth - 200 - 40; // 200 for fixed cols, 40 for scrollbar/padding
-        return Math.Max(35, available / dayCount);
-    }
-
     private void OnDataGridLoadingRow(object? sender, DataGridRowEventArgs e)
     {
         if (e.Row.DataContext is ScheduleRow row)
@@ -807,7 +874,7 @@ public partial class ScheduleTableWindow : Window
             }
             else
             {
-                // Normal rows use DataGrid.RowHeight (95) — no override needed.
+                // Normal rows use DataGrid.RowHeight (55) — no override needed.
                 // Reset in case this row was previously recycled from a gap row.
                 e.Row.Height = double.NaN;
                 e.Row.BorderThickness = new Thickness(0);
@@ -820,7 +887,7 @@ public partial class ScheduleTableWindow : Window
     {
         if (dgRow == null) return;
 
-        double maxHeight = 30; // minimum
+        double maxHeight = ScaleService.MinRowHeight / _currentScale; // minimum
         foreach (var tb in cellTextBlocks.Values)
         {
             var lineCount = 1 + tb.Text?.Count(c => c == '\n') ?? 0;
@@ -830,6 +897,30 @@ public partial class ScheduleTableWindow : Window
 
         dgRow.Height = maxHeight;
         dgRow.MinHeight = 0;
+    }
+
+    private void RefreshDayHeaders()
+    {
+        double gridW = ScheduleDataGrid.Bounds.Width;
+        if (gridW <= 0 || _dayDates.Count == 0) return;
+
+        double dayCol = (gridW - 200) / _dayDates.Count;
+        bool abbreviate = dayCol * _currentScale < HeaderAbbrevThreshold;
+        if (abbreviate == _headerAbbreviated) return;
+        _headerAbbreviated = abbreviate;
+
+        foreach (var day in _dayDates)
+        {
+            if (_headerTextBlocks.TryGetValue(day, out var tb))
+                tb.Text = BuildHeaderText(day, abbreviate);
+        }
+    }
+
+    private static string BuildHeaderText(DateOnly day, bool abbreviate)
+    {
+        return abbreviate
+            ? $"{day.Day}\n{day.ToString("ddd")[0]}"
+            : day.ToString("dd.MM\nddd");
     }
 
     private TextBlock CreateHeaderTextBlock(DateOnly day)
@@ -844,7 +935,7 @@ public partial class ScheduleTableWindow : Window
         
         var tb = new TextBlock
         {
-            Text = day.ToString("dd.MM\nddd"),
+            Text = BuildHeaderText(day, false),
             TextAlignment = TextAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,

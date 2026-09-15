@@ -1,6 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using GrafikPlanerCore.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -35,6 +38,36 @@ public partial class ExportDialog : Window
         }).ToList();
 
         EmployeeList.ItemsSource = _employees;
+
+        Opened += (s, e) => ClampToScreen();
+    }
+
+    public void ApplyScale(double s)
+    {
+        Width = 720 * s;
+        Height = 560 * s;
+        RootScaleHost.LayoutTransform = new ScaleTransform(s, s);
+    }
+
+    private void ClampToScreen()
+    {
+        try
+        {
+            var screen = Screens.ScreenFromWindow(this);
+            if (screen == null) return;
+
+            var wa = screen.WorkingArea;
+            double dw = Width * screen.Scaling;
+            double dh = Height * screen.Scaling;
+            double maxX = wa.X + Math.Max(0, wa.Width - dw);
+            double maxY = wa.Y + Math.Max(0, wa.Height - dh);
+            int x = (int)Math.Clamp(Position.X, wa.X, maxX);
+            int y = (int)Math.Clamp(Position.Y, wa.Y, maxY);
+            Position = new PixelPoint(x, y);
+        }
+        catch
+        {
+        }
     }
 
     private void Export_Click(object? sender, RoutedEventArgs e)
