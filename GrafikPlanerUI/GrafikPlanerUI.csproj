@@ -10,6 +10,10 @@
     <ItemGroup>
         <Folder Include="Models\" />
         <AvaloniaResource Include="Assets\**" />
+        <AvaloniaResource Update="logo.ico">
+          <Visible>false</Visible>
+          <Link>Assets\!__AvaloniaDefaultWindowIcon</Link>
+        </AvaloniaResource>
     </ItemGroup>
 
     <ItemGroup>

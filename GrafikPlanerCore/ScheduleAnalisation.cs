@@ -235,7 +235,7 @@ public class ScheduleAnalisation
         if (!next.StartTime.HasValue || !next.EndTime.HasValue)
             return null;
 
-        var gapHours = (next.StartTime.Value - prev.EndTime.Value).TotalHours;
+        var gapHours = (nextDay.ToDateTime(next.StartTime.Value) - prevDay.ToDateTime(prev.EndTime.Value)).TotalHours;
         if (gapHours < MinDailyRestHours)
         {
             return new DailyRestViolation
