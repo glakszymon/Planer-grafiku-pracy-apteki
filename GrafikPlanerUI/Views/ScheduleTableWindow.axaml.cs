@@ -251,23 +251,13 @@ public partial class ScheduleTableWindow : Window
 
     private Thickness SelectionThickness => new Thickness(Math.Max(2, FocusBorderThickness.Left * _currentScale));
 
-    public void LoadSchedule(List<ScheduleRow> scheduleRows)
+    public void LoadSchedule(List<ScheduleRow> scheduleRows, int month, int year)
     {
         if (scheduleRows == null || !scheduleRows.Any()) return;
         _scheduleRows = scheduleRows;
-
-        var firstDate = scheduleRows
-            .SelectMany(r => r.Records)
-            .Select(c => c.ShiftDate)
-            .Where(d => d != default)
-            .OrderBy(d => d)
-            .FirstOrDefault();
-        if (firstDate != default)
-        {
-            ScheduleTitleText.Text = $"{firstDate:MMMM yyyy}";
-            _currentMonth = firstDate.Month;
-            _currentYear = firstDate.Year;
-        }
+        _currentMonth = month;
+        _currentYear = year;
+        ScheduleTitleText.Text = $"{new DateOnly(year, month, 1):MMMM yyyy}";
 
         // Load closed days from settings
         _closedDays = LoadClosedDays();
@@ -625,8 +615,6 @@ public partial class ScheduleTableWindow : Window
             if (_suppressSelectionHandlers) return;
 
             var selectedHour = hoursListBox.SelectedItem as HoursRecord;
-            var employeeTable = new EmployeeTable();
-            employeeTable.StartConnectionWithDatabase();
 
             foreach (var cell in _selectedCells.ToList())
             {
@@ -634,17 +622,16 @@ public partial class ScheduleTableWindow : Window
                 cell.Row.HoursSummary -= CalculateShiftHours(previousHour);
                 cell.Row.HoursSummary += CalculateShiftHours(selectedHour);
 
-                // Update vacation days: decrement if old was vacation, increment if new is vacation
+                // Urlopy: "wykorzystane" to pochodna rekordów zmian — nie zapisujemy licznika,
+                // tylko korygujemy wartość w wierszu, by odświeżyć stan (wykorzystane w roku Y).
                 bool wasVacation = previousHour?.IsVacation == true;
                 bool isVacation = selectedHour?.IsVacation == true;
                 if (wasVacation && !isVacation)
                 {
-                    employeeTable.UpdateUsedVacationDays(cell.Row.Id, -1);
                     cell.Row.UsedVacationDays = (cell.Row.UsedVacationDays ?? 0) - 1;
                 }
                 else if (!wasVacation && isVacation)
                 {
-                    employeeTable.UpdateUsedVacationDays(cell.Row.Id, 1);
                     cell.Row.UsedVacationDays = (cell.Row.UsedVacationDays ?? 0) + 1;
                 }
 

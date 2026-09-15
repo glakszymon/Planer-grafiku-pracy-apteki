@@ -20,10 +20,7 @@ public class EmployeeTable : DbConnectionOption
                 Specialization TEXT NOT NULL,
                 Email TEXT,
                 PhoneNumber TEXT,
-                VacationDays INTIGER,
-                UsedVacationDays INTIGER,
-                UnusedVacationDaysFromLastYear INTIGER,
-                YearOfVacationData INTIGER NOT NULL
+                VacationDays INTEGER
             );";
         
         createEmployeeTableCommand.ExecuteNonQuery();
@@ -35,9 +32,9 @@ public class EmployeeTable : DbConnectionOption
         var command = _connection.CreateCommand();
 
         command.CommandText = @"
-            INSERT INTO Employee (FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays, UsedVacationDays, UnusedVacationDaysFromLastYear, YearOfVacationData,
+            INSERT INTO Employee (FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays,
                 EmploymentType, WorkTimeRate, AutoDailyRest) 
-            VALUES (@firstName, @lastName, @specialisation, @email, @phoneNumber, @vacationDays, @usedVacationDays, @unusedVacationDaysFromLastYear, @yearOfVacationData,
+            VALUES (@firstName, @lastName, @specialisation, @email, @phoneNumber, @vacationDays,
                 @employmentType, @workTimeRate, @autoDailyRest);";
 
         command.Parameters.AddWithValue("@firstName", record.FirstName);
@@ -46,9 +43,6 @@ public class EmployeeTable : DbConnectionOption
         command.Parameters.AddWithValue("@email", (object?)record.Email ?? DBNull.Value);
         command.Parameters.AddWithValue("@phoneNumber", (object?)record.PhoneNumber ?? DBNull.Value);
         command.Parameters.AddWithValue("@vacationDays", (object?)record.VacationDays ?? DBNull.Value);
-        command.Parameters.AddWithValue("@usedVacationDays", (object?)record.UsedVacationDays ?? DBNull.Value);
-        command.Parameters.AddWithValue("@unusedVacationDaysFromLastYear", (object?)record.UnusedVacationDaysFromLastYear ?? DBNull.Value);
-        command.Parameters.AddWithValue("@yearOfVacationData", DateTime.Now.Year);
         command.Parameters.AddWithValue("@employmentType", (int)record.EmploymentType);
         command.Parameters.AddWithValue("@workTimeRate", (int)record.WorkTimeRate);
         command.Parameters.AddWithValue("@autoDailyRest", record.AutoDailyRest ? 1 : 0);
@@ -62,9 +56,7 @@ public class EmployeeTable : DbConnectionOption
         command.CommandText = @"
             UPDATE Employee 
             SET FirstName = @firstName, LastName = @lastName, Specialization = @specialisation, 
-                Email = @email, PhoneNumber = @phoneNumber, VacationDays = @vacationDays, 
-                UsedVacationDays = @usedVacationDays, UnusedVacationDaysFromLastYear = @unusedVacationDaysFromLastYear,
-                YearOfVacationData = @yearOfVacationData,
+                Email = @email, PhoneNumber = @phoneNumber, VacationDays = @vacationDays,
                 EmploymentType = @employmentType, WorkTimeRate = @workTimeRate, AutoDailyRest = @autoDailyRest
             WHERE Id = @id;";
 
@@ -75,25 +67,10 @@ public class EmployeeTable : DbConnectionOption
         command.Parameters.AddWithValue("@email", (object?)record.Email ?? DBNull.Value);
         command.Parameters.AddWithValue("@phoneNumber", (object?)record.PhoneNumber ?? DBNull.Value);
         command.Parameters.AddWithValue("@vacationDays", (object?)record.VacationDays ?? DBNull.Value);
-        command.Parameters.AddWithValue("@usedVacationDays", (object?)record.UsedVacationDays ?? DBNull.Value);
-        command.Parameters.AddWithValue("@unusedVacationDaysFromLastYear", (object)record.UnusedVacationDaysFromLastYear ?? DBNull.Value);
-        command.Parameters.AddWithValue("@yearOfVacationData", (object)record.YearOfVacationData ?? DBNull.Value);
         command.Parameters.AddWithValue("@employmentType", (int)record.EmploymentType);
         command.Parameters.AddWithValue("@workTimeRate", (int)record.WorkTimeRate);
         command.Parameters.AddWithValue("@autoDailyRest", record.AutoDailyRest ? 1 : 0);
         
-        command.ExecuteNonQuery();
-    }
-
-    public void UpdateUsedVacationDays(int employeeId, int delta)
-    {
-        var command = _connection.CreateCommand();
-        command.CommandText = @"
-            UPDATE Employee 
-            SET UsedVacationDays = COALESCE(UsedVacationDays, 0) + @delta
-            WHERE Id = @id;";
-        command.Parameters.AddWithValue("@id", employeeId);
-        command.Parameters.AddWithValue("@delta", delta);
         command.ExecuteNonQuery();
     }
 
@@ -111,7 +88,7 @@ public class EmployeeTable : DbConnectionOption
     
         using var command = _connection.CreateCommand();
         command.CommandText = @"
-        SELECT Id, FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays, UsedVacationDays, UnusedVacationDaysFromLastYear, YearOfVacationData,
+        SELECT Id, FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays,
                EmploymentType, WorkTimeRate, AutoDailyRest
         FROM Employee";
 
@@ -124,9 +101,6 @@ public class EmployeeTable : DbConnectionOption
         int emailOrdinal = reader.GetOrdinal("Email");
         int phoneOrdinal = reader.GetOrdinal("PhoneNumber");
         int vacationDaysOrdinal = reader.GetOrdinal("VacationDays");
-        int usedVacationDaysOrdinal = reader.GetOrdinal("UsedVacationDays");
-        int unusedVacationDaysOrdinal = reader.GetOrdinal("UnusedVacationDaysFromLastYear");
-        int yearOfVacationDataOrdinal = reader.GetOrdinal("YearOfVacationData");
         int employmentTypeOrdinal = reader.GetOrdinal("EmploymentType");
         int workTimeRateOrdinal = reader.GetOrdinal("WorkTimeRate");
         int autoDailyRestOrdinal = reader.GetOrdinal("AutoDailyRest");
@@ -142,9 +116,6 @@ public class EmployeeTable : DbConnectionOption
                 Email = reader.IsDBNull(emailOrdinal) ? string.Empty : reader.GetString(emailOrdinal),
                 PhoneNumber = reader.IsDBNull(phoneOrdinal) ? string.Empty : reader.GetString(phoneOrdinal),
                 VacationDays = reader.IsDBNull(vacationDaysOrdinal) ? 0 : reader.GetInt32(vacationDaysOrdinal),
-                UsedVacationDays = reader.IsDBNull(usedVacationDaysOrdinal) ? 0 : reader.GetInt32(usedVacationDaysOrdinal),
-                UnusedVacationDaysFromLastYear = reader.IsDBNull(unusedVacationDaysOrdinal) ? 0 : reader.GetInt32(unusedVacationDaysOrdinal),
-                YearOfVacationData = reader.IsDBNull(yearOfVacationDataOrdinal) ? 0 : reader.GetInt32(yearOfVacationDataOrdinal),
                 EmploymentType = reader.IsDBNull(employmentTypeOrdinal) ? EmploymentType.UmowaPrace : (EmploymentType)reader.GetInt32(employmentTypeOrdinal),
                 WorkTimeRate = reader.IsDBNull(workTimeRateOrdinal) ? WorkTimeRate.Full : (WorkTimeRate)reader.GetInt32(workTimeRateOrdinal),
                 AutoDailyRest = reader.IsDBNull(autoDailyRestOrdinal) || reader.GetInt32(autoDailyRestOrdinal) == 1

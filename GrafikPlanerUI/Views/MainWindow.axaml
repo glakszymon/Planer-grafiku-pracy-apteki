@@ -548,30 +548,9 @@
                                     <StackPanel x:Name="EditVacationSection" Grid.Row="4" Spacing="8">
                                         <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
                                         <TextBlock Text="Urlop" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto">
                                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Roczny limit (dni/rok)" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center"/>
                                             <TextBox Grid.Row="0" Grid.Column="1" x:Name="EmpVacationDaysBox" PlaceholderText="np. 26" CornerRadius="5" Padding="10,7" FontSize="13"/>
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Urlop zaległy (z ub. roku)" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,6,0,0"/>
-                                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="EmpUnusedVacationBox" PlaceholderText="np. 3" CornerRadius="5" Padding="10,7" FontSize="13" Margin="0,6,0,0"/>
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Wykorzystane (ręcznie)" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,6,0,0"/>
-                                            <TextBox Grid.Row="2" Grid.Column="1" x:Name="EmpUsedVacationBox" PlaceholderText="np. 5" CornerRadius="5" Padding="10,7" FontSize="13" Margin="0,6,0,0"/>
-                                            <!-- Read-only vacation summary -->
-                                            <Border Grid.Row="3" Grid.ColumnSpan="2" Background="#F8F7F5" CornerRadius="4" Padding="12,8" Margin="0,10,0,0">
-                                                <StackPanel Spacing="4">
-                                                    <TextBlock Text="Podgląd salda:" FontSize="12" FontWeight="SemiBold" Foreground="#5A5A5A"/>
-                                                    <StackPanel Orientation="Horizontal" Spacing="16">
-                                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <TextBlock Text="Wykorzystano:" FontSize="12" Foreground="#5A5A5A"/>
-                                                            <TextBlock x:Name="EditVacationUsedLabel" Text="0 dni" FontSize="12" FontWeight="SemiBold" Foreground="#1A1A1A"/>
-                                                        </StackPanel>
-                                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <TextBlock Text="Pozostało:" FontSize="12" Foreground="#5A5A5A"/>
-                                                            <TextBlock x:Name="EditVacationRemainingLabel" Text="0 dni" FontSize="12" FontWeight="SemiBold" Foreground="#4A7C59"/>
-                                                        </StackPanel>
-                                                    </StackPanel>
-                                                    <TextBlock x:Name="EditVacationCarryoverHint" Text="" FontSize="11" Foreground="#8B6914" IsVisible="False"/>
-                                                </StackPanel>
-                                            </Border>
                                         </Grid>
                                     </StackPanel>
 

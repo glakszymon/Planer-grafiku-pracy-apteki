@@ -108,6 +108,28 @@ public class ShiftTable : DbConnectionOption
             : 0;
     }
 
+    /// <summary>
+    /// Liczba przypisań urlopowych (IsVacation=1) w miesiącu — potrzebna do ostrzeżenia
+    /// przy usuwaniu grafiku, że zwolni on dni urlopu.
+    /// </summary>
+    public int GetVacationCountOfMonth(int month, int year)
+    {
+        string monthPattern = $"{year:D4}-{month:D2}-%";
+
+        using var command = _connection.CreateCommand();
+        command.CommandText = @"
+            SELECT COUNT(ShiftRecords.Id)
+            FROM ShiftRecords
+            INNER JOIN ShiftHours ON ShiftHours.Id = ShiftRecords.ShiftHourId
+            WHERE ShiftHours.IsVacation = 1 AND ShiftRecords.ShiftDate LIKE @monthPattern";
+        command.Parameters.AddWithValue("@monthPattern", monthPattern);
+
+        var result = command.ExecuteScalar();
+        return result != null && result != DBNull.Value
+            ? Convert.ToInt32(result)
+            : 0;
+    }
+
     public List<ScheduleInfo> GetAllSchedulesDates()
     {
         var schedules = new List<ScheduleInfo>();
@@ -142,6 +164,45 @@ public class ShiftTable : DbConnectionOption
         command.CommandText = @"DELETE FROM ShiftRecords WHERE ShiftDate LIKE @monthPattern;";
         command.Parameters.AddWithValue("@monthPattern", monthPattern);
         command.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// Liczba przypisań urlopowych (ShiftHourId wskazujący na godzinę z IsVacation=1)
+    /// na pracownika dla całego roku kalendarzowego i roku poprzedniego.
+    /// </summary>
+    public Dictionary<int, (int UsedInYear, int UsedPrevYear)> GetVacationUsages(int year, int prevYear)
+    {
+        var usages = new Dictionary<int, (int UsedInYear, int UsedPrevYear)>();
+
+        using var command = _connection.CreateCommand();
+        command.CommandText = @"
+            SELECT ShiftRecords.EmployeeId, substr(ShiftRecords.ShiftDate, 1, 4) AS ShiftYear, COUNT(*) AS Cnt
+            FROM ShiftRecords
+            INNER JOIN ShiftHours ON ShiftHours.Id = ShiftRecords.ShiftHourId
+            WHERE ShiftHours.IsVacation = 1 AND substr(ShiftRecords.ShiftDate, 1, 4) IN (@year, @prevYear)
+            GROUP BY ShiftRecords.EmployeeId, substr(ShiftRecords.ShiftDate, 1, 4);";
+
+        command.Parameters.AddWithValue("@year", year.ToString());
+        command.Parameters.AddWithValue("@prevYear", prevYear.ToString());
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            int employeeId = reader.GetInt32(reader.GetOrdinal("EmployeeId"));
+            int shiftYear = int.Parse(reader.GetString(reader.GetOrdinal("ShiftYear")));
+            int count = reader.GetInt32(reader.GetOrdinal("Cnt"));
+
+            if (!usages.TryGetValue(employeeId, out var usage))
+                usage = (0, 0);
+
+            usage = shiftYear == year
+                ? (count, usage.UsedPrevYear)
+                : (usage.UsedInYear, count);
+
+            usages[employeeId] = usage;
+        }
+
+        return usages;
     }
 
     public ShiftRecord? GetLastShiftInMonth(int month, int year, int workerId)

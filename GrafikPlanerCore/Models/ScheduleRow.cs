@@ -65,9 +65,7 @@ public class ScheduleRow : INotifyPropertyChanged
                 _usedVacationDays = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UsedVacationDays)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VacationLine1)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VacationLine2)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VacationLine1Color)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VacationLine2Color)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NameColor)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsVacationCritical)));
             }
@@ -125,20 +123,6 @@ public class ScheduleRow : INotifyPropertyChanged
         }
     }
 
-    public string VacationLine2
-    {
-        get
-        {
-            var used = UsedVacationDays ?? 0;
-            var total = VacationDays ?? 0;
-            var unused = UnusedVacationDaysFromLastYear ?? 0;
-            if (total == 0 && unused == 0) return "";
-
-            var maxPool = total + unused;
-            return $"Wykorz: {used} z {maxPool}";
-        }
-    }
-
     public string VacationLine1Color
     {
         get
@@ -151,21 +135,6 @@ public class ScheduleRow : INotifyPropertyChanged
             var maxPool = total + unused;
             if (used > maxPool) return "#DC2626"; // czerwony — przekroczenie
             return "#16A34A"; // zielony — zostało
-        }
-    }
-
-    public string VacationLine2Color
-    {
-        get
-        {
-            var used = UsedVacationDays ?? 0;
-            var total = VacationDays ?? 0;
-            var unused = UnusedVacationDaysFromLastYear ?? 0;
-            if (total == 0 && unused == 0) return "#7A7A7A";
-
-            var maxPool = total + unused;
-            if (used > maxPool) return "#DC2626"; // czerwony
-            return "#7A7A7A"; // szary
         }
     }
 

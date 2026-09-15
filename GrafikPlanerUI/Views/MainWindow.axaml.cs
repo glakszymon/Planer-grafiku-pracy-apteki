@@ -35,7 +35,6 @@ public partial class MainWindow : Window
 
         LoadListOfSchedules();
         LoadEmployees();
-        _coreProgram.UpdateVacationDataForAllEmployees();
 
         // Domyślnie aktywna zakładka Grafiki
         SetActiveTab("grafiki");
@@ -187,7 +186,7 @@ public partial class MainWindow : Window
         {
             var contextMenu = _coreProgram.CreateContextMenu();
             var tableWindow = new ScheduleTableWindow(contextMenu);
-            tableWindow.LoadSchedule(dataForTable.Data);
+            tableWindow.LoadSchedule(dataForTable.Data, month, year);
             tableWindow.Show();
             this.Close();
         }
@@ -203,7 +202,18 @@ public partial class MainWindow : Window
         if (sender is Button button && button.Tag is ScheduleInfo schedule)
         {
             _scheduleToDelete = schedule;
+
+            var shiftTable = new ShiftTable();
+            shiftTable.StartConnectionWithDatabase();
+            int vacationCount = shiftTable.GetVacationCountOfMonth(schedule.Month, schedule.Year);
+
             DeleteScheduleMessage.Text = $"Czy na pewno chcesz usunąć grafik \"{schedule.Name}\"? Wszystkie dane zmianowe zostaną trwale usunięte.";
+            if (vacationCount > 0)
+            {
+                string dayLabel = vacationCount == 1 ? "dzień" : "dni";
+                DeleteScheduleMessage.Text += $"\nUsunięcie grafiku zwolni {vacationCount} {dayLabel} urlopu pracowników (zmniejszy «wykorzystane» w roku {schedule.Year}).";
+            }
+
             DeleteScheduleOverlay.IsVisible = true;
         }
     }
@@ -330,23 +340,29 @@ public partial class MainWindow : Window
         
         if (isEmployeeContract)
         {
+            // Stan urlopu liczony z danych grafiku dla bieżącego roku (referencja = rok dzisiejszy).
+            var today = DateTime.Now;
+            var shiftTable = new ShiftTable();
+            shiftTable.StartConnectionWithDatabase();
+            var usages = shiftTable.GetVacationUsages(today.Year, today.Year - 1);
+
+            int usedInYear = usages.TryGetValue(emp.Id, out var usage) ? usage.UsedInYear : 0;
+            int usedPrevYear = usages.TryGetValue(emp.Id, out usage) ? usage.UsedPrevYear : 0;
+            int quota = emp.VacationDays ?? 0;
+            var state = VacationStateCalculator.Compute(quota, usedInYear, usedPrevYear, today.Month);
+
             ViewVacationDays.Text = emp.VacationDays?.ToString() ?? "—";
-            ViewUnusedVacation.Text = emp.UnusedVacationDaysFromLastYear?.ToString() ?? "0";
+            ViewUnusedVacation.Text = state.Carryover.ToString();
             
-            int used = emp.UsedVacationDays ?? 0;
-            int total = (emp.VacationDays ?? 0) + (emp.UnusedVacationDaysFromLastYear ?? 0);
-            int remaining = total - used;
-            
-            ViewUsedVacation.Text = $"{used} dni";
-            ViewRemainingVacation.Text = $"{remaining} dni";
-            ViewRemainingVacation.Foreground = new SolidColorBrush(Color.Parse(remaining <= 0 ? "#DC2626" : "#4A7C59"));
-            ViewRemainingVacation.FontWeight = remaining <= 0 ? FontWeight.Bold : FontWeight.SemiBold;
+            ViewUsedVacation.Text = $"{usedInYear} dni";
+            ViewRemainingVacation.Text = $"{state.Remaining} dni";
+            ViewRemainingVacation.Foreground = new SolidColorBrush(Color.Parse(state.IsCritical ? "#DC2626" : "#4A7C59"));
+            ViewRemainingVacation.FontWeight = state.IsCritical ? FontWeight.Bold : FontWeight.SemiBold;
             
             // Carryover hint
-            int carryover = emp.UnusedVacationDaysFromLastYear ?? 0;
-            if (carryover > 0 && DateTime.Now.Month < 10)
+            if (state.Carryover > 0 && today.Month <= 9)
             {
-                ViewVacationCarryoverHint.Text = $"W tym {carryover} zaległych — wygasa 30.09";
+                ViewVacationCarryoverHint.Text = $"W tym {state.Carryover} zaległych — wygasa 30.09";
                 ViewVacationCarryoverHint.IsVisible = true;
             }
             else
@@ -381,15 +397,12 @@ public partial class MainWindow : Window
         EmpEmailBox.Text = _selectedEmployee.Email ?? "";
         EmpPhoneBox.Text = _selectedEmployee.PhoneNumber ?? "";
         EmpVacationDaysBox.Text = _selectedEmployee.VacationDays?.ToString() ?? "";
-        EmpUsedVacationBox.Text = _selectedEmployee.UsedVacationDays?.ToString() ?? "";
-        EmpUnusedVacationBox.Text = _selectedEmployee.UnusedVacationDaysFromLastYear?.ToString() ?? "";
         
         // Nowe pola
         EmpEmploymentTypeBox.SelectedIndex = (int)_selectedEmployee.EmploymentType;
         EmpWorkTimeRateBox.SelectedIndex = (int)_selectedEmployee.WorkTimeRate;
         
         UpdateEditFormVisibility();
-        UpdateEditVacationSummary();
         
         EmployeeDialogError.Text = "";
         EditAvatar.Text = _selectedEmployee.FirstName.Length > 0 ? _selectedEmployee.FirstName[0].ToString() : "?";
@@ -446,9 +459,6 @@ public partial class MainWindow : Window
             Email = string.IsNullOrWhiteSpace(EmpEmailBox.Text) ? null : EmpEmailBox.Text.Trim(),
             PhoneNumber = string.IsNullOrWhiteSpace(EmpPhoneBox.Text) ? null : EmpPhoneBox.Text.Trim(),
             VacationDays = int.TryParse(EmpVacationDaysBox.Text, out var vd) ? vd : null,
-            UsedVacationDays = int.TryParse(EmpUsedVacationBox.Text, out var uvd) ? uvd : null,
-            UnusedVacationDaysFromLastYear = int.TryParse(EmpUnusedVacationBox.Text, out var unvd) ? unvd : null,
-            YearOfVacationData = DateTime.Now.Year,
             EmploymentType = (EmploymentType)Math.Max(0, EmpEmploymentTypeBox.SelectedIndex),
             WorkTimeRate = (WorkTimeRate)Math.Max(0, EmpWorkTimeRateBox.SelectedIndex)
         };
@@ -501,8 +511,6 @@ public partial class MainWindow : Window
         EmpEmailBox.Text = "";
         EmpPhoneBox.Text = "";
         EmpVacationDaysBox.Text = "";
-        EmpUsedVacationBox.Text = "";
-        EmpUnusedVacationBox.Text = "";
         EmpEmploymentTypeBox.SelectedIndex = 0;
         EmpWorkTimeRateBox.SelectedIndex = 0;
         EmployeeDialogError.Text = "";
@@ -537,29 +545,6 @@ public partial class MainWindow : Window
     {
         bool isUmowaPrace = EmpEmploymentTypeBox.SelectedIndex == 0;
         EditVacationSection.IsVisible = isUmowaPrace;
-    }
-
-    private void UpdateEditVacationSummary()
-    {
-        int used = int.TryParse(EmpUsedVacationBox.Text, out var u) ? u : 0;
-        int total = (int.TryParse(EmpVacationDaysBox.Text, out var vd) ? vd : 0) +
-                    (int.TryParse(EmpUnusedVacationBox.Text, out var uv) ? uv : 0);
-        int remaining = total - used;
-        
-        EditVacationUsedLabel.Text = $"{used} dni";
-        EditVacationRemainingLabel.Text = $"{remaining} dni";
-        EditVacationRemainingLabel.Foreground = new SolidColorBrush(Color.Parse(remaining <= 0 ? "#DC2626" : "#4A7C59"));
-        
-        int carryover = int.TryParse(EmpUnusedVacationBox.Text, out var co) ? co : 0;
-        if (carryover > 0 && DateTime.Now.Month < 10)
-        {
-            EditVacationCarryoverHint.Text = $"W tym {carryover} zaległych — wygasa 30.09";
-            EditVacationCarryoverHint.IsVisible = true;
-        }
-        else
-        {
-            EditVacationCarryoverHint.IsVisible = false;
-        }
     }
 
     // ==================== SETTINGS ====================
