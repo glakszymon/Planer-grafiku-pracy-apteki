@@ -20,9 +20,8 @@ public partial class MainWindow : Window
     private CoreProgram _coreProgram = new CoreProgram();
     private EmployeeRecord? _editingEmployee = null;
     private EmployeeRecord? _selectedEmployee = null;
-    private ScheduleInfo? _scheduleToDelete = null;
     private HoursRecord? _editingHour = null;
-    private HoursRecord? _hourToDelete = null;
+    private Action? _deleteConfirmAction = null;
     private bool _isLoadingSettings = false;
     private int _cardYear = DateTime.Now.Year;
 
@@ -204,43 +203,52 @@ public partial class MainWindow : Window
     {
         if (sender is Button button && button.Tag is ScheduleInfo schedule)
         {
-            _scheduleToDelete = schedule;
-
             var shiftTable = new ShiftTable();
             shiftTable.StartConnectionWithDatabase();
             int vacationCount = shiftTable.GetVacationCountOfMonth(schedule.Month, schedule.Year);
 
-            DeleteScheduleMessage.Text = $"Czy na pewno chcesz usunąć grafik \"{schedule.Name}\"? Wszystkie dane zmianowe zostaną trwale usunięte.";
+            string message = $"Czy na pewno chcesz usunąć grafik \"{schedule.Name}\"? Wszystkie dane zmianowe zostaną trwale usunięte.";
             if (vacationCount > 0)
             {
                 string dayLabel = vacationCount == 1 ? "dzień" : "dni";
-                DeleteScheduleMessage.Text += $"\nUsunięcie grafiku zwolni {vacationCount} {dayLabel} urlopu pracowników (zmniejszy «wykorzystane» w roku {schedule.Year}).";
+                message += $"\nUsunięcie grafiku zwolni {vacationCount} {dayLabel} urlopu pracowników (zmniejszy «wykorzystane» w roku {schedule.Year}).";
             }
 
-            DeleteScheduleOverlay.IsVisible = true;
+            ShowDeleteConfirm("Usuń grafik", message, () =>
+            {
+                var table = new ShiftTable();
+                table.StartConnectionWithDatabase();
+                table.DeleteSchedule(schedule.Month, schedule.Year);
+
+                StatusTextBlock.Text = $"Usunięto grafik: {schedule.Name}";
+                StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#C05050"));
+                LoadListOfSchedules();
+            });
         }
     }
 
-    private void OnConfirmDeleteScheduleClick(object? sender, RoutedEventArgs e)
+    private void ShowDeleteConfirm(string title, string message, Action confirmAction)
     {
-        if (_scheduleToDelete == null) return;
-
-        var shiftTable = new ShiftTable();
-        shiftTable.StartConnectionWithDatabase();
-        shiftTable.DeleteSchedule(_scheduleToDelete.Month, _scheduleToDelete.Year);
-
-        StatusTextBlock.Text = $"Usunięto grafik: {_scheduleToDelete.Name}";
-        StatusTextBlock.Foreground = new SolidColorBrush(Color.Parse("#C05050"));
-
-        _scheduleToDelete = null;
-        DeleteScheduleOverlay.IsVisible = false;
-        LoadListOfSchedules();
+        DeleteConfirmTitle.Text = title;
+        DeleteConfirmMessage.Text = message;
+        _deleteConfirmAction = confirmAction;
+        DeleteConfirmOverlay.IsVisible = true;
     }
 
-    private void OnCancelDeleteScheduleClick(object? sender, RoutedEventArgs e)
+    private void OnConfirmDeleteClick(object? sender, RoutedEventArgs e)
     {
-        _scheduleToDelete = null;
-        DeleteScheduleOverlay.IsVisible = false;
+        if (_deleteConfirmAction == null) return;
+
+        var action = _deleteConfirmAction;
+        _deleteConfirmAction = null;
+        DeleteConfirmOverlay.IsVisible = false;
+        action();
+    }
+
+    private void OnCancelDeleteClick(object? sender, RoutedEventArgs e)
+    {
+        _deleteConfirmAction = null;
+        DeleteConfirmOverlay.IsVisible = false;
     }
 
     // ==================== EMPLOYEES ====================
@@ -311,7 +319,6 @@ public partial class MainWindow : Window
         DetailEmpty.IsVisible = false;
         DetailEditScroll.IsVisible = false;
         DetailViewScroll.IsVisible = true;
-        DeleteConfirmPanel.IsVisible = false;
 
         ViewAvatar.Text = emp.FirstName.Length > 0 ? emp.FirstName[0].ToString() : "?";
         ViewFirstName.Text = emp.FirstName;
@@ -490,29 +497,23 @@ public partial class MainWindow : Window
 
     private void OnDeleteEmployeeClick(object? sender, RoutedEventArgs e)
     {
-        DeleteConfirmPanel.IsVisible = true;
-    }
-
-    private void OnConfirmDeleteClick(object? sender, RoutedEventArgs e)
-    {
         if (_selectedEmployee == null) return;
 
-        var empTable = new EmployeeTable();
-        empTable.StartConnectionWithDatabase();
-        empTable.DeleteEmployee(_selectedEmployee.Id);
+        var emp = _selectedEmployee;
+        ShowDeleteConfirm("Usuń pracownika", $"Czy na pewno chcesz usunąć pracownika {emp.FirstName} {emp.LastName}?", () =>
+        {
+            var empTable = new EmployeeTable();
+            empTable.StartConnectionWithDatabase();
+            empTable.DeleteEmployee(emp.Id);
 
-        EmployeeStatusText.Text = $"Usunięto: {_selectedEmployee.FirstName} {_selectedEmployee.LastName}";
-        EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
+            EmployeeStatusText.Text = $"Usunięto: {emp.FirstName} {emp.LastName}";
+            EmployeeStatusText.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
 
-        _selectedEmployee = null;
-        DetailViewScroll.IsVisible = false;
-        DetailEmpty.IsVisible = true;
-        LoadEmployees();
-    }
-
-    private void OnCancelDeleteClick(object? sender, RoutedEventArgs e)
-    {
-        DeleteConfirmPanel.IsVisible = false;
+            _selectedEmployee = null;
+            DetailViewScroll.IsVisible = false;
+            DetailEmpty.IsVisible = true;
+            LoadEmployees();
+        });
     }
 
     private void OnEmployeeDialogSubmitClick(object? sender, RoutedEventArgs e)
@@ -978,32 +979,18 @@ public partial class MainWindow : Window
     {
         if (sender is Button button && button.Tag is HoursRecord hour)
         {
-            _hourToDelete = hour;
-            DeleteHourConfirmPanel.IsVisible = true;
+            ShowDeleteConfirm("Usuń zmianę", $"Czy na pewno chcesz usunąć zmianę \"{hour.Symbol}\"?", () =>
+            {
+                var hoursTable = new HoursTable();
+                hoursTable.StartConnectionWithDatabase();
+                hoursTable.DeleteHour(hour);
+
+                HourStatusText.Text = $"Usunięto zmianę: {hour.Symbol}";
+                HourStatusText.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
+                LoadHours();
+                CheckShiftCoverage();
+            });
         }
-    }
-
-    private void OnConfirmDeleteHourClick(object? sender, RoutedEventArgs e)
-    {
-        if (_hourToDelete == null) return;
-
-        var hoursTable = new HoursTable();
-        hoursTable.StartConnectionWithDatabase();
-        hoursTable.DeleteHour(_hourToDelete);
-
-        HourStatusText.Text = $"Usunięto zmianę: {_hourToDelete.Symbol}";
-        HourStatusText.Foreground = new SolidColorBrush(Color.Parse("#DC2626"));
-
-        _hourToDelete = null;
-        DeleteHourConfirmPanel.IsVisible = false;
-        LoadHours();
-        CheckShiftCoverage();
-    }
-
-    private void OnCancelDeleteHourClick(object? sender, RoutedEventArgs e)
-    {
-        _hourToDelete = null;
-        DeleteHourConfirmPanel.IsVisible = false;
     }
 
     // ==================== COVERAGE CHECK ====================

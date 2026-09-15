@@ -499,24 +499,7 @@
                                         </Border>
                                     </StackPanel>
 
-                                    <!-- Wiersz 6: Potwierdzenie usunięcia -->
-                                    <Border Grid.Row="5" x:Name="DeleteConfirmPanel" IsVisible="False"
-                                            Background="#FDF5F5" CornerRadius="6" Padding="16,12" 
-                                            Margin="0,20,0,0" VerticalAlignment="Bottom">
-                                        <StackPanel Spacing="8">
-                                            <TextBlock Text="Czy na pewno chcesz usunąć tego pracownika?" 
-                                                       FontSize="13" Foreground="#B04040" FontWeight="Medium"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <Button Content="Tak, usuń" Click="OnConfirmDeleteClick"
-                                                        Background="#B04040" Foreground="White" FontSize="12"
-                                                        Padding="12,6" CornerRadius="5" BorderThickness="0" Cursor="Hand"/>
-                                                <Button Content="Anuluj" Click="OnCancelDeleteClick"
-                                                        Background="White" Foreground="#2A2A2A" FontSize="12"
-                                                        Padding="12,6" CornerRadius="5" BorderBrush="#E0DDD8" BorderThickness="1" Cursor="Hand"/>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
+                                    </Grid>
                                 </ScrollViewer>
 
                                 <!-- Tryb edycji — odwzorowuje layout karty -->
@@ -1008,23 +991,6 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                    <!-- Panel potwierdzenia usunięcia zmiany -->
-                                    <Border x:Name="DeleteHourConfirmPanel" IsVisible="False"
-                                            Background="#FDF5F5" CornerRadius="6" Padding="16,12">
-                                        <StackPanel Spacing="8">
-                                            <TextBlock Text="Czy na pewno chcesz usunąć tę zmianę?" 
-                                                       FontSize="13" Foreground="#B04040" FontWeight="Medium"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <Button Content="Tak, usuń" Click="OnConfirmDeleteHourClick"
-                                                        Background="#B04040" Foreground="White" FontSize="12"
-                                                        Padding="12,6" CornerRadius="5" BorderThickness="0" Cursor="Hand"/>
-                                                <Button Content="Anuluj" Click="OnCancelDeleteHourClick"
-                                                        Background="White" Foreground="#2A2A2A" FontSize="12"
-                                                        Padding="12,6" CornerRadius="5" BorderBrush="#E0DDD8" BorderThickness="1" Cursor="Hand"/>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </Border>
-
                                     <!-- Empty state -->
                                     <Border x:Name="HoursEmptyState"
                                             IsVisible="False"
@@ -1114,8 +1080,8 @@
             </Border>
         </Border>
 
-        <!-- ============ OVERLAY: Potwierdź usunięcie grafiku ============ -->
-        <Border x:Name="DeleteScheduleOverlay"
+        <!-- ============ OVERLAY: Potwierdź usunięcie (ujednolicony, w centrum ekranu) ============ -->
+        <Border x:Name="DeleteConfirmOverlay"
                 Grid.RowSpan="2"
                 Background="#40000000"
                 IsVisible="False"
@@ -1129,17 +1095,18 @@
                     VerticalAlignment="Center"
                     BoxShadow="0 12 40 0 #20000000">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Usuń grafik"
+                    <TextBlock x:Name="DeleteConfirmTitle"
+                               Text="Usuń"
                                FontSize="18"
                                FontWeight="Bold"
                                Foreground="#C05050"/>
-                    <TextBlock x:Name="DeleteScheduleMessage"
-                               Text="Czy na pewno chcesz usunąć ten grafik? Wszystkie dane zmianowe zostaną trwale usunięte."
+                    <TextBlock x:Name="DeleteConfirmMessage"
+                               Text="Czy na pewno chcesz usunąć?"
                                FontSize="13"
                                Foreground="#4A4A4A"
                                TextWrapping="Wrap"/>
-                    <Button Content="Tak, usuń grafik"
-                            Click="OnConfirmDeleteScheduleClick"
+                    <Button Content="Tak, usuń"
+                            Click="OnConfirmDeleteClick"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             Background="#C05050"
@@ -1151,7 +1118,7 @@
                             Cursor="Hand"
                             BorderThickness="0"/>
                     <Button Content="Anuluj"
-                            Click="OnCancelDeleteScheduleClick"
+                            Click="OnCancelDeleteClick"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             Background="#F3F2F0"
