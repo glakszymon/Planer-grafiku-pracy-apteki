@@ -205,6 +205,45 @@ public class ShiftTable : DbConnectionOption
         return usages;
     }
 
+    /// <summary>
+    /// Rekordy zmian w całym roku kalendarzowym z godzinami i flagami typu zmiany
+    /// (urlop, L4) — do statystyk personalnych pracownika.
+    /// </summary>
+    public List<YearShiftStat> GetYearShiftStats(int year)
+    {
+        var stats = new List<YearShiftStat>();
+        string yearPattern = $"{year:D4}-%";
+
+        var command = _connection.CreateCommand();
+        command.CommandText = @"
+            SELECT ShiftRecords.EmployeeId, ShiftRecords.ShiftDate,
+                   ShiftHours.StartTime, ShiftHours.EndTime,
+                   ShiftHours.IsVacation, ShiftHours.IsSickLeave
+            FROM ShiftRecords
+            INNER JOIN ShiftHours ON ShiftHours.Id = ShiftRecords.ShiftHourId
+            WHERE ShiftRecords.ShiftDate LIKE @yearPattern";
+
+        command.Parameters.AddWithValue("@yearPattern", yearPattern);
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var start = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("StartTime")));
+            var end = TimeOnly.Parse(reader.GetString(reader.GetOrdinal("EndTime")));
+
+            stats.Add(new YearShiftStat
+            {
+                EmployeeId = reader.GetInt32(reader.GetOrdinal("EmployeeId")),
+                ShiftDate = DateOnly.Parse(reader.GetString(reader.GetOrdinal("ShiftDate"))),
+                Hours = (int)(end - start).TotalHours,
+                IsVacation = reader.GetInt32(reader.GetOrdinal("IsVacation")) == 1,
+                IsSickLeave = reader.GetInt32(reader.GetOrdinal("IsSickLeave")) == 1
+            });
+        }
+
+        return stats;
+    }
+
     public ShiftRecord? GetLastShiftInMonth(int month, int year, int workerId)
     {
         var command = _connection.CreateCommand();

@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:GrafikPlanerUI.ViewModels"
+        xmlns:views="using:GrafikPlanerUI.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:GrafikPlanerData.Models;assembly=GrafikPlanerData"
@@ -429,30 +430,71 @@
                                         </Grid>
                                     </StackPanel>
 
-                                    <!-- Wiersz 4: Separator + Urlop (rozbudowany) -->
+                                    <!-- Wiersz 4: Separator + Urlok i obecność (podsumowanie roczne, tryb tylko do odczytu) -->
                                     <StackPanel x:Name="ViewVacationSection" Grid.Row="4" Spacing="8">
                                         <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
-                                        <TextBlock Text="Urlop" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Roczny limit (dni/rok)" FontSize="13" Foreground="#5A5A5A"/>
-                                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ViewVacationDays" FontSize="13" Foreground="#1A1A1A" FontWeight="SemiBold"/>
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Urlop zaległy (z ub. roku)" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0"/>
-                                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ViewUnusedVacation" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0"/>
-                                        </Grid>
-                                        <!-- Vacation summary bar -->
-                                        <Border Background="#F8F7F5" CornerRadius="6" Padding="14,10" Margin="0,8,0,0">
-                                            <StackPanel Spacing="4">
-                                                <StackPanel Orientation="Horizontal" Spacing="20">
-                                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="Wykorzystano:" FontSize="13" Foreground="#5A5A5A"/>
-                                                        <TextBlock x:Name="ViewUsedVacation" FontSize="13" FontWeight="SemiBold" Foreground="#1A1A1A"/>
+                                        <Border Background="#FAFAF9" BorderBrush="#E0DDD8" BorderThickness="1" CornerRadius="6" Padding="14,12" Margin="0,4,0,0">
+                                            <StackPanel Spacing="10">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Text="Urlop i obecność" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="Rok:" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center"/>
+                                                        <ComboBox x:Name="InfoYearSelector" Width="88" FontSize="13" HorizontalAlignment="Right"
+                                                                  SelectionChanged="OnInfoYearChanged"/>
                                                     </StackPanel>
-                                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                                        <TextBlock Text="Pozostało:" FontSize="13" Foreground="#5A5A5A"/>
-                                                        <TextBlock x:Name="ViewRemainingVacation" FontSize="13" FontWeight="Bold" Foreground="#4A7C59"/>
+                                                </Grid>
+                                                <Grid ColumnDefinitions="*,16,1,16,*">
+                                                    <!-- LEWA KOLUMNA: podsumowanie sumaryczne -->
+                                                    <StackPanel Grid.Column="0" Spacing="6">
+                                                        <TextBlock Text="Podsumowanie" FontSize="12" FontWeight="SemiBold" Foreground="#4A4A4A" HorizontalAlignment="Center"/>
+                                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Roczny limit (dni/rok)" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="StatVacationDays" FontSize="13" Foreground="#1A1A1A" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Wykorzystany urlop" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="StatUsedVacation" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Urlop zaległy (z ub. roku)" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="StatCarryover" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Pozostały urlop" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="StatRemaining" FontSize="13" FontWeight="SemiBold" Foreground="#4A7C59" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Przepracowane godziny" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Row="4" Grid.Column="1" x:Name="StatWorkedHours" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Zwolnienia L4" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Row="5" Grid.Column="1" x:Name="StatSickLeave" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Obecności w pracy" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Row="6" Grid.Column="1" x:Name="StatWorkedDays" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                        </Grid>
                                                     </StackPanel>
-                                                </StackPanel>
-                                                <TextBlock x:Name="ViewVacationCarryoverHint" Text="" FontSize="11" Foreground="#8B6914" IsVisible="False"/>
+
+                                                    <!-- Separator pionowy -->
+                                                    <Border Grid.Column="2" Width="1" Background="#E0DDD8" Margin="0,2,0,2"/>
+
+                                                    <!-- PRAWA KOLUMNA: rozbicie miesięczne wybranego roku -->
+                                                    <StackPanel Grid.Column="4" Spacing="4">
+                                                        <TextBlock Text="Rozbicie miesięczne" FontSize="12" FontWeight="SemiBold" Foreground="#4A4A4A" HorizontalAlignment="Center"/>
+                                                        <Grid ColumnDefinitions="92,*,*,*,*" Margin="0,2,0,2">
+                                                            <TextBlock Text="Miesiąc" FontSize="11" FontWeight="SemiBold" Foreground="#5A5A5A"/>
+                                                            <TextBlock Text="Urlop" Grid.Column="1" FontSize="11" FontWeight="SemiBold" Foreground="#5A5A5A"/>
+                                                            <TextBlock Text="L4" Grid.Column="2" FontSize="11" FontWeight="SemiBold" Foreground="#5A5A5A" HorizontalAlignment="Center"/>
+                                                            <TextBlock Text="Godziny" Grid.Column="3" FontSize="11" FontWeight="SemiBold" Foreground="#5A5A5A" HorizontalAlignment="Center"/>
+                                                            <TextBlock Text="Obecności" Grid.Column="4" FontSize="11" FontWeight="SemiBold" Foreground="#5A5A5A" HorizontalAlignment="Center"/>
+                                                        </Grid>
+                                                        <ItemsControl x:Name="MonthlyStatsList">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="views:MonthVacationStatItem">
+                                                                    <Border BorderBrush="#EEEBE6" BorderThickness="0,0,0,1" Padding="0,3">
+                                                                        <Grid ColumnDefinitions="92,*,*,*,*">
+                                                                            <TextBlock Text="{Binding MonthLabel}" FontSize="12" Foreground="#3A3A3A" VerticalAlignment="Center"/>
+                                                                            <TextBlock Grid.Column="1" Text="{Binding UsedVacationLabel}" FontSize="12" Foreground="#3A3A3A" VerticalAlignment="Center"/>
+                                                                            <TextBlock Grid.Column="2" Text="{Binding SickLeave}" FontSize="12" Foreground="#B03030" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                            <TextBlock Grid.Column="3" Text="{Binding HoursLabel}" FontSize="12" Foreground="#3A3A3A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                            <TextBlock Grid.Column="4" Text="{Binding WorkedDaysLabel}" FontSize="12" Foreground="#3A3A3A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                        </Grid>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </Grid>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>

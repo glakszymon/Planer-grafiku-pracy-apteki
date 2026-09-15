@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -23,6 +24,7 @@ public partial class MainWindow : Window
     private HoursRecord? _editingHour = null;
     private HoursRecord? _hourToDelete = null;
     private bool _isLoadingSettings = false;
+    private int _cardYear = DateTime.Now.Year;
 
     public MainWindow()
     {
@@ -35,6 +37,7 @@ public partial class MainWindow : Window
 
         LoadListOfSchedules();
         LoadEmployees();
+        LoadInfoYears();
 
         // Domyślnie aktywna zakładka Grafiki
         SetActiveTab("grafiki");
@@ -334,42 +337,115 @@ public partial class MainWindow : Window
             _ => "—"
         };
         
-        // Urlopy — ukryj dla Zlecenie/B2B
-        bool isEmployeeContract = emp.EmploymentType == EmploymentType.UmowaPrace;
-        ViewVacationSection.IsVisible = isEmployeeContract;
-        
-        if (isEmployeeContract)
+        // Urlopy i obecność — ukryj dla Zlecenie/B2B
+        UpdateVacationInfoCard(emp);
+    }
+
+    private void LoadInfoYears()
+    {
+        var years = new HashSet<int> { DateTime.Now.Year };
+        var shiftTable = new ShiftTable();
+        shiftTable.StartConnectionWithDatabase();
+        foreach (var schedule in shiftTable.GetAllSchedulesDates())
+            years.Add(schedule.Year);
+
+        InfoYearSelector.ItemsSource = years.OrderByDescending(y => y).ToList();
+        InfoYearSelector.SelectedItem = DateTime.Now.Year;
+        _cardYear = DateTime.Now.Year;
+    }
+
+    private void OnInfoYearChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (InfoYearSelector.SelectedItem is int year && year != _cardYear)
         {
-            // Stan urlopu liczony z danych grafiku dla bieżącego roku (referencja = rok dzisiejszy).
-            var today = DateTime.Now;
-            var shiftTable = new ShiftTable();
-            shiftTable.StartConnectionWithDatabase();
-            var usages = shiftTable.GetVacationUsages(today.Year, today.Year - 1);
-
-            int usedInYear = usages.TryGetValue(emp.Id, out var usage) ? usage.UsedInYear : 0;
-            int usedPrevYear = usages.TryGetValue(emp.Id, out usage) ? usage.UsedPrevYear : 0;
-            int quota = emp.VacationDays ?? 0;
-            var state = VacationStateCalculator.Compute(quota, usedInYear, usedPrevYear, today.Month);
-
-            ViewVacationDays.Text = emp.VacationDays?.ToString() ?? "—";
-            ViewUnusedVacation.Text = state.Carryover.ToString();
-            
-            ViewUsedVacation.Text = $"{usedInYear} dni";
-            ViewRemainingVacation.Text = $"{state.Remaining} dni";
-            ViewRemainingVacation.Foreground = new SolidColorBrush(Color.Parse(state.IsCritical ? "#DC2626" : "#4A7C59"));
-            ViewRemainingVacation.FontWeight = state.IsCritical ? FontWeight.Bold : FontWeight.SemiBold;
-            
-            // Carryover hint
-            if (state.Carryover > 0 && today.Month <= 9)
-            {
-                ViewVacationCarryoverHint.Text = $"W tym {state.Carryover} zaległych — wygasa 30.09";
-                ViewVacationCarryoverHint.IsVisible = true;
-            }
-            else
-            {
-                ViewVacationCarryoverHint.IsVisible = false;
-            }
+            _cardYear = year;
+            if (_selectedEmployee != null)
+                UpdateVacationInfoCard(_selectedEmployee);
         }
+    }
+
+    private static readonly string[] _monthLabels =
+    { "Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru" };
+
+    private void UpdateMonthlyStats(List<YearShiftStat> stats, int year, WorkTimeRate rate, List<HolidayRecord> holidays)
+    {
+        var rows = new List<MonthVacationStatItem>();
+        for (int m = 1; m <= 12; m++)
+        {
+            var monthStats = stats.Where(s => s.ShiftDate.Month == m).ToList();
+            int hours = monthStats.Sum(s => s.Hours);
+            int expected = ExpectedHoursCalculator.Calculate(year, m, rate, holidays);
+
+            rows.Add(new MonthVacationStatItem
+            {
+                MonthLabel = _monthLabels[m - 1],
+                UsedVacationLabel = $"{monthStats.Count(s => s.IsVacation)} dni",
+                SickLeave = monthStats.Count(s => s.IsSickLeave),
+                HoursLabel = expected > 0 ? $"{hours} h / {expected} h" : $"{hours} h",
+                WorkedDaysLabel = $"{monthStats.Where(s => !s.IsVacation && !s.IsSickLeave)
+                                               .Select(s => s.ShiftDate).Distinct().Count()} dni"
+            });
+        }
+        MonthlyStatsList.ItemsSource = rows;
+    }
+
+    /// <summary>
+    /// Podsumowanie personalne (rok z wyboru InfoYearSelector) w perspektywie końca
+    /// grudnia danego roku: wykorzystany urlop, przepracowane dni i godziny, liczba L4
+    /// liczone z danych grafiku za cały rok. Urlop zaległy to zawsze różnica
+    /// „limit − wykorzystane z poprzedniego roku" — niezależnie od daty/września
+    /// (dotyczy wyłącznie wyświetlania podsumowania).
+    /// </summary>
+    private void UpdateVacationInfoCard(EmployeeRecord emp)
+    {
+        ViewVacationSection.IsVisible = emp.EmploymentType == EmploymentType.UmowaPrace;
+        if (emp.EmploymentType != EmploymentType.UmowaPrace)
+            return;
+
+        int quota = emp.VacationDays ?? 0;
+        int year = _cardYear;
+
+        var shiftTable = new ShiftTable();
+        shiftTable.StartConnectionWithDatabase();
+
+        var stats = shiftTable.GetYearShiftStats(year)
+            .Where(s => s.EmployeeId == emp.Id)
+            .ToList();
+
+        int used = stats.Count(s => s.IsVacation);
+        int sickLeave = stats.Count(s => s.IsSickLeave);
+        int totalHours = stats.Sum(s => s.Hours);
+        int workedDays = stats.Where(s => !s.IsVacation && !s.IsSickLeave)
+            .Select(s => s.ShiftDate).Distinct().Count();
+
+        var holidaysTable = new HolidaysTable();
+        holidaysTable.StartConnectionWithDatabase();
+        var holidays = holidaysTable.GetAllActiveHolidays();
+
+        // Godziny należne (wymiar wg etatu i świąt) — suma za cały rok.
+        int annualExpected = Enumerable.Range(1, 12)
+            .Sum(m => ExpectedHoursCalculator.Calculate(year, m, emp.WorkTimeRate, holidays));
+
+        StatVacationDays.Text = quota == 0 ? "—" : quota.ToString();
+        StatUsedVacation.Text = $"{used} dni";
+        StatSickLeave.Text = sickLeave.ToString();
+        StatWorkedDays.Text = $"{workedDays} dni";
+        // Godziny: wykorzystane / należne (wg logiki podsumowania grafiku).
+        StatWorkedHours.Text = annualExpected > 0 ? $"{totalHours} h / {annualExpected} h" : $"{totalHours} h";
+
+        UpdateMonthlyStats(stats, year, emp.WorkTimeRate, holidays);
+
+        // Wykorzystane z poprzedniego roku → zaległe (zawsze, bez względu na datę).
+        var usages = shiftTable.GetVacationUsages(year, year - 1);
+        int usedPrev = usages.TryGetValue(emp.Id, out var u) ? u.UsedPrevYear : 0;
+        int carryover = Math.Max(0, quota - usedPrev);
+        StatCarryover.Text = carryover.ToString();
+
+        // Pozostały urlop w ujęciu końca roku: limit + zaległe − wykorzystane.
+        int remaining = quota + carryover - used;
+        StatRemaining.Text = $"{remaining} dni";
+        StatRemaining.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
+        StatRemaining.FontWeight = FontWeight.SemiBold;
     }
 
     private void OnAddEmployeeClick(object? sender, RoutedEventArgs e)
@@ -948,4 +1024,13 @@ public partial class MainWindow : Window
             CoverageWarningPanel.IsVisible = false;
         }
     }
+}
+
+public sealed class MonthVacationStatItem
+{
+    public string MonthLabel { get; set; } = "";
+    public string UsedVacationLabel { get; set; } = "";
+    public int SickLeave { get; set; }
+    public string HoursLabel { get; set; } = "";
+    public string WorkedDaysLabel { get; set; } = "";
 }
