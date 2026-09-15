@@ -7,6 +7,8 @@ public class DbInitialization
 {
     public void InitializeDatabase()
     {
+        DatabasePath.EnsureMigrated();
+
         var hoursTable = new HoursTable();
         hoursTable.StartConnectionWithDatabase();
         hoursTable.CreateTable();
@@ -33,7 +35,7 @@ public class DbInitialization
     
     private void RunMigrations()
     {
-        using var connection = new SqliteConnection("Data Source=apteka.db");
+        using var connection = new SqliteConnection(DatabasePath.GetConnectionString());
         connection.Open();
         
         // Migration: Add IsVacation column to ShiftHours if missing

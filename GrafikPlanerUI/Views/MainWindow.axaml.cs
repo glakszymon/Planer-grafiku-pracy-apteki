@@ -33,8 +33,6 @@ public partial class MainWindow : Window
 
         DataContext = new MainViewModel();
 
-        _coreProgram.RunInitializeDatabase();
-
         LoadListOfSchedules();
         LoadEmployees();
         _coreProgram.UpdateVacationDataForAllEmployees();

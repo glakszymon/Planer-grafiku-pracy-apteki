@@ -10,7 +10,7 @@ public class DbConnectionOption
     
     public void StartConnectionWithDatabase()
     {
-        var connectionString = "Data Source=apteka.db";
+        var connectionString = DatabasePath.GetConnectionString();
         
         var tempCon = new SqliteConnection(connectionString);
         tempCon.Open();
