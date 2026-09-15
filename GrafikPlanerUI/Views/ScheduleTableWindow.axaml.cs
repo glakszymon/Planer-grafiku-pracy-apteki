@@ -99,7 +99,7 @@ public partial class ScheduleTableWindow : Window
         PointerMoved += OnGlobalPointerMoved;
         PointerReleased += OnGlobalPointerReleased;
 
-        SizeChanged += OnWindowSizeChanged;
+        Resized += OnWindowResized;
         Opened += (s, e) => ApplyScale();
 
         LoadLegend();
@@ -198,7 +198,7 @@ public partial class ScheduleTableWindow : Window
         }, DispatcherPriority.Background);
     }
 
-    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+    private void OnWindowResized(object? sender, WindowResizedEventArgs e)
     {
         ApplyScale();
     }
@@ -206,10 +206,24 @@ public partial class ScheduleTableWindow : Window
     private void ApplyScale()
     {
         _currentScale = ScaleService.Apply(this, RootScaleHost);
-        RecalculateRowHeights();
-        RecalculateGapRowHeight(_gapDataGridRow, _gapCellTextBlocks);
-        RecalculateGapRowHeight(_pharmacistGapDataGridRow, _pharmacistGapCellTextBlocks);
-        RefreshDayHeaders();
+        QueueRowRecompute();
+    }
+
+    private bool _rowRecomputeQueued;
+
+    private void QueueRowRecompute()
+    {
+        if (_rowRecomputeQueued) return;
+        _rowRecomputeQueued = true;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            _rowRecomputeQueued = false;
+            RecalculateRowHeights();
+            RecalculateGapRowHeight(_gapDataGridRow, _gapCellTextBlocks);
+            RecalculateGapRowHeight(_pharmacistGapDataGridRow, _pharmacistGapCellTextBlocks);
+            RefreshDayHeaders();
+        });
     }
 
     private void RecalculateRowHeights()
@@ -224,7 +238,7 @@ public partial class ScheduleTableWindow : Window
         rowArea = Math.Max(0, rowArea - headerH);
 
         double rowH = rowArea / _scheduleRows.Count;
-        double minDesign = ScaleService.MinRowHeight / s;
+        double minDesign = Math.Min(ScaleService.MinRowHeight / s, ScaleService.BaseRowHeight);
         ScheduleDataGrid.RowHeight = Math.Clamp(rowH, minDesign, ScaleService.BaseRowHeight);
     }
 

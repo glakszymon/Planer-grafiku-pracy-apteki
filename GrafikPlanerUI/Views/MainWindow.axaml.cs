@@ -29,8 +29,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         Opened += (_, _) => WindowState = WindowState.Maximized;
-        Opened += (_, _) => ApplyScale();
-        SizeChanged += (_, _) => ApplyScale();
+        Resized += (_, _) => ApplyScale();
 
         DataContext = new MainViewModel();
 
