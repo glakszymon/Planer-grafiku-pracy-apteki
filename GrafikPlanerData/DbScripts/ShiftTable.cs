@@ -22,6 +22,13 @@ public class ShiftTable : DbConnectionOption
             );";
         
         createShiftsTableCommand.ExecuteNonQuery();
+
+        EnsureColumns("ShiftRecords",
+            "EmployeeId INTEGER",
+            "ShiftHourId INTEGER",
+            "ShiftDate TEXT",
+            "PoleColor TEXT",
+            "PoleIcon TEXT");
     }
 
     public void AddShift(ShiftRecord record)

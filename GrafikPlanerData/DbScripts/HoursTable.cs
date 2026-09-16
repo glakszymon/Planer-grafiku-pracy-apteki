@@ -22,6 +22,13 @@ public class HoursTable : DbConnectionOption
             );";
         
         createHoursTableCommand.ExecuteNonQuery();
+
+        EnsureColumns("ShiftHours",
+            "StartTime TEXT",
+            "EndTime TEXT",
+            "Symbol TEXT",
+            "IsVacation INTEGER NOT NULL DEFAULT 0",
+            "IsSickLeave INTEGER NOT NULL DEFAULT 0");
     }
 
     public void AddHours(HoursRecord record)

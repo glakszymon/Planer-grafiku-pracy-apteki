@@ -18,6 +18,14 @@ public class HolidaysTable : DbConnectionOption
                 EasterOffset INTEGER
             );";
         command.ExecuteNonQuery();
+
+        EnsureColumns("Holidays",
+            "Name TEXT",
+            "IsBuiltIn INTEGER NOT NULL DEFAULT 0",
+            "IsActive INTEGER NOT NULL DEFAULT 1",
+            "Month INTEGER",
+            "Day INTEGER",
+            "EasterOffset INTEGER");
     }
 
     public List<HolidayRecord> GetAllHolidays()

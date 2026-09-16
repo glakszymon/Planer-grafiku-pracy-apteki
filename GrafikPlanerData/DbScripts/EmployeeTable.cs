@@ -20,10 +20,24 @@ public class EmployeeTable : DbConnectionOption
                 Specialization TEXT NOT NULL,
                 Email TEXT,
                 PhoneNumber TEXT,
-                VacationDays INTEGER
+                VacationDays INTEGER,
+                EmploymentType INTEGER NOT NULL DEFAULT 0,
+                WorkTimeRate INTEGER NOT NULL DEFAULT 0,
+                AutoDailyRest INTEGER NOT NULL DEFAULT 1
             );";
         
         createEmployeeTableCommand.ExecuteNonQuery();
+
+        EnsureColumns("Employee",
+            "FirstName TEXT",
+            "LastName TEXT",
+            "Specialization TEXT",
+            "Email TEXT",
+            "PhoneNumber TEXT",
+            "VacationDays INTEGER",
+            "EmploymentType INTEGER NOT NULL DEFAULT 0",
+            "WorkTimeRate INTEGER NOT NULL DEFAULT 0",
+            "AutoDailyRest INTEGER NOT NULL DEFAULT 1");
     }
 
     public void AddEmployee(EmployeeRecord record)

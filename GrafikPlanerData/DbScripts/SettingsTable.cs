@@ -25,6 +25,24 @@ public class SettingsTable : DbConnectionOption
             );";
         
         createHoursTableCommand.ExecuteNonQuery();
+
+        EnsureColumns("Settings",
+            "OpeningTime TEXT",
+            "ClosingTime TEXT",
+            "MondayOpen INTEGER NOT NULL DEFAULT 1",
+            "TuesdayOpen INTEGER NOT NULL DEFAULT 1",
+            "WednesdayOpen INTEGER NOT NULL DEFAULT 1",
+            "ThursdayOpen INTEGER NOT NULL DEFAULT 1",
+            "FridayOpen INTEGER NOT NULL DEFAULT 1",
+            "SaturdayOpen INTEGER NOT NULL DEFAULT 0",
+            "SundayOpen INTEGER NOT NULL DEFAULT 0",
+            "MondayOpeningTime TEXT", "MondayClosingTime TEXT",
+            "TuesdayOpeningTime TEXT", "TuesdayClosingTime TEXT",
+            "WednesdayOpeningTime TEXT", "WednesdayClosingTime TEXT",
+            "ThursdayOpeningTime TEXT", "ThursdayClosingTime TEXT",
+            "FridayOpeningTime TEXT", "FridayClosingTime TEXT",
+            "SaturdayOpeningTime TEXT", "SaturdayClosingTime TEXT",
+            "SundayOpeningTime TEXT", "SundayClosingTime TEXT");
     }
 
     public void InitializeSettings()

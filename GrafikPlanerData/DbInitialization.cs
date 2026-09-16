@@ -37,96 +37,60 @@ public class DbInitialization
     {
         using var connection = new SqliteConnection(DatabasePath.GetConnectionString());
         connection.Open();
-        
-        // Migration: Add IsVacation column to ShiftHours if missing
-        try
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE ShiftHours ADD COLUMN IsVacation INTEGER NOT NULL DEFAULT 0";
-            cmd.ExecuteNonQuery();
-        }
-        catch (SqliteException)
-        {
-            // Column already exists — ignore
-        }
 
-        // Migration: Add IsSickLeave column to ShiftHours if missing
-        try
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE ShiftHours ADD COLUMN IsSickLeave INTEGER NOT NULL DEFAULT 0";
-            cmd.ExecuteNonQuery();
-        }
-        catch (SqliteException)
-        {
-            // Column already exists — ignore
-        }
-        
-        // Migration: Recreate Holidays table with recurring schema (Month/Day/EasterOffset instead of Date)
+        // Migration: convert legacy Holidays (Date TEXT) rows to recurring schema (Month/Day)
+        // and drop the obsolete Date column — data is preserved, not deleted.
         try
         {
             using var checkCmd = connection.CreateCommand();
             checkCmd.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Holidays') WHERE name = 'Date';";
             var hasDateColumn = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
-            
+
             if (hasDateColumn)
             {
-                using var dropCmd = connection.CreateCommand();
-                dropCmd.CommandText = "DROP TABLE Holidays;";
-                dropCmd.ExecuteNonQuery();
-                
-                // Table will be recreated by CreateTable() on next init
-                var holidaysTable = new HolidaysTable();
-                holidaysTable.StartConnectionWithDatabase();
-                holidaysTable.CreateTable();
+                using var convertCmd = connection.CreateCommand();
+                convertCmd.CommandText = @"
+                    UPDATE Holidays
+                    SET Month = CAST(substr(Date, 6, 2) AS INTEGER),
+                        Day = CAST(substr(Date, 9, 2) AS INTEGER)
+                    WHERE Date IS NOT NULL AND Month IS NULL AND Day IS NULL;";
+                convertCmd.ExecuteNonQuery();
+
+                using var dropDateCmd = connection.CreateCommand();
+                dropDateCmd.CommandText = "ALTER TABLE Holidays DROP COLUMN Date;";
+                dropDateCmd.ExecuteNonQuery();
             }
         }
         catch (SqliteException)
         {
-            // Table doesn't exist yet — ignore
+            // Table doesn't exist or column not droppable — ignore
         }
-        
-        // Migration: Add per-day opening/closing time columns to Settings
-        var dayNames = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
-        foreach (var day in dayNames)
+
+        // Migration: remove legacy vacation columns from Employee that are no longer used.
+        // YearOfVacationData was NOT NULL without a default, which crashed AddEmployee.
+        try
         {
-            foreach (var suffix in new[] { "OpeningTime", "ClosingTime" })
+            using var checkCmd = connection.CreateCommand();
+            checkCmd.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Employee') WHERE name = 'YearOfVacationData';";
+            var hasLegacyVacationColumn = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
+
+            if (hasLegacyVacationColumn)
             {
-                try
+                foreach (var column in new[] { "YearOfVacationData", "UsedVacationDays", "UnusedVacationDaysFromLastYear" })
                 {
-                    using var cmd = connection.CreateCommand();
-                    cmd.CommandText = $"ALTER TABLE Settings ADD COLUMN {day}{suffix} TEXT";
-                    cmd.ExecuteNonQuery();
-                }
-                catch (SqliteException)
-                {
-                    // Column already exists — ignore
+                    using var dropCmd = connection.CreateCommand();
+                    dropCmd.CommandText = $"ALTER TABLE Employee DROP COLUMN {column};";
+                    dropCmd.ExecuteNonQuery();
                 }
             }
         }
-        
-        // Migration: Add employee profile fields (employment type, work time, legal constraints)
-        var employeeColumns = new[]
+        catch (SqliteException)
         {
-            "EmploymentType INTEGER NOT NULL DEFAULT 0",
-            "WorkTimeRate INTEGER NOT NULL DEFAULT 0",
-            "AutoDailyRest INTEGER NOT NULL DEFAULT 1"
-        };
-        foreach (var colDef in employeeColumns)
-        {
-            try
-            {
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = $"ALTER TABLE Employee ADD COLUMN {colDef}";
-                cmd.ExecuteNonQuery();
-            }
-            catch (SqliteException)
-            {
-                // Column already exists — ignore
-            }
+            // Column already removed or not droppable — ignore
         }
-        
+
         // Backfill: copy global times to per-day columns where null
+        var dayNames = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
         try
         {
             using var cmd = connection.CreateCommand();
