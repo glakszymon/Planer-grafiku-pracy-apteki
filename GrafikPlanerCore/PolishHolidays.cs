@@ -85,6 +85,26 @@ public static class PolishHolidays
     }
 
     /// <summary>
+    /// Resolves all active holidays to concrete dates with their names for a given year and month.
+    /// </summary>
+    public static Dictionary<DateOnly, string> GetActiveHolidayDatesWithNamesForMonth(HolidaysTable holidaysTable, int year, int month)
+    {
+        var allHolidays = holidaysTable.GetAllActiveHolidays();
+        var result = new Dictionary<DateOnly, string>();
+
+        foreach (var holiday in allHolidays)
+        {
+            var date = ResolveDate(holiday, year);
+            if (date.HasValue && date.Value.Month == month)
+            {
+                result[date.Value] = holiday.Name;
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Anonymous Gregorian algorithm for computing Easter Sunday date.
     /// </summary>
     public static DateOnly ComputeEasterSunday(int year)

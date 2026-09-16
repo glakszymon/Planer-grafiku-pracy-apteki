@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using GrafikPlanerCore.Models;
 using System;
 using System.Collections.Generic;
@@ -44,9 +43,7 @@ public partial class ExportDialog : Window
 
     public void ApplyScale(double s)
     {
-        Width = 720 * s;
-        Height = 560 * s;
-        RootScaleHost.LayoutTransform = new ScaleTransform(s, s);
+        _ = s;
     }
 
     private void ClampToScreen()

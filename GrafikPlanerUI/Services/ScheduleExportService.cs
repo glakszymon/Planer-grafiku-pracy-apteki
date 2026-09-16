@@ -14,10 +14,12 @@ namespace GrafikPlanerUI.Services;
 public class ScheduleExportService
 {
     private readonly List<HoursRecord> _hours;
+    private readonly IReadOnlyDictionary<DateOnly, string> _holidayNames;
 
-    public ScheduleExportService(List<HoursRecord> hours)
+    public ScheduleExportService(List<HoursRecord> hours, IReadOnlyDictionary<DateOnly, string>? holidayNames = null)
     {
         _hours = hours;
+        _holidayNames = holidayNames ?? new Dictionary<DateOnly, string>();
     }
 
     private static string GetLegendDescription(HoursRecord h)
@@ -54,6 +56,12 @@ public class ScheduleExportService
             cell.Value = days[i].ToString("dd.MM");
             cell.Style.Font.Bold = true;
             cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            if (_holidayNames.ContainsKey(days[i]))
+            {
+                cell.Style.Font.Italic = true;
+                cell.Style.Font.FontColor = XLColor.FromHtml("#B91C1C");
+            }
         }
 
         // Data rows
@@ -79,8 +87,16 @@ public class ScheduleExportService
                 var shift = row.Records?.FirstOrDefault(rec => rec.ShiftDate == days[d]);
                 var cell = ws.Cell(r + 2, firstDayCol + d);
 
-                cell.Value = shift?.Symbol ?? "";
+                var holidayName = _holidayNames.ContainsKey(days[d]) ? _holidayNames[days[d]] : null;
+                cell.Value = shift?.Symbol ?? (holidayName != null ? "-" : "");
                 cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                if (holidayName != null && string.IsNullOrEmpty(shift?.Symbol))
+                {
+                    cell.Style.Font.Italic = true;
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Font.FontColor = XLColor.FromHtml("#B91C1C");
+                }
 
                 if (includeColors && !string.IsNullOrWhiteSpace(shift?.PoleColor))
                 {
@@ -93,8 +109,14 @@ public class ScheduleExportService
                     catch { }
                 }
 
+                // Holiday shading
+                if (includeColors && holidayName != null)
+                {
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FCA5A5");
+                }
+
                 // Weekend shading
-                if (includeColors && string.IsNullOrWhiteSpace(shift?.PoleColor) &&
+                if (includeColors && holidayName == null && string.IsNullOrWhiteSpace(shift?.PoleColor) &&
                     (days[d].DayOfWeek == DayOfWeek.Saturday || days[d].DayOfWeek == DayOfWeek.Sunday))
                 {
                     cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#E2E8F0");
@@ -169,7 +191,9 @@ public class ScheduleExportService
 
                         foreach (var day in days)
                         {
-                            header.Cell().Border(0.5f).Background(Colors.Grey.Lighten3).Padding(2)
+                            var dayCell = header.Cell().Border(0.5f).Background(
+                                _holidayNames.ContainsKey(day) ? Colors.Red.Lighten3 : Colors.Grey.Lighten3);
+                            dayCell.Padding(2)
                                 .AlignCenter().Text($"{day:dd.MM}\n{day:ddd}").FontSize(6).Bold();
                         }
                     });
@@ -211,15 +235,28 @@ public class ScheduleExportService
                                 }
                                 catch { }
                             }
+                            else if (includeColors && _holidayNames.ContainsKey(day))
+                            {
+                                cellDescriptor = cellDescriptor.Background(Colors.Red.Lighten3);
+                            }
                             else if (includeColors && (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday))
                             {
                                 cellDescriptor = cellDescriptor.Background(Colors.Grey.Lighten4);
                             }
 
                             var symbol = shift?.Symbol ?? "";
+                            var holidayName = _holidayNames.TryGetValue(day, out var name) ? name : null;
 
-                            cellDescriptor.PaddingHorizontal(4).PaddingVertical(3).AlignCenter().AlignMiddle()
-                                .Text(symbol).FontSize(7);
+                            if (string.IsNullOrEmpty(symbol) && holidayName != null)
+                            {
+                                cellDescriptor.PaddingHorizontal(4).PaddingVertical(3).AlignCenter().AlignMiddle()
+                                    .Text("-", QuestPDF.Infrastructure.TextStyle.Default.FontSize(6).Bold().FontColor(Colors.Red.Darken4));
+                            }
+                            else
+                            {
+                                cellDescriptor.PaddingHorizontal(4).PaddingVertical(3).AlignCenter().AlignMiddle()
+                                    .Text(symbol).FontSize(7);
+                            }
                         }
                     }
                 });

@@ -54,6 +54,7 @@ public partial class ScheduleTableWindow : Window
     private readonly Dictionary<DateOnly, TextBlock> _pharmacistGapCellTextBlocks = new();
     private HashSet<DayOfWeek> _closedDays = new();
     private HashSet<DateOnly> _holidayDates = new();
+    private Dictionary<DateOnly, string> _holidayNames = new();
     private DataGridRow? _gapDataGridRow;
     private DataGridRow? _pharmacistGapDataGridRow;
     private int _currentMonth;
@@ -157,7 +158,7 @@ public partial class ScheduleTableWindow : Window
         var selectedRows = dialog.SelectedEmployees;
         if (selectedRows.Count == 0) return;
 
-        var exportService = new ScheduleExportService(_contextMenu.Hours.Where(h => h != null).Cast<HoursRecord>().ToList());
+        var exportService = new ScheduleExportService(_contextMenu.Hours.Where(h => h != null).Cast<HoursRecord>().ToList(), _holidayNames);
 
         if (dialog.IsExcel)
         {
@@ -263,7 +264,8 @@ public partial class ScheduleTableWindow : Window
 
         // Load closed days from settings
         _closedDays = LoadClosedDays();
-        _holidayDates = LoadHolidayDates(scheduleRows);
+        _holidayNames = LoadHolidayNames(scheduleRows);
+        _holidayDates = _holidayNames.Keys.ToHashSet();
 
         if (scheduleRows[0].Records?.Count > 0)
         {
@@ -1245,11 +1247,11 @@ public partial class ScheduleTableWindow : Window
         return closed;
     }
 
-    private HashSet<DateOnly> LoadHolidayDates(List<ScheduleRow> scheduleRows)
+    private Dictionary<DateOnly, string> LoadHolidayNames(List<ScheduleRow> scheduleRows)
     {
         if (scheduleRows == null || !scheduleRows.Any() || 
             scheduleRows[0].Records == null || !scheduleRows[0].Records.Any())
-            return new HashSet<DateOnly>();
+            return new Dictionary<DateOnly, string>();
 
         var firstDate = scheduleRows[0].Records[0].ShiftDate;
         int year = firstDate.Year;
@@ -1259,7 +1261,7 @@ public partial class ScheduleTableWindow : Window
         holidaysTable.StartConnectionWithDatabase();
         PolishHolidays.SeedBuiltIn(holidaysTable);
         
-        return PolishHolidays.GetActiveHolidayDatesForMonth(holidaysTable, year, month);
+        return PolishHolidays.GetActiveHolidayDatesWithNamesForMonth(holidaysTable, year, month);
     }
 }
 
