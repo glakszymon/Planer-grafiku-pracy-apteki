@@ -8,6 +8,7 @@ public static class ScaleService
 {
     public const double DesignWidth = 1920;
     public const double DesignHeight = 1080;
+    public const double DefaultScale = 0.9;
     public const double MinScale = 0.5;
     public const double MaxScale = 1.5;
     public const double BaseRowHeight = 55;
@@ -22,7 +23,7 @@ public static class ScaleService
         if (size.Width <= 0 || size.Height <= 0)
             return 1.0;
 
-        double s = Math.Min(size.Width / DesignWidth, size.Height / DesignHeight);
+        double s = Math.Min(size.Width / DesignWidth, size.Height / DesignHeight) * DefaultScale;
         s = Math.Clamp(s, MinScale, MaxScale);
         return Math.Round(s, 2);
     }
