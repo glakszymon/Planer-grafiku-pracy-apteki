@@ -52,8 +52,9 @@ public static class VacationStateCalculator
 
     /// <summary>
     /// Proporcjonalny wymiar urlopu w danym roku. W roku dołączenia wymiar to
-    /// quota × (13 − miesiąc dołączenia) / 12 (zaokrąglone w dół); w latach przed
-    /// dołączeniem 0; w kolejnych latach pełny wymiar.
+    /// quota × (13 − miesiąc dołączenia) / 12 (zaokrąglone w górę do pełnego dnia —
+    /// art. 155² Kodeksu Pracy); w latach przed dołączeniem 0; w kolejnych latach
+    /// pełny wymiar.
     /// </summary>
     public static int GetProportionalQuota(int quota, int year, string? joinDate)
     {
@@ -62,7 +63,7 @@ public static class VacationStateCalculator
 
         if (year < joinDateValue.Year) return 0;
         if (year == joinDateValue.Year)
-            return (int)Math.Floor(quota * (13 - joinDateValue.Month) / 12.0);
+            return (int)Math.Ceiling(quota * (13 - joinDateValue.Month) / 12.0);
         return quota;
     }
 }
