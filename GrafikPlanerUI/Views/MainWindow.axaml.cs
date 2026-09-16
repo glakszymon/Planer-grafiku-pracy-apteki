@@ -412,6 +412,9 @@ public partial class MainWindow : Window
         int quota = emp.VacationDays ?? 0;
         int year = _cardYear;
 
+        int effectiveQuota = VacationStateCalculator.GetProportionalQuota(quota, year, emp.JoinDate);
+        int prevYearQuota = VacationStateCalculator.GetProportionalQuota(quota, year - 1, emp.JoinDate);
+
         var shiftTable = new ShiftTable();
         shiftTable.StartConnectionWithDatabase();
 
@@ -433,7 +436,7 @@ public partial class MainWindow : Window
         int annualExpected = Enumerable.Range(1, 12)
             .Sum(m => ExpectedHoursCalculator.Calculate(year, m, emp.WorkTimeRate, holidays));
 
-        StatVacationDays.Text = quota == 0 ? "—" : quota.ToString();
+        StatVacationDays.Text = effectiveQuota == 0 ? "—" : effectiveQuota.ToString();
         StatUsedVacation.Text = $"{used} dni";
         StatSickLeave.Text = sickLeave.ToString();
         StatWorkedDays.Text = $"{workedDays} dni";
@@ -445,11 +448,11 @@ public partial class MainWindow : Window
         // Wykorzystane z poprzedniego roku → zaległe (zawsze, bez względu na datę).
         var usages = shiftTable.GetVacationUsages(year, year - 1);
         int usedPrev = usages.TryGetValue(emp.Id, out var u) ? u.UsedPrevYear : 0;
-        int carryover = Math.Max(0, quota - usedPrev);
+        int carryover = Math.Max(0, prevYearQuota - usedPrev);
         StatCarryover.Text = carryover.ToString();
 
         // Pozostały urlop w ujęciu końca roku: limit + zaległe − wykorzystane.
-        int remaining = quota + carryover - used;
+        int remaining = effectiveQuota + carryover - used;
         StatRemaining.Text = $"{remaining} dni";
         StatRemaining.Foreground = new SolidColorBrush(Color.Parse("#4A7C59"));
         StatRemaining.FontWeight = FontWeight.SemiBold;
@@ -480,6 +483,9 @@ public partial class MainWindow : Window
         EmpEmailBox.Text = _selectedEmployee.Email ?? "";
         EmpPhoneBox.Text = _selectedEmployee.PhoneNumber ?? "";
         EmpVacationDaysBox.Text = _selectedEmployee.VacationDays?.ToString() ?? "";
+        EmpJoinDatePicker.SelectedDate = DateOnly.TryParseExact(_selectedEmployee.JoinDate ?? "", "yyyy-MM-dd", out var joinDate)
+            ? new DateTimeOffset(joinDate.ToDateTime(TimeOnly.MinValue))
+            : null;
         
         // Nowe pola
         EmpEmploymentTypeBox.SelectedIndex = (int)_selectedEmployee.EmploymentType;
@@ -537,7 +543,10 @@ public partial class MainWindow : Window
             PhoneNumber = string.IsNullOrWhiteSpace(EmpPhoneBox.Text) ? null : EmpPhoneBox.Text.Trim(),
             VacationDays = int.TryParse(EmpVacationDaysBox.Text, out var vd) ? vd : null,
             EmploymentType = (EmploymentType)Math.Max(0, EmpEmploymentTypeBox.SelectedIndex),
-            WorkTimeRate = (WorkTimeRate)Math.Max(0, EmpWorkTimeRateBox.SelectedIndex)
+            WorkTimeRate = (WorkTimeRate)Math.Max(0, EmpWorkTimeRateBox.SelectedIndex),
+            JoinDate = EmpJoinDatePicker.SelectedDate.HasValue
+                ? EmpJoinDatePicker.SelectedDate.Value.ToString("yyyy-MM-dd")
+                : null
         };
 
         var empTable = new EmployeeTable();
@@ -588,6 +597,7 @@ public partial class MainWindow : Window
         EmpEmailBox.Text = "";
         EmpPhoneBox.Text = "";
         EmpVacationDaysBox.Text = "";
+        EmpJoinDatePicker.SelectedDate = null;
         EmpEmploymentTypeBox.SelectedIndex = 0;
         EmpWorkTimeRateBox.SelectedIndex = 0;
         EmployeeDialogError.Text = "";

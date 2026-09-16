@@ -18,4 +18,7 @@ public class EmployeeRecord
     
     // Odpoczynek dobowy
     public bool AutoDailyRest { get; set; } = true;
+    
+    /// <summary>Data dołączenia pracownika (ISO YYYY-MM-DD). Wymiar urlopu proporcjonalny w pierwszym roku.</summary>
+    public string? JoinDate { get; set; }
 }

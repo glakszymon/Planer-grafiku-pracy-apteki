@@ -89,6 +89,23 @@ public class DbInitialization
             // Column already removed or not droppable — ignore
         }
 
+        // Migration: backfill JoinDate for existing employees. The column itself is
+        // added by EnsureColumns in EmployeeTable.CreateTable. We use a distant past
+        // date (2000-01-01) so the proportional formula yields the full quota and the
+        // carryover behaves exactly as before (max(0, quota − usedPrevYear)) — setting
+        // the current year here would silently wipe existing carryover. Users can set
+        // each employee's real join date in the edit form.
+        try
+        {
+            using var backfillCmd = connection.CreateCommand();
+            backfillCmd.CommandText = "UPDATE Employee SET JoinDate = '2000-01-01' WHERE JoinDate IS NULL;";
+            backfillCmd.ExecuteNonQuery();
+        }
+        catch (SqliteException)
+        {
+            // Table doesn't exist yet — ignore
+        }
+
         // Backfill: copy global times to per-day columns where null
         var dayNames = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
         try

@@ -78,7 +78,7 @@ public class ScheduleReader
             int usedInYear = _vacationUsages.TryGetValue(emp.Id, out var usage) ? usage.UsedInYear : 0;
             int usedPrevYear = _vacationUsages.TryGetValue(emp.Id, out usage) ? usage.UsedPrevYear : 0;
             int quota = emp.VacationDays ?? 0;
-            var vacationState = VacationStateCalculator.Compute(quota, usedInYear, usedPrevYear, _month);
+            var vacationState = VacationStateCalculator.Compute(quota, usedInYear, usedPrevYear, _month, _year, emp.JoinDate);
 
             return new ScheduleRow
             {
@@ -88,7 +88,7 @@ public class ScheduleReader
                 Specialisation = emp.Specialisation,
                 Email = emp.Email,
                 PhoneNumber = emp.PhoneNumber,
-                VacationDays = emp.VacationDays,
+                VacationDays = vacationState.Quota,
                 UsedVacationDays = usedInYear,
                 UnusedVacationDaysFromLastYear = vacationState.Carryover,
                 

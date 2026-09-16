@@ -551,7 +551,7 @@
                                     <StackPanel Grid.Row="3" Spacing="8" Margin="0,0,0,20">
                                         <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
                                         <TextBlock Text="Wymiar czasu pracy" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto">
+                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
                                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Forma zatrudnienia" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Row="0" Grid.Column="1" x:Name="EmpEmploymentTypeBox" CornerRadius="5" Padding="10,7" FontSize="13" HorizontalAlignment="Stretch"
                                                       SelectionChanged="OnEmploymentTypeChanged">
@@ -566,6 +566,13 @@
                                                 <ComboBoxItem Content="1/2"/>
                                                 <ComboBoxItem Content="1/4"/>
                                             </ComboBox>
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Data dołączenia" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                                            <DatePicker Grid.Row="2" Grid.Column="1" x:Name="EmpJoinDatePicker"
+                                                        Margin="0,6,0,0"
+                                                        HorizontalAlignment="Stretch"
+                                                        YearVisible="True"
+                                                        MonthVisible="True"
+                                                        DayVisible="True"/>
                                         </Grid>
                                     </StackPanel>
 

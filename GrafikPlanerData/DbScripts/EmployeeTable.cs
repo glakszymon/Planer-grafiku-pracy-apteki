@@ -23,7 +23,8 @@ public class EmployeeTable : DbConnectionOption
                 VacationDays INTEGER,
                 EmploymentType INTEGER NOT NULL DEFAULT 0,
                 WorkTimeRate INTEGER NOT NULL DEFAULT 0,
-                AutoDailyRest INTEGER NOT NULL DEFAULT 1
+                AutoDailyRest INTEGER NOT NULL DEFAULT 1,
+                JoinDate TEXT
             );";
         
         createEmployeeTableCommand.ExecuteNonQuery();
@@ -37,7 +38,8 @@ public class EmployeeTable : DbConnectionOption
             "VacationDays INTEGER",
             "EmploymentType INTEGER NOT NULL DEFAULT 0",
             "WorkTimeRate INTEGER NOT NULL DEFAULT 0",
-            "AutoDailyRest INTEGER NOT NULL DEFAULT 1");
+            "AutoDailyRest INTEGER NOT NULL DEFAULT 1",
+            "JoinDate TEXT");
     }
 
     public void AddEmployee(EmployeeRecord record)
@@ -47,9 +49,9 @@ public class EmployeeTable : DbConnectionOption
 
         command.CommandText = @"
             INSERT INTO Employee (FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays,
-                EmploymentType, WorkTimeRate, AutoDailyRest) 
+                EmploymentType, WorkTimeRate, AutoDailyRest, JoinDate) 
             VALUES (@firstName, @lastName, @specialisation, @email, @phoneNumber, @vacationDays,
-                @employmentType, @workTimeRate, @autoDailyRest);";
+                @employmentType, @workTimeRate, @autoDailyRest, @joinDate);";
 
         command.Parameters.AddWithValue("@firstName", record.FirstName);
         command.Parameters.AddWithValue("@lastName", record.LastName);
@@ -60,6 +62,7 @@ public class EmployeeTable : DbConnectionOption
         command.Parameters.AddWithValue("@employmentType", (int)record.EmploymentType);
         command.Parameters.AddWithValue("@workTimeRate", (int)record.WorkTimeRate);
         command.Parameters.AddWithValue("@autoDailyRest", record.AutoDailyRest ? 1 : 0);
+        command.Parameters.AddWithValue("@joinDate", (object?)record.JoinDate ?? DBNull.Value);
 
         command.ExecuteNonQuery();
     }
@@ -71,7 +74,8 @@ public class EmployeeTable : DbConnectionOption
             UPDATE Employee 
             SET FirstName = @firstName, LastName = @lastName, Specialization = @specialisation, 
                 Email = @email, PhoneNumber = @phoneNumber, VacationDays = @vacationDays,
-                EmploymentType = @employmentType, WorkTimeRate = @workTimeRate, AutoDailyRest = @autoDailyRest
+                EmploymentType = @employmentType, WorkTimeRate = @workTimeRate, AutoDailyRest = @autoDailyRest,
+                JoinDate = @joinDate
             WHERE Id = @id;";
 
         command.Parameters.AddWithValue("@id", record.Id);
@@ -84,6 +88,7 @@ public class EmployeeTable : DbConnectionOption
         command.Parameters.AddWithValue("@employmentType", (int)record.EmploymentType);
         command.Parameters.AddWithValue("@workTimeRate", (int)record.WorkTimeRate);
         command.Parameters.AddWithValue("@autoDailyRest", record.AutoDailyRest ? 1 : 0);
+        command.Parameters.AddWithValue("@joinDate", (object?)record.JoinDate ?? DBNull.Value);
         
         command.ExecuteNonQuery();
     }
@@ -103,7 +108,7 @@ public class EmployeeTable : DbConnectionOption
         using var command = _connection.CreateCommand();
         command.CommandText = @"
         SELECT Id, FirstName, LastName, Specialization, Email, PhoneNumber, VacationDays,
-               EmploymentType, WorkTimeRate, AutoDailyRest
+               EmploymentType, WorkTimeRate, AutoDailyRest, JoinDate
         FROM Employee";
 
         using var reader = command.ExecuteReader();
@@ -118,6 +123,7 @@ public class EmployeeTable : DbConnectionOption
         int employmentTypeOrdinal = reader.GetOrdinal("EmploymentType");
         int workTimeRateOrdinal = reader.GetOrdinal("WorkTimeRate");
         int autoDailyRestOrdinal = reader.GetOrdinal("AutoDailyRest");
+        int joinDateOrdinal = reader.GetOrdinal("JoinDate");
 
         while (reader.Read())
         {
@@ -132,7 +138,8 @@ public class EmployeeTable : DbConnectionOption
                 VacationDays = reader.IsDBNull(vacationDaysOrdinal) ? 0 : reader.GetInt32(vacationDaysOrdinal),
                 EmploymentType = reader.IsDBNull(employmentTypeOrdinal) ? EmploymentType.UmowaPrace : (EmploymentType)reader.GetInt32(employmentTypeOrdinal),
                 WorkTimeRate = reader.IsDBNull(workTimeRateOrdinal) ? WorkTimeRate.Full : (WorkTimeRate)reader.GetInt32(workTimeRateOrdinal),
-                AutoDailyRest = reader.IsDBNull(autoDailyRestOrdinal) || reader.GetInt32(autoDailyRestOrdinal) == 1
+                AutoDailyRest = reader.IsDBNull(autoDailyRestOrdinal) || reader.GetInt32(autoDailyRestOrdinal) == 1,
+                JoinDate = reader.IsDBNull(joinDateOrdinal) ? null : reader.GetString(joinDateOrdinal)
             };
         
             employees.Add(emp);
