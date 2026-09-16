@@ -422,11 +422,13 @@
                                     <StackPanel Grid.Row="3" Spacing="8" Margin="0,0,0,20">
                                         <Border Height="1" Background="#E8E5E0" Margin="0,0,0,14"/>
                                         <TextBlock Text="Wymiar czasu pracy" FontSize="13" FontWeight="SemiBold" Foreground="#4A4A4A" Margin="0,0,0,4"/>
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto">
+                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
                                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Forma zatrudnienia" FontSize="13" Foreground="#5A5A5A"/>
                                             <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ViewEmploymentType" FontSize="13" Foreground="#1A1A1A"/>
                                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Wymiar etatu" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0"/>
                                             <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ViewWorkTimeRate" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0"/>
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Data dołączenia" FontSize="13" Foreground="#5A5A5A" Margin="0,6,0,0"/>
+                                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ViewJoinDate" FontSize="13" Foreground="#1A1A1A" Margin="0,6,0,0"/>
                                         </Grid>
                                     </StackPanel>
 
@@ -566,13 +568,16 @@
                                                 <ComboBoxItem Content="1/2"/>
                                                 <ComboBoxItem Content="1/4"/>
                                             </ComboBox>
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Data dołączenia" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Center" Margin="0,6,0,0"/>
-                                            <DatePicker Grid.Row="2" Grid.Column="1" x:Name="EmpJoinDatePicker"
-                                                        Margin="0,6,0,0"
-                                                        HorizontalAlignment="Stretch"
-                                                        YearVisible="True"
-                                                        MonthVisible="True"
-                                                        DayVisible="True"/>
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Data dołączenia" FontSize="13" Foreground="#5A5A5A" VerticalAlignment="Top" Margin="0,6,0,0"/>
+                                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,6,0,0">
+                                                <DatePicker x:Name="EmpJoinDatePicker"
+                                                            HorizontalAlignment="Stretch"
+                                                            YearVisible="True"
+                                                            MonthVisible="True"
+                                                            DayVisible="True"/>
+                                                <TextBlock Text="Jeśli pracownik dołączył dawno temu, możesz ustawić bardzo starą datę — wtedy urlop naliczany jest od początku zatrudnienia."
+                                                           FontSize="11" Foreground="#8A8A8A" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                            </StackPanel>
                                         </Grid>
                                     </StackPanel>
 

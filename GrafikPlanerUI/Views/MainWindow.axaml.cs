@@ -343,6 +343,9 @@ public partial class MainWindow : Window
             WorkTimeRate.Quarter => "1/4",
             _ => "—"
         };
+        ViewJoinDate.Text = DateOnly.TryParseExact(emp.JoinDate ?? "", "yyyy-MM-dd", out var joinDate)
+            ? joinDate.ToString("dd.MM.yyyy")
+            : "—";
         
         // Urlopy i obecność — ukryj dla Zlecenie/B2B
         UpdateVacationInfoCard(emp);
